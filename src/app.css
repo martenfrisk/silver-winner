@@ -1,0 +1,245 @@
+/* ── MyanLingo design tokens ─────────────────────────────────────────── */
+:root {
+	/* Brand: Shwedagon gold on warm cream, with teal + plum + coral accents */
+	--gold: #f7b500;
+	--gold-dark: #d99a00;
+	--gold-soft: #ffe9ad;
+	--teal: #0ea5a5;
+	--teal-dark: #0b8383;
+	--plum: #8b5cf6;
+	--plum-dark: #7443d6;
+	--coral: #ff6b5e;
+	--coral-dark: #e05548;
+
+	--bg: #fffaf0;
+	--card: #ffffff;
+	--ink: #4a3520;
+	--ink-soft: #8a7458;
+	--line: #f0e4cc;
+
+	--green: #2fb350;
+	--green-dark: #26923f;
+	--green-soft: #d9f5e1;
+	--red: #e5484d;
+	--red-dark: #c73a3f;
+	--red-soft: #fde2e3;
+
+	--radius: 16px;
+	--font-ui:
+		'Nunito', -apple-system, 'Segoe UI', sans-serif;
+	--font-my:
+		'Padauk', 'Myanmar MN', 'Noto Sans Myanmar', 'Myanmar Text', sans-serif;
+
+	/* Springy easing for pops and bounces (linear() approximation) */
+	--spring: linear(
+		0, 0.016 0.5%, 0.226 2%, 1.116 5.4%, 1.375 6.6%, 1.565 8.2%, 1.581 9.3%,
+		1.458 10.9%, 0.937 14.3%, 0.693 16.6%, 0.67 17.1%, 0.729 19.8%,
+		1.042 23.3%, 1.182 25.6%, 1.192 27.7%, 0.977 32.2%, 0.882 35.6%,
+		1.045 42.4%, 1.059 46.3%, 0.979 50.9%, 1.013 59.9%, 0.986 71.2%,
+		1.008 79.9%, 0.995 88.9%, 1
+	);
+	--pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html {
+	height: 100%;
+}
+
+body {
+	margin: 0;
+	min-height: 100%;
+	background: var(--bg);
+	color: var(--ink);
+	font-family: var(--font-ui);
+	font-weight: 700;
+	-webkit-font-smoothing: antialiased;
+	overflow-x: hidden;
+}
+
+.my {
+	font-family: var(--font-my);
+	font-weight: 400;
+	line-height: 1.7;
+}
+
+h1,
+h2,
+h3 {
+	margin: 0;
+}
+
+button {
+	font-family: inherit;
+	font-weight: inherit;
+	cursor: pointer;
+	border: none;
+	background: none;
+	color: inherit;
+	padding: 0;
+	-webkit-tap-highlight-color: transparent;
+}
+
+button:disabled {
+	cursor: default;
+}
+
+/* ── Chunky game buttons (Duolingo-style 3D press) ───────────────────── */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 14px 28px;
+	border-radius: var(--radius);
+	font-size: 1rem;
+	font-weight: 900;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: #fff;
+	background: var(--gold);
+	box-shadow: 0 4px 0 var(--gold-dark);
+	transition:
+		translate 0.1s ease,
+		box-shadow 0.1s ease,
+		filter 0.15s ease,
+		background 0.2s ease;
+	user-select: none;
+}
+
+.btn:hover:not(:disabled) {
+	filter: brightness(1.05);
+}
+
+.btn:active:not(:disabled) {
+	translate: 0 4px;
+	box-shadow: 0 0 0 var(--gold-dark);
+}
+
+.btn:disabled {
+	background: #e8e0d0;
+	box-shadow: 0 4px 0 #d5cbb5;
+	color: #b0a58a;
+}
+
+.btn.green {
+	background: var(--green);
+	box-shadow: 0 4px 0 var(--green-dark);
+}
+.btn.green:active:not(:disabled) {
+	box-shadow: 0 0 0 var(--green-dark);
+}
+.btn.red {
+	background: var(--red);
+	box-shadow: 0 4px 0 var(--red-dark);
+}
+.btn.red:active:not(:disabled) {
+	box-shadow: 0 0 0 var(--red-dark);
+}
+.btn.ghost {
+	background: var(--card);
+	color: var(--teal);
+	box-shadow: 0 4px 0 var(--line), inset 0 0 0 2px var(--line);
+}
+.btn.ghost:active:not(:disabled) {
+	box-shadow: 0 0 0 var(--line), inset 0 0 0 2px var(--line);
+}
+
+/* ── Answer cards ────────────────────────────────────────────────────── */
+.answer-card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2px;
+	width: 100%;
+	padding: 14px 16px;
+	border-radius: var(--radius);
+	background: var(--card);
+	box-shadow: 0 3px 0 var(--line), inset 0 0 0 2px var(--line);
+	font-size: 1.05rem;
+	transition:
+		translate 0.08s ease,
+		box-shadow 0.15s ease,
+		background 0.2s ease;
+}
+
+.answer-card:hover:not(:disabled) {
+	background: #fdf6e5;
+}
+
+.answer-card:active:not(:disabled) {
+	translate: 0 3px;
+	box-shadow: 0 0 0 var(--line), inset 0 0 0 2px var(--line);
+}
+
+.answer-card.selected {
+	background: #e7f7f7;
+	box-shadow: 0 3px 0 var(--teal), inset 0 0 0 2px var(--teal);
+	color: var(--teal-dark);
+}
+
+.answer-card.correct {
+	background: var(--green-soft);
+	box-shadow: 0 3px 0 var(--green-dark), inset 0 0 0 2px var(--green);
+	color: var(--green-dark);
+	animation: pulse-pop 0.4s ease-in-out;
+}
+
+.answer-card.wrong {
+	background: var(--red-soft);
+	box-shadow: 0 3px 0 var(--red-dark), inset 0 0 0 2px var(--red);
+	color: var(--red-dark);
+	animation: shake 0.4s ease;
+}
+
+.answer-card .sub {
+	font-size: 0.8rem;
+	color: var(--ink-soft);
+	font-weight: 700;
+}
+
+.answer-card.selected .sub {
+	color: var(--teal-dark);
+}
+
+/* ── Shared keyframes ────────────────────────────────────────────────── */
+/* One smooth swell-and-settle. Keep spring easings away from multi-keyframe
+   animations — the overshoot applies per segment and reads as jitter. */
+@keyframes pulse-pop {
+	0% { scale: 1; }
+	35% { scale: 1.04; }
+	70% { scale: 0.99; }
+	100% { scale: 1; }
+}
+
+@keyframes shake {
+	0%, 100% { translate: 0 0; }
+	20% { translate: -6px 0; }
+	40% { translate: 6px 0; }
+	60% { translate: -4px 0; }
+	80% { translate: 4px 0; }
+}
+
+@keyframes float {
+	0%, 100% { translate: 0 0; }
+	50% { translate: 0 -8px; }
+}
+
+@keyframes wiggle {
+	0%, 100% { rotate: 0deg; }
+	25% { rotate: -4deg; }
+	75% { rotate: 4deg; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
+}
