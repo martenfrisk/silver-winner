@@ -24,6 +24,43 @@
 	--red-dark: #c73a3f;
 	--red-soft: #fde2e3;
 
+	/* Accent text on tinted/soft backgrounds. Matches the -dark variants in
+	   light mode; brightened in dark mode where the -dark shades vanish. */
+	--gold-ink: #d99a00;
+	--teal-ink: #0b8383;
+	--plum-ink: #7443d6;
+	--coral-ink: #e05548;
+	--green-ink: #26923f;
+	--red-ink: #c73a3f;
+
+	/* Tinted surfaces */
+	--card-hover: #fdf6e5;
+	--gold-wash: #fdf8ec;
+	--teal-soft: #e7f7f7;
+	--plum-soft: #f1e9ff;
+	--coral-soft: #fff0ee;
+	--coral-line: #f5cfc9;
+
+	/* Disabled / dimmed */
+	--disabled-bg: #e8e0d0;
+	--disabled-shadow: #d5cbb5;
+	--disabled-ink: #b0a58a;
+	--star-dim: #e3d9c3;
+
+	/* Overlays + soft shadows */
+	--backdrop: rgb(0 0 0 / 30%);
+	--shadow-pop: 0 12px 40px rgb(0 0 0 / 22%);
+	--trace-guide: rgba(74, 53, 32, 0.13);
+
+	/* SRS heat scale: new → learning → good → strong → mastered */
+	--heat-0: #e8e0d0;
+	--heat-1: #ffe9ad;
+	--heat-2: #f7b500;
+	--heat-3: #7fd4d4;
+	--heat-4: #2fb350;
+
+	color-scheme: light;
+
 	--radius: 16px;
 	--font-ui:
 		'Nunito', -apple-system, 'Segoe UI', sans-serif;
@@ -39,6 +76,99 @@
 		1.008 79.9%, 0.995 88.9%, 1
 	);
 	--pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Dark theme ──────────────────────────────────────────────────────────
+   Deep warm plum-tinted charcoal; gold stays the hero. The two blocks below
+   (system preference + explicit [data-theme='dark']) must stay in sync. */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) {
+		--gold-soft: #4a3a10;
+
+		--bg: #1f1820;
+		--card: #2a2129;
+		--ink: #f0e6d8;
+		--ink-soft: #b0a094;
+		--line: #423645;
+
+		--green-soft: #1d3a27;
+		--red-soft: #45242a;
+
+		--gold-ink: #ffcf4d;
+		--teal-ink: #4dd0d0;
+		--plum-ink: #c4b5fd;
+		--coral-ink: #ff9c92;
+		--green-ink: #7fe0a1;
+		--red-ink: #ff9a9e;
+
+		--card-hover: #332937;
+		--gold-wash: #332b1d;
+		--teal-soft: #163a3a;
+		--plum-soft: #322948;
+		--coral-soft: #43262b;
+		--coral-line: #5f3a3a;
+
+		--disabled-bg: #3a313d;
+		--disabled-shadow: #2b242e;
+		--disabled-ink: #7c6f80;
+		--star-dim: #4b4050;
+
+		--backdrop: rgb(0 0 0 / 55%);
+		--shadow-pop: 0 12px 40px rgb(0 0 0 / 60%);
+		--trace-guide: rgba(240, 230, 216, 0.15);
+
+		--heat-0: #3a313d;
+		--heat-1: #86610a;
+		--heat-2: #f7b500;
+		--heat-3: #4fc0c0;
+		--heat-4: #3bc568;
+
+		color-scheme: dark;
+	}
+}
+
+:root[data-theme='dark'] {
+	--gold-soft: #4a3a10;
+
+	--bg: #1f1820;
+	--card: #2a2129;
+	--ink: #f0e6d8;
+	--ink-soft: #b0a094;
+	--line: #423645;
+
+	--green-soft: #1d3a27;
+	--red-soft: #45242a;
+
+	--gold-ink: #ffcf4d;
+	--teal-ink: #4dd0d0;
+	--plum-ink: #c4b5fd;
+	--coral-ink: #ff9c92;
+	--green-ink: #7fe0a1;
+	--red-ink: #ff9a9e;
+
+	--card-hover: #332937;
+	--gold-wash: #332b1d;
+	--teal-soft: #163a3a;
+	--plum-soft: #322948;
+	--coral-soft: #43262b;
+	--coral-line: #5f3a3a;
+
+	--disabled-bg: #3a313d;
+	--disabled-shadow: #2b242e;
+	--disabled-ink: #7c6f80;
+	--star-dim: #4b4050;
+
+	--backdrop: rgb(0 0 0 / 55%);
+	--shadow-pop: 0 12px 40px rgb(0 0 0 / 60%);
+	--trace-guide: rgba(240, 230, 216, 0.15);
+
+	--heat-0: #3a313d;
+	--heat-1: #86610a;
+	--heat-2: #f7b500;
+	--heat-3: #4fc0c0;
+	--heat-4: #3bc568;
+
+	color-scheme: dark;
 }
 
 * {
@@ -120,9 +250,9 @@ button:disabled {
 }
 
 .btn:disabled {
-	background: #e8e0d0;
-	box-shadow: 0 4px 0 #d5cbb5;
-	color: #b0a58a;
+	background: var(--disabled-bg);
+	box-shadow: 0 4px 0 var(--disabled-shadow);
+	color: var(--disabled-ink);
 }
 
 .btn.green {
@@ -167,7 +297,7 @@ button:disabled {
 }
 
 .answer-card:hover:not(:disabled) {
-	background: #fdf6e5;
+	background: var(--card-hover);
 }
 
 .answer-card:active:not(:disabled) {
@@ -176,22 +306,22 @@ button:disabled {
 }
 
 .answer-card.selected {
-	background: #e7f7f7;
+	background: var(--teal-soft);
 	box-shadow: 0 3px 0 var(--teal), inset 0 0 0 2px var(--teal);
-	color: var(--teal-dark);
+	color: var(--teal-ink);
 }
 
 .answer-card.correct {
 	background: var(--green-soft);
 	box-shadow: 0 3px 0 var(--green-dark), inset 0 0 0 2px var(--green);
-	color: var(--green-dark);
+	color: var(--green-ink);
 	animation: pulse-pop 0.4s ease-in-out;
 }
 
 .answer-card.wrong {
 	background: var(--red-soft);
 	box-shadow: 0 3px 0 var(--red-dark), inset 0 0 0 2px var(--red);
-	color: var(--red-dark);
+	color: var(--red-ink);
 	animation: shake 0.4s ease;
 }
 
@@ -202,7 +332,7 @@ button:disabled {
 }
 
 .answer-card.selected .sub {
-	color: var(--teal-dark);
+	color: var(--teal-ink);
 }
 
 /* ── Shared keyframes ────────────────────────────────────────────────── */

@@ -72,7 +72,7 @@
 		font-weight: 900;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
-		color: var(--teal-dark);
+		color: var(--teal-ink);
 	}
 	.question {
 		font-size: 1.3rem;
@@ -110,7 +110,7 @@
 		box-shadow: inset 0 0 0 2px var(--line);
 	}
 	.meaning.won {
-		color: var(--green-dark);
+		color: var(--green-ink);
 		box-shadow: inset 0 0 0 2px var(--green);
 		animation: pulse-pop 0.4s ease-in-out;
 	}

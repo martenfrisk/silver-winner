@@ -25,7 +25,10 @@
 	function drawGuide() {
 		ctx.clearRect(0, 0, SIZE, SIZE);
 		ctx.save();
-		ctx.fillStyle = 'rgba(74, 53, 32, 0.13)';
+		// Theme-aware guide tint — canvas can't use var() directly.
+		ctx.fillStyle =
+			getComputedStyle(canvas).getPropertyValue('--trace-guide').trim() ||
+			'rgba(74, 53, 32, 0.13)';
 		ctx.font = `170px ${FONT}`;
 		ctx.textAlign = 'center';
 		ctx.textBaseline = 'middle';
@@ -177,7 +180,7 @@
 	}
 	.target {
 		font-size: 1.7rem;
-		color: var(--gold-dark);
+		color: var(--gold-ink);
 	}
 	.pad {
 		position: relative;
@@ -224,7 +227,7 @@
 	.mini {
 		font-size: 0.85rem;
 		font-weight: 800;
-		color: var(--teal-dark);
+		color: var(--teal-ink);
 		padding: 6px 12px;
 		border-radius: 10px;
 		box-shadow: inset 0 0 0 2px var(--line);

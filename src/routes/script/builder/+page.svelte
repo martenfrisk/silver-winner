@@ -191,7 +191,7 @@
 	.title h1 {
 		font-size: 1.35rem;
 		font-weight: 900;
-		color: var(--teal-dark);
+		color: var(--teal-ink);
 	}
 	.hint-text {
 		margin: 0;
@@ -216,7 +216,7 @@
 	}
 	.challenge strong {
 		font-size: 1.2rem;
-		color: var(--gold-dark);
+		color: var(--gold-ink);
 	}
 	.wins {
 		margin-left: auto;
@@ -226,7 +226,7 @@
 	.mini {
 		font-size: 0.8rem;
 		font-weight: 800;
-		color: var(--teal-dark);
+		color: var(--teal-ink);
 		padding: 5px 10px;
 		border-radius: 10px;
 		box-shadow: inset 0 0 0 2px var(--line);
@@ -234,7 +234,7 @@
 	}
 	.mini.go {
 		margin-left: auto;
-		color: var(--gold-dark);
+		color: var(--gold-ink);
 	}
 
 	.stage-area {
@@ -287,7 +287,7 @@
 		box-shadow: 0 0 0 var(--line), inset 0 0 0 2px var(--line);
 	}
 	.dia.active {
-		background: #e7f7f7;
+		background: var(--teal-soft);
 		box-shadow: 0 3px 0 var(--teal-dark), inset 0 0 0 2px var(--teal);
 	}
 	.dia.disabled {
@@ -316,7 +316,7 @@
 	.roman {
 		font-size: 1.6rem;
 		font-weight: 900;
-		color: var(--teal-dark);
+		color: var(--teal-ink);
 		min-width: 80px;
 		text-align: center;
 	}
@@ -331,8 +331,8 @@
 		font-size: 1.4rem;
 	}
 	.speak-big:disabled {
-		background: #e8e0d0;
-		box-shadow: 0 4px 0 #d5cbb5;
+		background: var(--disabled-bg);
+		box-shadow: 0 4px 0 var(--disabled-shadow);
 	}
 	.speak-big:active:not(:disabled) {
 		translate: 0 4px;

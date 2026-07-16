@@ -60,7 +60,7 @@
 	.backdrop {
 		position: fixed;
 		inset: 0;
-		background: rgb(0 0 0 / 30%);
+		background: var(--backdrop);
 		z-index: 40;
 		animation: fade-in 0.15s ease;
 	}
@@ -73,7 +73,7 @@
 		width: min(420px, calc(100vw - 32px));
 		background: var(--bg);
 		border-radius: 20px;
-		box-shadow: 0 12px 40px rgb(0 0 0 / 22%);
+		box-shadow: var(--shadow-pop);
 		padding: 28px 24px 24px;
 		display: flex;
 		flex-direction: column;
@@ -121,7 +121,7 @@
 	}
 	.sound {
 		margin: 0;
-		color: var(--teal-dark);
+		color: var(--teal-ink);
 		font-weight: 800;
 	}
 	.mnemonic {

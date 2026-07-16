@@ -64,7 +64,7 @@
 		font-weight: 900;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
-		color: var(--gold-dark);
+		color: var(--gold-ink);
 	}
 	.char-row {
 		display: flex;
@@ -89,7 +89,7 @@
 	.sound {
 		margin: 0;
 		font-size: 1.05rem;
-		color: var(--teal-dark);
+		color: var(--teal-ink);
 		font-weight: 800;
 	}
 	.mnemonic {
@@ -106,8 +106,8 @@
 		margin: 0;
 		font-size: 0.9rem;
 		font-weight: 700;
-		color: var(--coral-dark);
-		background: #fff0ee;
+		color: var(--coral-ink);
+		background: var(--coral-soft);
 		border-radius: 12px;
 		padding: 8px 14px;
 	}

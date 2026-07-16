@@ -95,7 +95,7 @@
 		font-size: 1.9rem;
 	}
 	.prompt-roman {
-		color: var(--teal-dark);
+		color: var(--teal-ink);
 		font-weight: 800;
 		font-size: 0.95rem;
 	}
