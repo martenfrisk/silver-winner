@@ -18,7 +18,12 @@ interface Saved {
 	activity: Record<string, number>; // YYYY-MM-DD -> XP earned that day
 	dailyGoal: number;
 	achievements: Record<string, number>; // achievement id -> epoch ms earned
+	freezes: number; // streak freezes held (bought with XP)
+	crowns: Record<string, number>; // lessonId -> epoch ms of the perfect hard-mode run
 }
+
+export const FREEZE_COST = 100;
+export const MAX_FREEZES = 2;
 
 /** How many days of per-day XP history to keep. */
 const ACTIVITY_CAP_DAYS = 400;
@@ -52,6 +57,10 @@ class Progress {
 	dailyGoal = $state(20);
 	// Earned achievements never un-earn, even if the underlying stat drops.
 	achievements = $state<Record<string, number>>({});
+	// Streak freezes: each one silently covers one missed day.
+	freezes = $state(0);
+	// Crowns: perfect hard-mode (drills-only) replays of completed lessons.
+	crowns = $state<Record<string, number>>({});
 
 	constructor() {
 		if (browser) {
@@ -71,13 +80,27 @@ class Progress {
 					this.activity = s.activity ?? {};
 					this.dailyGoal = s.dailyGoal ?? 20;
 					this.achievements = s.achievements ?? {};
+					this.freezes = s.freezes ?? 0;
+					this.crowns = s.crowns ?? {};
 				}
 			} catch {
 				// Corrupt storage — start fresh.
 			}
-			// A streak lapses if the last study day is before yesterday.
+			// A streak lapses if the last study day is before yesterday — unless
+			// held freezes cover every missed day, in which case they're consumed
+			// and the streak survives (lastStudy moves to yesterday so the next
+			// study continues it normally).
 			if (this.lastStudy && this.lastStudy < yesterday()) {
-				this.streak = 0;
+				const missed = Math.max(
+					1,
+					Math.round((Date.parse(yesterday()) - Date.parse(this.lastStudy)) / 86_400_000)
+				);
+				if (missed <= this.freezes) {
+					this.freezes -= missed;
+					this.lastStudy = yesterday();
+				} else {
+					this.streak = 0;
+				}
 				this.save();
 			}
 			// The inline script in app.html applied the theme pre-paint; keep in sync.
@@ -108,7 +131,9 @@ class Progress {
 			createdAt: this.createdAt,
 			activity: this.activity,
 			dailyGoal: this.dailyGoal,
-			achievements: this.achievements
+			achievements: this.achievements,
+			freezes: this.freezes,
+			crowns: this.crowns
 		};
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
 	}
@@ -154,6 +179,26 @@ class Progress {
 	setDailyGoal(goal: number) {
 		this.dailyGoal = goal;
 		this.save();
+	}
+
+	/** Buys one streak freeze with XP. Returns whether the purchase happened. */
+	buyFreeze(): boolean {
+		if (this.xp < FREEZE_COST || this.freezes >= MAX_FREEZES) return false;
+		this.xp -= FREEZE_COST;
+		this.freezes++;
+		this.save();
+		return true;
+	}
+
+	/** Records a perfect hard-mode run (idempotent). */
+	awardCrown(lessonId: string) {
+		if (lessonId in this.crowns) return;
+		this.crowns = { ...this.crowns, [lessonId]: Date.now() };
+		this.save();
+	}
+
+	isCrowned(lessonId: string): boolean {
+		return lessonId in this.crowns;
 	}
 
 	/** Marks an achievement as earned (idempotent). */
@@ -212,6 +257,8 @@ class Progress {
 		this.stars = {};
 		this.activity = {};
 		this.achievements = {};
+		this.freezes = 0;
+		this.crowns = {};
 		this.save();
 	}
 }

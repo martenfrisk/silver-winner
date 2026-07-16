@@ -18,8 +18,18 @@
 
 	const found = findLesson(page.params.id ?? '');
 
+	// Hard mode (crown run): drills only — no learn cards — and a perfect
+	// run earns the lesson's crown. Entered from the 👑 chip on completed nodes.
+	const hard = page.url.searchParams.get('mode') === 'hard';
+
 	// Wrong answers get re-queued at the end, Duolingo-style.
-	let queue = $state<Exercise[]>(found ? [...found.lesson.exercises] : []);
+	let queue = $state<Exercise[]>(
+		found
+			? hard
+				? found.lesson.exercises.filter((e) => e.kind !== 'learn')
+				: [...found.lesson.exercises]
+			: []
+	);
 	let idx = $state(0);
 	let status = $state<'answer' | 'correct' | 'wrong'>('answer');
 	let done = $state(false);
@@ -28,6 +38,11 @@
 	let xpEarned = $state(0);
 	let stars = $state(0);
 	let matchReady = $state(false);
+	let crowned = $state(false);
+
+	// Combo: consecutive correct answers. ≥5 at any point earns bonus XP.
+	let combo = $state(0);
+	let maxCombo = $state(0);
 
 	// Per-exercise input state (reset on advance).
 	let selected = $state<number | null>(null);
@@ -67,11 +82,15 @@
 
 		if (ok) {
 			status = 'correct';
+			combo++;
+			maxCombo = Math.max(maxCombo, combo);
 			sfx.correct();
+			if (combo > 0 && combo % 5 === 0) sfx.match(); // combo milestone
 			if (ex.kind === 'assemble') speak(ex.my);
 		} else {
 			status = 'wrong';
 			mistakes++;
+			combo = 0;
 			sfx.wrong();
 			// Practice it again at the end of the lesson, and remember the word
 			// for the /practice review queue (skipped if it maps to no vocab).
@@ -95,8 +114,17 @@
 
 	function finish() {
 		stars = mistakes === 0 ? 3 : mistakes <= 2 ? 2 : 1;
-		xpEarned = progress.completeLesson(found!.lesson.id, stars);
-		vocabSrs.introduceLesson(found!.lesson.id);
+		const comboBonus = maxCombo >= 5 ? 5 : 0;
+		if (hard) {
+			crowned = mistakes === 0;
+			if (crowned) progress.awardCrown(found!.lesson.id);
+			xpEarned = 15 + (crowned ? 10 : 0) + comboBonus;
+			progress.addXp(xpEarned);
+		} else {
+			xpEarned = progress.completeLesson(found!.lesson.id, stars) + comboBonus;
+			if (comboBonus > 0) progress.addXp(comboBonus);
+			vocabSrs.introduceLesson(found!.lesson.id);
+		}
 		done = true;
 		sfx.fanfare();
 	}
@@ -156,6 +184,18 @@
 		<Mascot mood="celebrate" size={150} />
 		<h1>{ui('lesson-complete').text}</h1>
 		<p class="my complete-my">အရမ်းကောင်းတယ်! <span class="complete-roman">(a-yan kaung-deh — awesome!)</span></p>
+		{#if hard}
+			<p class="crown-result" class:won={crowned}>
+				{#if crowned}
+					👑 Crown earned — a perfect run!
+				{:else}
+					👑 No crown this time — a crown needs a mistake-free run.
+				{/if}
+			</p>
+		{/if}
+		{#if maxCombo >= 5}
+			<p class="combo-bonus">🔥 Best combo ×{maxCombo} — +5 XP</p>
+		{/if}
 		<div class="stars" aria-label="{stars} of 3 stars">
 			{#each [1, 2, 3] as s (s)}
 				<span class="star {s <= stars ? 'lit' : ''}" style="animation-delay: {s * 0.18}s">★</span>
@@ -181,6 +221,9 @@
 	<div class="lesson">
 		<header>
 			<button class="quit" onclick={quit} aria-label="Quit lesson">✕</button>
+			{#if hard}
+				<span class="hard-badge" title="Hard mode — perfect run earns the crown">👑</span>
+			{/if}
 			<div class="bar" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
 				<div class="fill" style="width: {pct}%"></div>
 			</div>
@@ -220,6 +263,9 @@
 					<div class="feedback-text">
 						<strong>{['ကောင်းတယ်! Nice!', 'Great job!', 'ဟုတ်ပြီ! Correct!'][solved % 3]}</strong>
 					</div>
+					{#if combo >= 2}
+						<span class="combo-chip" class:hot={combo >= 5}>🔥×{combo}</span>
+					{/if}
 					<button class="btn green" onclick={advance}>{ui('continue').text}</button>
 				</div>
 			{:else if status === 'wrong'}
@@ -375,6 +421,44 @@
 	.answer {
 		color: var(--red-ink);
 		font-size: 0.95rem;
+	}
+	.hard-badge {
+		font-size: 1.15rem;
+		filter: drop-shadow(0 1px 0 var(--gold-dark));
+	}
+	.combo-chip {
+		font-weight: 900;
+		font-size: 0.95rem;
+		color: var(--gold-ink);
+		background: var(--gold-soft);
+		border-radius: 99px;
+		padding: 6px 12px;
+		white-space: nowrap;
+		animation: pulse-pop 0.4s ease-in-out;
+	}
+	.combo-chip.hot {
+		color: #fff;
+		background: var(--coral);
+		box-shadow: 0 2px 0 var(--coral-dark);
+	}
+	.crown-result {
+		margin: 0;
+		font-weight: 800;
+		color: var(--ink-soft);
+		background: var(--card);
+		border-radius: 12px;
+		box-shadow: inset 0 0 0 2px var(--line);
+		padding: 10px 18px;
+	}
+	.crown-result.won {
+		color: var(--gold-ink);
+		box-shadow: inset 0 0 0 2px var(--gold);
+	}
+	.combo-bonus {
+		margin: 0;
+		font-weight: 800;
+		font-size: 0.95rem;
+		color: var(--coral-ink);
 	}
 
 	/* completion screen */
