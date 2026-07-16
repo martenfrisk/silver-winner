@@ -3,6 +3,8 @@ import { lessonOrder } from '$lib/data/course';
 
 const STORAGE_KEY = 'myanlingo-progress-v1';
 
+export type Theme = 'system' | 'light' | 'dark';
+
 interface Saved {
 	xp: number;
 	streak: number;
@@ -11,6 +13,7 @@ interface Saved {
 	sound: boolean;
 	showRoman: boolean;
 	immersion: boolean;
+	theme: Theme;
 	createdAt: number;
 }
 
@@ -35,6 +38,8 @@ class Progress {
 	showRoman = $state(false);
 	// Immersion mode: UI strings gradually switch to Burmese as script knowledge grows.
 	immersion = $state(false);
+	// 'system' follows the OS preference; 'light'/'dark' force it via data-theme on <html>.
+	theme = $state<Theme>('system');
 	createdAt = $state(Date.now());
 
 	constructor() {
@@ -50,6 +55,7 @@ class Progress {
 					this.sound = s.sound ?? true;
 					this.showRoman = s.showRoman ?? false;
 					this.immersion = s.immersion ?? false;
+					this.theme = s.theme === 'light' || s.theme === 'dark' ? s.theme : 'system';
 					this.createdAt = s.createdAt ?? Date.now();
 				}
 			} catch {
@@ -60,7 +66,18 @@ class Progress {
 				this.streak = 0;
 				this.save();
 			}
+			// The inline script in app.html applied the theme pre-paint; keep in sync.
+			this.applyTheme();
 		}
+	}
+
+	/** Mirrors the theme onto <html data-theme>. 'system' removes the attribute so the
+	 *  prefers-color-scheme media query (which tracks live OS changes) takes over. */
+	private applyTheme() {
+		if (!browser) return;
+		const el = document.documentElement;
+		if (this.theme === 'system') el.removeAttribute('data-theme');
+		else el.setAttribute('data-theme', this.theme);
 	}
 
 	private save() {
@@ -73,6 +90,7 @@ class Progress {
 			sound: this.sound,
 			showRoman: this.showRoman,
 			immersion: this.immersion,
+			theme: this.theme,
 			createdAt: this.createdAt
 		};
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
@@ -142,6 +160,12 @@ class Progress {
 	toggleImmersion() {
 		this.immersion = !this.immersion;
 		this.save();
+	}
+
+	setTheme(theme: Theme) {
+		this.theme = theme;
+		this.save();
+		this.applyTheme();
 	}
 
 	reset() {

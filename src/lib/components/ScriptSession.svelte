@@ -255,10 +255,10 @@
 		font-weight: 900;
 	}
 	.verdict.good {
-		color: var(--green-dark);
+		color: var(--green-ink);
 	}
 	.verdict.bad {
-		color: var(--red-dark);
+		color: var(--red-ink);
 	}
 
 	/* completion */
@@ -275,7 +275,7 @@
 	.complete h1 {
 		font-size: 2rem;
 		font-weight: 900;
-		color: var(--gold-dark);
+		color: var(--gold-ink);
 	}
 	.stars {
 		display: flex;
@@ -283,7 +283,7 @@
 		font-size: 3rem;
 	}
 	.star {
-		color: #e3d9c3;
+		color: var(--star-dim);
 		scale: 0;
 		animation: star-in 0.5s var(--spring) forwards;
 	}

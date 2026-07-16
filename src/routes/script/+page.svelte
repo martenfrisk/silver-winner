@@ -23,7 +23,7 @@
 		goto(`/script/learn/${id}`);
 	}
 
-	const HEAT = ['#e8e0d0', '#ffe9ad', '#f7b500', '#7fd4d4', '#2fb350'];
+	const HEAT = ['var(--heat-0)', 'var(--heat-1)', 'var(--heat-2)', 'var(--heat-3)', 'var(--heat-4)'];
 	function heat(id: string): string {
 		const b = srs.box(id);
 		return b < 0 ? 'transparent' : HEAT[b];
@@ -133,11 +133,11 @@
 			</div>
 		{/each}
 		<div class="legend">
-			<span><i style="background:#e8e0d0"></i> new</span>
-			<span><i style="background:#ffe9ad"></i> learning</span>
-			<span><i style="background:#f7b500"></i> good</span>
-			<span><i style="background:#7fd4d4"></i> strong</span>
-			<span><i style="background:#2fb350"></i> mastered</span>
+			<span><i style="background:var(--heat-0)"></i> new</span>
+			<span><i style="background:var(--heat-1)"></i> learning</span>
+			<span><i style="background:var(--heat-2)"></i> good</span>
+			<span><i style="background:var(--heat-3)"></i> strong</span>
+			<span><i style="background:var(--heat-4)"></i> mastered</span>
 		</div>
 	</section>
 
@@ -188,7 +188,7 @@
 	.title h1 {
 		font-size: 1.35rem;
 		font-weight: 900;
-		color: var(--plum-dark);
+		color: var(--plum-ink);
 	}
 	.sub {
 		margin: 0;
@@ -304,7 +304,7 @@
 		box-shadow: 0 3px 0 var(--plum-dark), inset 0 0 0 2px var(--plum);
 	}
 	.unit-card.done {
-		background: #fdf8ec;
+		background: var(--gold-wash);
 	}
 	.unit-glyph {
 		font-size: 1.8rem;
@@ -341,8 +341,8 @@
 		font-size: 0.7rem;
 		font-weight: 900;
 		letter-spacing: 0.1em;
-		color: var(--plum-dark);
-		background: #f1e9ff;
+		color: var(--plum-ink);
+		background: var(--plum-soft);
 		border-radius: 8px;
 		padding: 4px 8px;
 		animation: bob 1.2s ease-in-out infinite;
@@ -378,7 +378,7 @@
 		transition: translate 0.1s ease, background 0.15s ease;
 	}
 	.cell:hover {
-		background: #fdf6e5;
+		background: var(--card-hover);
 		translate: 0 -2px;
 	}
 	.cell-char {

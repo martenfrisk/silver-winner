@@ -3,7 +3,21 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<meta name="theme-color" content="#f7b500" />
+		<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7b500" />
+		<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1f1820" />
+		<script>
+			// Apply a forced theme before first paint to avoid a flash of the wrong
+			// theme. 'system' (or unset) leaves the attribute off so the
+			// prefers-color-scheme media queries in app.css decide.
+			try {
+				var theme = JSON.parse(localStorage.getItem('myanlingo-progress-v1') || '{}').theme;
+				if (theme === 'light' || theme === 'dark') {
+					document.documentElement.setAttribute('data-theme', theme);
+				}
+			} catch (e) {
+				/* corrupt storage — fall back to system */
+			}
+		</script>
 		<title>MyanLingo — Learn Burmese</title>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

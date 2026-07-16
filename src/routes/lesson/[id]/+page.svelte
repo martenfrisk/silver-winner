@@ -263,7 +263,7 @@
 	.roman-toggle {
 		font-size: 0.9rem;
 		font-weight: 900;
-		color: var(--teal-dark);
+		color: var(--teal-ink);
 		padding: 6px 10px;
 		border-radius: 10px;
 		box-shadow: inset 0 0 0 2px var(--line);
@@ -346,15 +346,15 @@
 		gap: 2px;
 	}
 	footer.correct strong {
-		color: var(--green-dark);
+		color: var(--green-ink);
 		font-size: 1.15rem;
 	}
 	footer.wrong strong {
-		color: var(--red-dark);
+		color: var(--red-ink);
 		font-size: 1.15rem;
 	}
 	.answer {
-		color: var(--red-dark);
+		color: var(--red-ink);
 		font-size: 0.95rem;
 	}
 
@@ -372,7 +372,7 @@
 	.complete h1 {
 		font-size: 2rem;
 		font-weight: 900;
-		color: var(--gold-dark);
+		color: var(--gold-ink);
 	}
 	.complete-my {
 		margin: 0;
@@ -389,7 +389,7 @@
 		font-size: 3rem;
 	}
 	.star {
-		color: #e3d9c3;
+		color: var(--star-dim);
 		scale: 0;
 		animation: star-in 0.5s var(--spring) forwards;
 	}

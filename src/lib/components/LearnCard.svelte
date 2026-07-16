@@ -50,7 +50,7 @@
 		font-weight: 900;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
-		color: var(--gold-dark);
+		color: var(--gold-ink);
 	}
 	.emoji {
 		font-size: 3.4rem;
@@ -68,7 +68,7 @@
 	.roman {
 		margin: 0;
 		font-size: 1.15rem;
-		color: var(--teal-dark);
+		color: var(--teal-ink);
 		font-weight: 800;
 	}
 	.en {

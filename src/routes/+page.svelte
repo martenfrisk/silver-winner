@@ -178,7 +178,7 @@
 	.brand-name {
 		font-size: 1.3rem;
 		font-weight: 900;
-		color: var(--gold-dark);
+		color: var(--gold-ink);
 		letter-spacing: -0.02em;
 	}
 	.pills {
@@ -251,8 +251,8 @@
 		place-items: center;
 		font-size: 1.7rem;
 		border-radius: 14px;
-		background: #f1e9ff;
-		color: var(--plum-dark);
+		background: var(--plum-soft);
+		color: var(--plum-ink);
 		flex-shrink: 0;
 	}
 	.script-text {
@@ -263,7 +263,7 @@
 	}
 	.script-title {
 		font-weight: 900;
-		color: var(--plum-dark);
+		color: var(--plum-ink);
 	}
 	.optional-tag {
 		font-size: 0.65rem;
@@ -296,7 +296,7 @@
 	.script-arrow {
 		font-size: 1.2rem;
 		font-weight: 900;
-		color: var(--plum-dark);
+		color: var(--plum-ink);
 	}
 
 	.path {
@@ -353,8 +353,8 @@
 		box-shadow: 0 0 0 rgb(0 0 0 / 22%);
 	}
 	.node.locked {
-		background: #e8e0d0;
-		box-shadow: 0 7px 0 #d0c6b0;
+		background: var(--disabled-bg);
+		box-shadow: 0 7px 0 var(--disabled-shadow);
 	}
 	.node.current {
 		animation: node-pulse 1.8s ease-in-out infinite;
@@ -370,16 +370,16 @@
 		box-shadow: inset 0 0 0 1.5px var(--line);
 		padding: 1px 7px;
 		font-size: 0.7rem;
-		color: var(--gold-dark);
+		color: var(--gold-ink);
 	}
 	.node-stars .dim {
-		color: #ddd3bd;
+		color: var(--star-dim);
 	}
 	.start-bubble {
 		position: absolute;
 		top: -34px;
 		background: var(--card);
-		color: var(--gold-dark);
+		color: var(--gold-ink);
 		font-size: 0.72rem;
 		font-weight: 900;
 		letter-spacing: 0.1em;
@@ -416,7 +416,7 @@
 		font-size: 0.85rem;
 	}
 	.reset {
-		color: var(--coral-dark);
+		color: var(--coral-ink);
 		font-weight: 800;
 		text-decoration: underline;
 		font-size: 0.85rem;

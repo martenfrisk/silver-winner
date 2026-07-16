@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { progress } from '$lib/progress.svelte';
+	import { progress, type Theme } from '$lib/progress.svelte';
 	import { srs } from '$lib/srs.svelte';
 	import { course } from '$lib/data/course';
 	import { totalGlyphs } from '$lib/data/script';
@@ -15,6 +15,12 @@
 			day: 'numeric'
 		})
 	);
+
+	const themeOptions: { value: Theme; label: string }[] = [
+		{ value: 'system', label: 'System' },
+		{ value: 'light', label: 'Light' },
+		{ value: 'dark', label: 'Dark' }
+	];
 
 	function resetCourse() {
 		if (confirm('Reset course progress (lessons, XP, streak)? This cannot be undone.')) {
@@ -105,6 +111,24 @@
 				onchange={() => progress.toggleRoman()}
 			/>
 		</label>
+		<div class="setting">
+			<span class="setting-text">
+				<span class="setting-title">Theme</span>
+				<span class="setting-desc">Follow your device, or force light or dark.</span>
+			</span>
+			<div class="theme-picker" role="radiogroup" aria-label="Theme">
+				{#each themeOptions as opt (opt.value)}
+					<button
+						role="radio"
+						aria-checked={progress.theme === opt.value}
+						class:active={progress.theme === opt.value}
+						onclick={() => progress.setTheme(opt.value)}
+					>
+						{opt.label}
+					</button>
+				{/each}
+			</div>
+		</div>
 		<label class="setting">
 			<span class="setting-text">
 				<span class="setting-title">Immersion mode</span>
@@ -276,6 +300,29 @@
 	.setting input:checked::after {
 		translate: 22px 0;
 	}
+	.theme-picker {
+		display: flex;
+		gap: 6px;
+		flex-shrink: 0;
+	}
+	.theme-picker button {
+		padding: 8px 12px;
+		border-radius: 10px;
+		font-size: 0.8rem;
+		font-weight: 800;
+		color: var(--ink-soft);
+		background: var(--bg);
+		box-shadow: inset 0 0 0 2px var(--line);
+		transition:
+			background 0.15s ease,
+			color 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+	.theme-picker button.active {
+		color: #fff;
+		background: var(--gold);
+		box-shadow: 0 2px 0 var(--gold-dark);
+	}
 	.danger-row {
 		display: flex;
 		flex-wrap: wrap;
@@ -286,9 +333,9 @@
 		border-radius: 12px;
 		font-weight: 800;
 		font-size: 0.9rem;
-		color: var(--coral-dark);
+		color: var(--coral-ink);
 		background: var(--card);
-		box-shadow: inset 0 0 0 2px #f5cfc9;
+		box-shadow: inset 0 0 0 2px var(--coral-line);
 	}
 	.danger-btn.worst {
 		color: #fff;

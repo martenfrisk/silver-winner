@@ -20,6 +20,7 @@ Meet **Shwe** (ရွှေ, "gold") — a golden Burmese cat who guides you thr
   - **decodable words & sentences**: real Burmese words — and short real sentences in later units — readable using only components you've learned
 - **Immersion mode** (off by default) — UI buttons and labels switch to Burmese in three tiers as your script knowledge grows, like gradually setting your phone to the target language.
 - **Profile page** (`/account`) — stats, settings and reset options; still 100% localStorage.
+- **Dark mode** — warm charcoal/plum dark theme with gold kept as the hero accent. Follows the OS by default; force light/dark from the profile page (System / Light / Dark). Applied pre-paint, so no flash of the wrong theme.
 
 ## Running
 
