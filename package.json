@@ -12,7 +12,8 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:e2e": "playwright test",
 		"audio": "bun scripts/generate-audio.ts",
-		"lint:content": "bun scripts/lint-content.ts"
+		"lint:content": "bun scripts/lint-content.ts",
+		"test": "vitest run"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.61.1",
@@ -23,6 +24,7 @@
 		"svelte": "^5.56.1",
 		"svelte-check": "^4.6.0",
 		"typescript": "^6.0.3",
-		"vite": "^8.0.16"
+		"vite": "^8.0.16",
+		"vitest": "^4.1.10"
 	}
 }

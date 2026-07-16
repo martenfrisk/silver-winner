@@ -1,11 +1,16 @@
 import adapter from '@sveltejs/adapter-auto';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
 	server: {
 		// Honor the port assigned by the preview harness, if any.
 		port: process.env.PORT ? Number(process.env.PORT) : 5173
+	},
+	test: {
+		// Unit tests only — Playwright owns e2e/ via `bun run test:e2e`.
+		include: ['src/**/*.test.ts'],
+		environment: 'node'
 	},
 	plugins: [
 		sveltekit({
