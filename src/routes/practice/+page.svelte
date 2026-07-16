@@ -1,24 +1,18 @@
 <script lang="ts">
-	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { fly, scale } from 'svelte/transition';
-	import { findLesson, type Exercise } from '$lib/data/course';
-	import { progress } from '$lib/progress.svelte';
+	import { buildVocabPracticeQueue, starsFor, type VocabEx } from '$lib/practice-session';
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
+	import { progress } from '$lib/progress.svelte';
 	import { ui } from '$lib/i18n.svelte';
 	import { sfx, speak } from '$lib/audio';
 	import Mascot from '$lib/components/Mascot.svelte';
 	import Confetti from '$lib/components/Confetti.svelte';
-	import LearnCard from '$lib/components/LearnCard.svelte';
 	import ChoiceExercise from '$lib/components/ChoiceExercise.svelte';
-	import MatchExercise from '$lib/components/MatchExercise.svelte';
-	import AssembleExercise from '$lib/components/AssembleExercise.svelte';
 	import ListenExercise from '$lib/components/ListenExercise.svelte';
 
-	const found = findLesson(page.params.id ?? '');
-
-	// Wrong answers get re-queued at the end, Duolingo-style.
-	let queue = $state<Exercise[]>(found ? [...found.lesson.exercises] : []);
+	// The queue is built once at mount; requeues append copies.
+	let queue = $state<VocabEx[]>(buildVocabPracticeQueue());
 	let idx = $state(0);
 	let status = $state<'answer' | 'correct' | 'wrong'>('answer');
 	let done = $state(false);
@@ -26,22 +20,13 @@
 	let solved = $state(0);
 	let xpEarned = $state(0);
 	let stars = $state(0);
-	let matchReady = $state(false);
-
-	// Per-exercise input state (reset on advance).
 	let selected = $state<number | null>(null);
-	let sequence = $state<string[]>([]);
 
-	const ex = $derived(queue[idx]);
+	const item = $derived(queue[idx]);
+	const ex = $derived(item?.ex);
 	const total = $derived(queue.length);
 	const pct = $derived(total === 0 ? 0 : (solved / total) * 100);
-
-	const canCheck = $derived.by(() => {
-		if (!ex) return false;
-		if (ex.kind === 'choice' || ex.kind === 'listen') return selected !== null;
-		if (ex.kind === 'assemble') return sequence.length > 0;
-		return false;
-	});
+	const canCheck = $derived(selected !== null);
 
 	const correctAnswerText = $derived.by(() => {
 		if (!ex) return '';
@@ -49,7 +34,6 @@
 			const o = ex.options[ex.correct];
 			return o.sub && progress.showRoman ? `${o.text} (${o.sub})` : o.text;
 		}
-		if (ex.kind === 'assemble') return progress.showRoman ? `${ex.my} — ${ex.roman}` : ex.my;
 		if (ex.kind === 'listen') {
 			const base = progress.showRoman ? `${ex.my} (${ex.roman})` : ex.my;
 			return `${base} — ${ex.en}`;
@@ -58,26 +42,19 @@
 	});
 
 	function check() {
-		if (!ex || status !== 'answer') return;
-		let ok = false;
-		if (ex.kind === 'choice' || ex.kind === 'listen') ok = selected === ex.correct;
-		else if (ex.kind === 'assemble')
-			ok = sequence.join('') === ex.answer.map((a) => a.t).join('');
-
+		if (!ex || !item || status !== 'answer') return;
+		const ok = selected === ex.correct;
+		vocabSrs.grade(item.my, ok);
 		if (ok) {
 			status = 'correct';
 			sfx.correct();
-			if (ex.kind === 'assemble') speak(ex.my);
+			// Reinforce the word's sound on my→en drills, where it wasn't the prompt.
+			if (ex.kind === 'choice' && ex.promptMy) speak(ex.promptMy);
 		} else {
 			status = 'wrong';
 			mistakes++;
 			sfx.wrong();
-			// Practice it again at the end of the lesson, and remember the word
-			// for the /practice review queue (skipped if it maps to no vocab).
-			if (ex.kind === 'listen' || ex.kind === 'assemble') vocabSrs.recordMistake(ex.my);
-			else if (ex.kind === 'choice')
-				vocabSrs.recordMistake(ex.promptMy ?? ex.options[ex.correct].text);
-			queue = [...queue, ex];
+			queue = [...queue, item]; // practice it again at the end
 		}
 	}
 
@@ -87,15 +64,13 @@
 		idx++;
 		status = 'answer';
 		selected = null;
-		sequence = [];
-		matchReady = false;
 		if (idx >= queue.length) finish();
 	}
 
 	function finish() {
-		stars = mistakes === 0 ? 3 : mistakes <= 2 ? 2 : 1;
-		xpEarned = progress.completeLesson(found!.lesson.id, stars);
-		vocabSrs.introduceLesson(found!.lesson.id);
+		stars = starsFor(mistakes);
+		xpEarned = 10 + (stars === 3 ? 5 : 0);
+		progress.addXp(xpEarned);
 		done = true;
 		sfx.fanfare();
 	}
@@ -108,16 +83,12 @@
 		if (done || !ex) return;
 		if (e.key === 'Enter') {
 			e.preventDefault();
-			if (status !== 'answer' || ex.kind === 'learn') advance();
-			else if (ex.kind === 'match') {
-				if (matchReady) advance();
-			} else if (canCheck) check();
+			if (status !== 'answer') advance();
+			else if (canCheck) check();
 		}
-		if ((ex.kind === 'choice' || ex.kind === 'listen') && status === 'answer') {
+		if (status === 'answer') {
 			const n = Number(e.key);
 			if (n >= 1 && n <= ex.options.length) {
-				// Number keys map to displayed order; simplest is first..last as rendered.
-				// The component shuffles internally, so map via its DOM order instead:
 				const buttons = document.querySelectorAll<HTMLButtonElement>('.options .answer-card');
 				buttons[n - 1]?.click();
 			}
@@ -128,21 +99,21 @@
 <svelte:window {onkeydown} />
 
 <svelte:head>
-	<title>{found ? `${found.lesson.title} · MyanLingo` : 'MyanLingo'}</title>
+	<title>{ui('practice').text} · MyanLingo</title>
 </svelte:head>
 
-{#if !found}
-	<div class="missing">
-		<Mascot mood="sad" />
-		<p>Hmm, that lesson doesn’t exist.</p>
+{#if queue.length === 0}
+	<div class="empty">
+		<Mascot mood="idle" size={120} />
+		<h1>Nothing to practice yet</h1>
+		<p>Complete a lesson first — its words come back here for review.</p>
 		<a class="btn" href="/">Back home</a>
 	</div>
 {:else if done}
 	<Confetti />
 	<div class="complete" in:scale={{ duration: 450, start: 0.7 }}>
 		<Mascot mood="celebrate" size={150} />
-		<h1>{ui('lesson-complete').text}</h1>
-		<p class="my complete-my">အရမ်းကောင်းတယ်! <span class="complete-roman">(a-yan kaung-deh — awesome!)</span></p>
+		<h1>{ui('practice-complete').text}</h1>
 		<div class="stars" aria-label="{stars} of 3 stars">
 			{#each [1, 2, 3] as s (s)}
 				<span class="star {s <= stars ? 'lit' : ''}" style="animation-delay: {s * 0.18}s">★</span>
@@ -165,9 +136,9 @@
 		<button class="btn green big" onclick={quit}>{ui('continue').text}</button>
 	</div>
 {:else}
-	<div class="lesson">
+	<div class="practice">
 		<header>
-			<button class="quit" onclick={quit} aria-label="Quit lesson">✕</button>
+			<button class="quit" onclick={quit} aria-label="Quit practice">✕</button>
 			<div class="bar" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
 				<div class="fill" style="width: {pct}%"></div>
 			</div>
@@ -185,16 +156,10 @@
 		<main>
 			{#key idx}
 				<div class="stage" in:fly={{ x: 60, duration: 300 }}>
-					{#if ex.kind === 'learn'}
-						<LearnCard my={ex.my} roman={ex.roman} en={ex.en} emoji={ex.emoji} note={ex.note} />
-					{:else if ex.kind === 'choice'}
+					{#if ex.kind === 'choice'}
 						<ChoiceExercise {ex} bind:selected {status} />
 					{:else if ex.kind === 'listen'}
 						<ListenExercise {ex} bind:selected {status} />
-					{:else if ex.kind === 'assemble'}
-						<AssembleExercise {ex} bind:sequence {status} />
-					{:else if ex.kind === 'match'}
-						<MatchExercise {ex} oncomplete={() => (matchReady = true)} onmiss={() => mistakes++} />
 					{/if}
 				</div>
 			{/key}
@@ -218,19 +183,8 @@
 					</div>
 					<button class="btn red" onclick={advance}>{ui('got-it').text}</button>
 				</div>
-			{:else if ex.kind === 'learn'}
-				<div class="actions">
-					<button class="btn" onclick={advance}>{ui('continue').text}</button>
-				</div>
-			{:else if ex.kind === 'match'}
-				<div class="actions">
-					<button class="btn green" onclick={advance} disabled={!matchReady}>
-						{matchReady ? ui('continue').text : ui('match-pairs').text}
-					</button>
-				</div>
 			{:else}
 				<div class="actions">
-					<button class="btn ghost" onclick={advance} title={ui('skip').hint}>{ui('skip').text}</button>
 					<button class="btn green" onclick={check} disabled={!canCheck} title={ui('check').hint}>
 						{ui('check').text}
 					</button>
@@ -241,7 +195,7 @@
 {/if}
 
 <style>
-	.lesson {
+	.practice {
 		display: flex;
 		flex-direction: column;
 		min-height: 100dvh;
@@ -291,17 +245,8 @@
 	.fill {
 		height: 100%;
 		border-radius: 99px;
-		background: var(--gold);
+		background: var(--teal);
 		transition: width 0.5s var(--pop);
-		position: relative;
-	}
-	.fill::after {
-		content: '';
-		position: absolute;
-		inset: 3px 6px auto;
-		height: 4px;
-		border-radius: 99px;
-		background: rgb(255 255 255 / 40%);
 	}
 	main {
 		flex: 1;
@@ -330,13 +275,10 @@
 	}
 	.actions {
 		display: flex;
-		justify-content: space-between;
+		justify-content: flex-end;
 		gap: 12px;
 		max-width: 680px;
 		margin: 0 auto;
-	}
-	.actions .btn:only-child {
-		margin-left: auto;
 	}
 	.feedback {
 		display: flex;
@@ -364,7 +306,7 @@
 		font-size: 0.95rem;
 	}
 
-	/* completion screen */
+	.empty,
 	.complete {
 		min-height: 100dvh;
 		display: flex;
@@ -375,19 +317,22 @@
 		text-align: center;
 		padding: 24px;
 	}
+	.empty h1 {
+		font-size: 1.5rem;
+		font-weight: 900;
+	}
+	.empty p {
+		color: var(--ink-soft);
+		font-weight: 700;
+		max-width: 380px;
+	}
+	.empty .btn {
+		text-decoration: none;
+	}
 	.complete h1 {
 		font-size: 2rem;
 		font-weight: 900;
-		color: var(--gold-ink);
-	}
-	.complete-my {
-		margin: 0;
-		font-size: 1.2rem;
-	}
-	.complete-roman {
-		font-family: var(--font-ui);
-		font-size: 0.9rem;
-		color: var(--ink-soft);
+		color: var(--teal-ink);
 	}
 	.stars {
 		display: flex;
@@ -438,16 +383,5 @@
 		padding: 16px 48px;
 		font-size: 1.1rem;
 		margin-top: 8px;
-	}
-	.missing {
-		min-height: 100dvh;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 16px;
-	}
-	.missing .btn {
-		text-decoration: none;
 	}
 </style>

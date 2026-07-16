@@ -24,6 +24,7 @@ const STRINGS = {
 	'not-quite': { en: 'Not quite…', my: 'မမှန်ဘူး…', tier: 2 },
 	answer: { en: 'Answer', my: 'အဖြေ', tier: 2 },
 	'lesson-complete': { en: 'Lesson complete!', my: 'သင်ခန်းစာ ပြီးပြီ!', tier: 2 },
+	'practice-complete': { en: 'Practice complete!', my: 'လေ့ကျင့်ခန်း ပြီးပြီ!', tier: 2 },
 	'welcome-back': { en: 'Welcome back!', my: 'ပြန်ကြိုဆိုပါတယ်!', tier: 2 },
 	'xp-earned': { en: 'XP earned', my: 'ရမှတ်', tier: 2 },
 	accuracy: { en: 'Accuracy', my: 'တိကျမှု', tier: 2 },
