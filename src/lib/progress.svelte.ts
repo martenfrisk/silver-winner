@@ -15,7 +15,13 @@ interface Saved {
 	immersion: boolean;
 	theme: Theme;
 	createdAt: number;
+	activity: Record<string, number>; // YYYY-MM-DD -> XP earned that day
+	dailyGoal: number;
+	achievements: Record<string, number>; // achievement id -> epoch ms earned
 }
+
+/** How many days of per-day XP history to keep. */
+const ACTIVITY_CAP_DAYS = 400;
 
 function today(): string {
 	const d = new Date();
@@ -41,6 +47,11 @@ class Progress {
 	// 'system' follows the OS preference; 'light'/'dark' force it via data-theme on <html>.
 	theme = $state<Theme>('system');
 	createdAt = $state(Date.now());
+	// Per-day XP history (drives the daily goal ring and the heatmap).
+	activity = $state<Record<string, number>>({});
+	dailyGoal = $state(20);
+	// Earned achievements never un-earn, even if the underlying stat drops.
+	achievements = $state<Record<string, number>>({});
 
 	constructor() {
 		if (browser) {
@@ -57,6 +68,9 @@ class Progress {
 					this.immersion = s.immersion ?? false;
 					this.theme = s.theme === 'light' || s.theme === 'dark' ? s.theme : 'system';
 					this.createdAt = s.createdAt ?? Date.now();
+					this.activity = s.activity ?? {};
+					this.dailyGoal = s.dailyGoal ?? 20;
+					this.achievements = s.achievements ?? {};
 				}
 			} catch {
 				// Corrupt storage — start fresh.
@@ -91,7 +105,10 @@ class Progress {
 			showRoman: this.showRoman,
 			immersion: this.immersion,
 			theme: this.theme,
-			createdAt: this.createdAt
+			createdAt: this.createdAt,
+			activity: this.activity,
+			dailyGoal: this.dailyGoal,
+			achievements: this.achievements
 		};
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
 	}
@@ -100,29 +117,49 @@ class Progress {
 	completeLesson(lessonId: string, earnedStars: number): number {
 		const isFirstTime = !(lessonId in this.stars);
 		const xpEarned = (isFirstTime ? 20 : 10) + (earnedStars === 3 ? 5 : 0);
-		this.xp += xpEarned;
 		this.stars = {
 			...this.stars,
 			[lessonId]: Math.max(this.stars[lessonId] ?? 0, earnedStars)
 		};
+		this.addXp(xpEarned);
+		return xpEarned;
+	}
 
+	/** Awards XP, logs it on today's activity, and keeps the streak alive. */
+	addXp(amount: number) {
+		this.xp += amount;
 		const t = today();
+		const next = { ...this.activity, [t]: (this.activity[t] ?? 0) + amount };
+		// Cap the history so localStorage doesn't grow forever.
+		const dates = Object.keys(next).sort();
+		for (const d of dates.slice(0, Math.max(0, dates.length - ACTIVITY_CAP_DAYS))) delete next[d];
+		this.activity = next;
 		if (this.lastStudy !== t) {
 			this.streak = this.lastStudy === yesterday() ? this.streak + 1 : 1;
 			this.lastStudy = t;
 		}
 		this.save();
-		return xpEarned;
 	}
 
-	/** Awards XP from outside the course (script sessions) and keeps the streak alive. */
-	addXp(amount: number) {
-		this.xp += amount;
-		const t = today();
-		if (this.lastStudy !== t) {
-			this.streak = this.lastStudy === yesterday() ? this.streak + 1 : 1;
-			this.lastStudy = t;
-		}
+	/** XP earned today (drives the daily-goal ring). */
+	get xpToday(): number {
+		return this.activity[today()] ?? 0;
+	}
+
+	/** Days on which the (current) daily goal was reached. */
+	get goalDaysCount(): number {
+		return Object.values(this.activity).filter((xp) => xp >= this.dailyGoal).length;
+	}
+
+	setDailyGoal(goal: number) {
+		this.dailyGoal = goal;
+		this.save();
+	}
+
+	/** Marks an achievement as earned (idempotent). */
+	award(id: string) {
+		if (id in this.achievements) return;
+		this.achievements = { ...this.achievements, [id]: Date.now() };
 		this.save();
 	}
 
@@ -173,6 +210,8 @@ class Progress {
 		this.streak = 0;
 		this.lastStudy = '';
 		this.stars = {};
+		this.activity = {};
+		this.achievements = {};
 		this.save();
 	}
 }

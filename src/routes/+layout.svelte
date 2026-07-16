@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import AchievementToast from '$lib/components/AchievementToast.svelte';
 
 	let { children } = $props();
 
@@ -17,3 +18,4 @@
 </svelte:head>
 
 {@render children()}
+<AchievementToast />
