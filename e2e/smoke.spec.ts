@@ -49,6 +49,16 @@ async function solveExercise(page: Page, ex: Exercise) {
 			break;
 		}
 
+		case 'listen': {
+			// Same select → Check → Continue flow as choice; the correct
+			// option is the one showing the played text.
+			const correct = ex.options[ex.correct];
+			await byExactText(page, page.locator('.options .answer-card'), correct.text).click();
+			await page.getByRole('button', { name: 'Check' }).click();
+			await continueBtn.click();
+			break;
+		}
+
 		case 'match': {
 			const left = page.locator('.cols .col').first();
 			const right = page.locator('.cols .col').nth(1);
