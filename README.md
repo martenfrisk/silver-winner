@@ -22,6 +22,7 @@ Meet **Shwe** (ရွှေ, "gold") — a golden Burmese cat who guides you thr
 - **Practice & mistake review** — completed lessons feed their vocabulary into a Leitner-box spaced-repetition queue (localStorage); the home-screen Practice card shows what's due, and sessions drill recent mistakes first with listening and both-direction choice exercises.
 - **Daily goal, activity heatmap & achievements** — settable XP goal with a progress ring on home, a 12-week activity calendar and a badge collection on the profile page.
 - **Immersion mode** (off by default) — UI buttons and labels switch to Burmese in three tiers as your script knowledge grows, like gradually setting your phone to the target language.
+- **Install as an app / offline** — a web manifest + service worker precache the app shell and cache audio as it plays, so the app works offline after the first visit and can be added to a phone home screen.
 - **Profile page** (`/account`) — stats, settings and reset options; still 100% localStorage.
 - **Dark mode** — warm charcoal/plum dark theme with gold kept as the hero accent. Follows the OS by default; force light/dark from the profile page (System / Light / Dark). Applied pre-paint, so no flash of the wrong theme.
 
