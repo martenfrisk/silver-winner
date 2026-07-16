@@ -1025,6 +1025,673 @@ export const course: Unit[] = [
 				]
 			}
 		]
+	}	,
+	{
+		id: 'family',
+		title: 'Family',
+		my: 'မိသားစု',
+		color: 'var(--gold)',
+		lessons: [
+			{
+				id: 'my-family',
+				title: 'My family',
+				emoji: '👨‍👩‍👧‍👦',
+				exercises: [
+					{
+						kind: 'learn',
+						my: 'အမေ',
+						roman: 'a-mei',
+						en: 'Mother',
+						emoji: '👩',
+						note: 'At home kids just say မေမေ (mei-mei) — like “mom”.'
+					},
+					{ kind: 'learn', my: 'အဖေ', roman: 'a-hpei', en: 'Father', emoji: '👨' },
+					{
+						kind: 'choice',
+						question: 'What does this mean?',
+						promptMy: 'အမေ',
+						promptRoman: 'a-mei',
+						options: [{ text: 'Mother' }, { text: 'Father' }, { text: 'Water' }],
+						correct: 0
+					},
+					{
+						kind: 'learn',
+						my: 'မိသားစု',
+						roman: 'mi-tha-zu',
+						en: 'Family',
+						emoji: '👨‍👩‍👧‍👦'
+					},
+					{
+						kind: 'listen',
+						my: 'အဖေ',
+						roman: 'a-hpei',
+						en: 'Father',
+						options: [
+							{ text: 'အဖေ', sub: 'a-hpei' },
+							{ text: 'အမေ', sub: 'a-mei' },
+							{ text: 'မိသားစု', sub: 'mi-tha-zu' }
+						],
+						correct: 0
+					},
+					{
+						kind: 'learn',
+						my: 'ဒါ',
+						roman: 'da',
+						en: 'This',
+						emoji: '👉',
+						note: 'A tiny word you will use constantly — point and say ဒါ!'
+					},
+					{
+						kind: 'learn',
+						my: 'ဒါ အမေပါ',
+						roman: 'da a-mei-ba',
+						en: 'This is (my) mother',
+						emoji: '🤱',
+						note: 'ပါ softens the sentence and makes it polite — you know it from မင်္ဂလာပါ.'
+					},
+					{
+						kind: 'choice',
+						question: 'How do you say “This is (my) father”?',
+						options: [
+							{ text: 'ဒါ အဖေပါ', sub: 'da a-hpei-ba' },
+							{ text: 'ဒါ အမေပါ', sub: 'da a-mei-ba' },
+							{ text: 'နေကောင်းလား', sub: 'nei-kaung-la' }
+						],
+						correct: 0
+					},
+					{
+						kind: 'match',
+						pairs: [
+							{ l: 'အမေ', lSub: 'a-mei', r: 'Mother' },
+							{ l: 'အဖေ', lSub: 'a-hpei', r: 'Father' },
+							{ l: 'မိသားစု', lSub: 'mi-tha-zu', r: 'Family' },
+							{ l: 'ဒါ', lSub: 'da', r: 'This' }
+						]
+					}
+				]
+			},
+			{
+				id: 'siblings',
+				title: 'Siblings',
+				emoji: '🧒',
+				exercises: [
+					{
+						kind: 'learn',
+						my: 'အစ်ကို',
+						roman: 'a-ko',
+						en: 'Older brother',
+						emoji: '👦',
+						note: 'Also the friendly way to address any man a bit older than you.'
+					},
+					{
+						kind: 'learn',
+						my: 'အစ်မ',
+						roman: 'a-ma',
+						en: 'Older sister',
+						emoji: '👧',
+						note: 'Same trick: a polite way to address a slightly older woman.'
+					},
+					{
+						kind: 'listen',
+						my: 'အစ်ကို',
+						roman: 'a-ko',
+						en: 'Older brother',
+						options: [
+							{ text: 'အစ်ကို', sub: 'a-ko' },
+							{ text: 'အစ်မ', sub: 'a-ma' },
+							{ text: 'အမေ', sub: 'a-mei' }
+						],
+						correct: 0
+					},
+					{ kind: 'learn', my: 'ညီလေး', roman: 'nyi-lei', en: 'Little brother', emoji: '👶' },
+					{ kind: 'learn', my: 'ညီမလေး', roman: 'nyi-ma-lei', en: 'Little sister', emoji: '🎀' },
+					{
+						kind: 'choice',
+						question: 'What does this mean?',
+						promptMy: 'အစ်မ',
+						promptRoman: 'a-ma',
+						options: [{ text: 'Older sister' }, { text: 'Older brother' }, { text: 'Little sister' }],
+						correct: 0
+					},
+					{
+						kind: 'assemble',
+						question: 'Build: “This is (my) older brother”',
+						answer: [
+							{ t: 'ဒါ', sub: 'da' },
+							{ t: 'အစ်ကို', sub: 'a-ko' },
+							{ t: 'ပါ', sub: 'ba' }
+						],
+						extras: [{ t: 'အစ်မ', sub: 'a-ma' }],
+						my: 'ဒါ အစ်ကိုပါ',
+						roman: 'da a-ko-ba'
+					},
+					{
+						kind: 'match',
+						pairs: [
+							{ l: 'အစ်ကို', lSub: 'a-ko', r: 'Older brother' },
+							{ l: 'အစ်မ', lSub: 'a-ma', r: 'Older sister' },
+							{ l: 'ညီလေး', lSub: 'nyi-lei', r: 'Little brother' },
+							{ l: 'ညီမလေး', lSub: 'nyi-ma-lei', r: 'Little sister' }
+						]
+					}
+				]
+			},
+			{
+				id: 'kids-and-love',
+				title: 'Kids & love',
+				emoji: '👶',
+				exercises: [
+					{ kind: 'learn', my: 'ကလေး', roman: 'kha-lei', en: 'Child', emoji: '👶' },
+					{
+						kind: 'learn',
+						my: 'အဘွား',
+						roman: 'a-hpwa',
+						en: 'Grandmother',
+						emoji: '👵'
+					},
+					{ kind: 'learn', my: 'အဘိုး', roman: 'a-hpo', en: 'Grandfather', emoji: '👴' },
+					{
+						kind: 'listen',
+						my: 'ကလေး',
+						roman: 'kha-lei',
+						en: 'Child',
+						options: [
+							{ text: 'ကလေး', sub: 'kha-lei' },
+							{ text: 'အဘွား', sub: 'a-hpwa' },
+							{ text: 'ညီလေး', sub: 'nyi-lei' }
+						],
+						correct: 0
+					},
+					{
+						kind: 'learn',
+						my: 'ချစ်တယ်',
+						roman: 'chit-teh',
+						en: '(I) love…',
+						emoji: '❤️',
+						note: 'Burmese verbs come last — “Mom love” = I love mom.'
+					},
+					{
+						kind: 'choice',
+						question: 'What does this mean?',
+						promptMy: 'ချစ်တယ်',
+						promptRoman: 'chit-teh',
+						options: [{ text: '(I) love…' }, { text: '(I) want to eat' }, { text: 'It’s good!' }],
+						correct: 0
+					},
+					{
+						kind: 'assemble',
+						question: 'Build: “This is (my) grandmother”',
+						answer: [
+							{ t: 'ဒါ', sub: 'da' },
+							{ t: 'အဘွား', sub: 'a-hpwa' },
+							{ t: 'ပါ', sub: 'ba' }
+						],
+						extras: [{ t: 'အဘိုး', sub: 'a-hpo' }],
+						my: 'ဒါ အဘွားပါ',
+						roman: 'da a-hpwa-ba'
+					},
+					{
+						kind: 'listen',
+						my: 'အဘိုး',
+						roman: 'a-hpo',
+						en: 'Grandfather',
+						options: [
+							{ text: 'အဘိုး', sub: 'a-hpo' },
+							{ text: 'အဘွား', sub: 'a-hpwa' },
+							{ text: 'အဖေ', sub: 'a-hpei' }
+						],
+						correct: 0
+					},
+					{
+						kind: 'match',
+						pairs: [
+							{ l: 'ကလေး', lSub: 'kha-lei', r: 'Child' },
+							{ l: 'အဘွား', lSub: 'a-hpwa', r: 'Grandmother' },
+							{ l: 'အဘိုး', lSub: 'a-hpo', r: 'Grandfather' },
+							{ l: 'ချစ်တယ်', lSub: 'chit-teh', r: '(I) love…' }
+						]
+					}
+				]
+			}
+		]
+	},
+	{
+		id: 'places',
+		title: 'Places & Directions',
+		my: 'နေရာများ',
+		color: 'var(--teal)',
+		lessons: [
+			{
+				id: 'around-town',
+				title: 'Around town',
+				emoji: '🏘️',
+				exercises: [
+					{ kind: 'learn', my: 'အိမ်', roman: 'ein', en: 'House / home', emoji: '🏠' },
+					{
+						kind: 'learn',
+						my: 'ကျောင်း',
+						roman: 'kyaung',
+						en: 'School',
+						emoji: '🏫',
+						note: 'The same word also means “monastery” — schooling began in monasteries.'
+					},
+					{ kind: 'learn', my: 'ဈေး', roman: 'zei', en: 'Market', emoji: '🛒' },
+					{
+						kind: 'listen',
+						my: 'အိမ်',
+						roman: 'ein',
+						en: 'House / home',
+						options: [
+							{ text: 'အိမ်', sub: 'ein' },
+							{ text: 'ဈေး', sub: 'zei' },
+							{ text: 'ကျောင်း', sub: 'kyaung' }
+						],
+						correct: 0
+					},
+					{
+						kind: 'learn',
+						my: 'ဘုရား',
+						roman: 'hpa-ya',
+						en: 'Pagoda',
+						emoji: '🛕',
+						note: 'Myanmar is dotted with golden pagodas — Shwedagon is the most famous.'
+					},
+					{
+						kind: 'choice',
+						question: 'What does this mean?',
+						promptMy: 'ဈေး',
+						promptRoman: 'zei',
+						options: [{ text: 'Market' }, { text: 'School' }, { text: 'Pagoda' }],
+						correct: 0
+					},
+					{ kind: 'learn', my: 'လမ်း', roman: 'lan', en: 'Street / road', emoji: '🛣️' },
+					{
+						kind: 'match',
+						pairs: [
+							{ l: 'အိမ်', lSub: 'ein', r: 'House' },
+							{ l: 'ကျောင်း', lSub: 'kyaung', r: 'School' },
+							{ l: 'ဈေး', lSub: 'zei', r: 'Market' },
+							{ l: 'လမ်း', lSub: 'lan', r: 'Street' }
+						]
+					}
+				]
+			},
+			{
+				id: 'where-is-it',
+				title: 'Where is it?',
+				emoji: '🧭',
+				exercises: [
+					{
+						kind: 'learn',
+						my: 'ဘယ်မှာလဲ',
+						roman: 'beh-hma-léh',
+						en: 'Where is…?',
+						emoji: '❓',
+						note: 'ဘယ် (which) + မှာ (at) + လဲ (question) — you met လဲ in ဘယ်လောက်လဲ.'
+					},
+					{ kind: 'learn', my: 'ဒီမှာ', roman: 'di-hma', en: 'Here', emoji: '👇' },
+					{ kind: 'learn', my: 'ဟိုမှာ', roman: 'ho-hma', en: 'Over there', emoji: '👉' },
+					{
+						kind: 'choice',
+						question: 'How do you ask “Where is…?”',
+						options: [
+							{ text: 'ဘယ်မှာလဲ', sub: 'beh-hma-léh' },
+							{ text: 'ဒီမှာ', sub: 'di-hma' },
+							{ text: 'ဘယ်လောက်လဲ', sub: 'beh-lauk-léh' }
+						],
+						correct: 0
+					},
+					{
+						kind: 'assemble',
+						question: 'Build: “Where is the market?”',
+						answer: [
+							{ t: 'ဈေး', sub: 'zei' },
+							{ t: 'ဘယ်မှာလဲ', sub: 'beh-hma-léh' }
+						],
+						extras: [{ t: 'ဒီမှာ', sub: 'di-hma' }],
+						my: 'ဈေး ဘယ်မှာလဲ',
+						roman: 'zei beh-hma-léh'
+					},
+					{
+						kind: 'listen',
+						my: 'ဒီမှာ',
+						roman: 'di-hma',
+						en: 'Here',
+						options: [
+							{ text: 'ဒီမှာ', sub: 'di-hma' },
+							{ text: 'ဟိုမှာ', sub: 'ho-hma' },
+							{ text: 'ဘယ်မှာလဲ', sub: 'beh-hma-léh' }
+						],
+						correct: 0
+					},
+					{
+						kind: 'learn',
+						my: 'ရှိတယ်',
+						roman: 'shi-deh',
+						en: 'There is / it’s (located)',
+						emoji: '✅'
+					},
+					{
+						kind: 'assemble',
+						question: 'Build: “The school is over there”',
+						answer: [
+							{ t: 'ကျောင်း', sub: 'kyaung' },
+							{ t: 'ဟိုမှာ', sub: 'ho-hma' },
+							{ t: 'ရှိတယ်', sub: 'shi-deh' }
+						],
+						extras: [{ t: 'ဒီမှာ', sub: 'di-hma' }],
+						my: 'ကျောင်း ဟိုမှာ ရှိတယ်',
+						roman: 'kyaung ho-hma shi-deh'
+					},
+					{
+						kind: 'match',
+						pairs: [
+							{ l: 'ဘယ်မှာလဲ', lSub: 'beh-hma-léh', r: 'Where is…?' },
+							{ l: 'ဒီမှာ', lSub: 'di-hma', r: 'Here' },
+							{ l: 'ဟိုမှာ', lSub: 'ho-hma', r: 'Over there' },
+							{ l: 'ရှိတယ်', lSub: 'shi-deh', r: 'There is' }
+						]
+					}
+				]
+			},
+			{
+				id: 'left-and-right',
+				title: 'Left & right',
+				emoji: '↔️',
+				exercises: [
+					{
+						kind: 'learn',
+						my: 'ဘယ်ဘက်',
+						roman: 'beh-bet',
+						en: 'Left (side)',
+						emoji: '⬅️',
+						note: 'Sneaky: ဘယ် means both “which?” and “left”. Context decides.'
+					},
+					{ kind: 'learn', my: 'ညာဘက်', roman: 'nya-bet', en: 'Right (side)', emoji: '➡️' },
+					{
+						kind: 'listen',
+						my: 'ဘယ်ဘက်',
+						roman: 'beh-bet',
+						en: 'Left (side)',
+						options: [
+							{ text: 'ဘယ်ဘက်', sub: 'beh-bet' },
+							{ text: 'ညာဘက်', sub: 'nya-bet' },
+							{ text: 'ဘယ်မှာလဲ', sub: 'beh-hma-léh' }
+						],
+						correct: 0
+					},
+					{
+						kind: 'learn',
+						my: 'သွားပါ',
+						roman: 'thwa-ba',
+						en: 'Please go',
+						emoji: '🚶',
+						note: 'Great in a taxi: point and say it.'
+					},
+					{
+						kind: 'choice',
+						question: 'What does this mean?',
+						promptMy: 'ညာဘက်',
+						promptRoman: 'nya-bet',
+						options: [{ text: 'Right (side)' }, { text: 'Left (side)' }, { text: 'Straight ahead' }],
+						correct: 0
+					},
+					{
+						kind: 'assemble',
+						question: 'Build: “Please go right”',
+						answer: [
+							{ t: 'ညာဘက်', sub: 'nya-bet' },
+							{ t: 'သွားပါ', sub: 'thwa-ba' }
+						],
+						extras: [{ t: 'ဘယ်ဘက်', sub: 'beh-bet' }],
+						my: 'ညာဘက် သွားပါ',
+						roman: 'nya-bet thwa-ba'
+					},
+					{ kind: 'learn', my: 'ရပ်ပါ', roman: 'yat-pa', en: 'Please stop', emoji: '🛑' },
+					{
+						kind: 'listen',
+						my: 'သွားပါ',
+						roman: 'thwa-ba',
+						en: 'Please go',
+						options: [
+							{ text: 'သွားပါ', sub: 'thwa-ba' },
+							{ text: 'ရပ်ပါ', sub: 'yat-pa' },
+							{ text: 'ပေးပါ', sub: 'pei-ba' }
+						],
+						correct: 0
+					},
+					{
+						kind: 'match',
+						pairs: [
+							{ l: 'ဘယ်ဘက်', lSub: 'beh-bet', r: 'Left' },
+							{ l: 'ညာဘက်', lSub: 'nya-bet', r: 'Right' },
+							{ l: 'သွားပါ', lSub: 'thwa-ba', r: 'Please go' },
+							{ l: 'ရပ်ပါ', lSub: 'yat-pa', r: 'Please stop' }
+						]
+					}
+				]
+			}
+		]
+	},
+	{
+		id: 'time',
+		title: 'Time & Days',
+		my: 'အချိန်',
+		color: 'var(--plum)',
+		lessons: [
+			{
+				id: 'today-tomorrow',
+				title: 'Today & tomorrow',
+				emoji: '📅',
+				exercises: [
+					{
+						kind: 'learn',
+						my: 'ဒီနေ့',
+						roman: 'di-nei',
+						en: 'Today',
+						emoji: '📅',
+						note: 'ဒီ (this) + နေ့ (day) — you know ဒီ from ဒီမှာ (here).'
+					},
+					{ kind: 'learn', my: 'မနက်ဖြန်', roman: 'ma-net-hpyan', en: 'Tomorrow', emoji: '🌄' },
+					{ kind: 'learn', my: 'မနေ့က', roman: 'ma-nei-ga', en: 'Yesterday', emoji: '🌒' },
+					{
+						kind: 'listen',
+						my: 'ဒီနေ့',
+						roman: 'di-nei',
+						en: 'Today',
+						options: [
+							{ text: 'ဒီနေ့', sub: 'di-nei' },
+							{ text: 'မနက်ဖြန်', sub: 'ma-net-hpyan' },
+							{ text: 'မနေ့က', sub: 'ma-nei-ga' }
+						],
+						correct: 0
+					},
+					{
+						kind: 'choice',
+						question: 'What does this mean?',
+						promptMy: 'မနက်ဖြန်',
+						promptRoman: 'ma-net-hpyan',
+						options: [{ text: 'Tomorrow' }, { text: 'Yesterday' }, { text: 'Today' }],
+						correct: 0
+					},
+					{ kind: 'learn', my: 'အခု', roman: 'a-khu', en: 'Now', emoji: '⏰' },
+					{
+						kind: 'learn',
+						my: 'သွားမယ်',
+						roman: 'thwa-meh',
+						en: '(I) will go',
+						emoji: '🎒',
+						note: 'မယ် marks the future — compare သွားပါ (please go).'
+					},
+					{
+						kind: 'assemble',
+						question: 'Build: “I’ll go tomorrow”',
+						answer: [
+							{ t: 'မနက်ဖြန်', sub: 'ma-net-hpyan' },
+							{ t: 'သွားမယ်', sub: 'thwa-meh' }
+						],
+						extras: [{ t: 'ဒီနေ့', sub: 'di-nei' }],
+						my: 'မနက်ဖြန် သွားမယ်',
+						roman: 'ma-net-hpyan thwa-meh'
+					},
+					{
+						kind: 'match',
+						pairs: [
+							{ l: 'ဒီနေ့', lSub: 'di-nei', r: 'Today' },
+							{ l: 'မနက်ဖြန်', lSub: 'ma-net-hpyan', r: 'Tomorrow' },
+							{ l: 'မနေ့က', lSub: 'ma-nei-ga', r: 'Yesterday' },
+							{ l: 'အခု', lSub: 'a-khu', r: 'Now' }
+						]
+					}
+				]
+			},
+			{
+				id: 'morning-to-night',
+				title: 'Morning to night',
+				emoji: '🌅',
+				exercises: [
+					{ kind: 'learn', my: 'မနက်', roman: 'ma-net', en: 'Morning', emoji: '🌅' },
+					{ kind: 'learn', my: 'နေ့လယ်', roman: 'nei-leh', en: 'Noon / midday', emoji: '☀️' },
+					{ kind: 'learn', my: 'ညနေ', roman: 'nya-nei', en: 'Evening', emoji: '🌇' },
+					{
+						kind: 'listen',
+						my: 'မနက်',
+						roman: 'ma-net',
+						en: 'Morning',
+						options: [
+							{ text: 'မနက်', sub: 'ma-net' },
+							{ text: 'ညနေ', sub: 'nya-nei' },
+							{ text: 'နေ့လယ်', sub: 'nei-leh' }
+						],
+						correct: 0
+					},
+					{
+						kind: 'learn',
+						my: 'ည',
+						roman: 'nya',
+						en: 'Night',
+						emoji: '🌙',
+						note: 'One letter, one word — you met ည in the script unit!'
+					},
+					{
+						kind: 'choice',
+						question: 'What does this mean?',
+						promptMy: 'ညနေ',
+						promptRoman: 'nya-nei',
+						options: [{ text: 'Evening' }, { text: 'Morning' }, { text: 'Night' }],
+						correct: 0
+					},
+					{
+						kind: 'assemble',
+						question: 'Build: “I’ll go tomorrow morning”',
+						answer: [
+							{ t: 'မနက်ဖြန်', sub: 'ma-net-hpyan' },
+							{ t: 'မနက်', sub: 'ma-net' },
+							{ t: 'သွားမယ်', sub: 'thwa-meh' }
+						],
+						extras: [{ t: 'ည', sub: 'nya' }],
+						my: 'မနက်ဖြန် မနက် သွားမယ်',
+						roman: 'ma-net-hpyan ma-net thwa-meh'
+					},
+					{
+						kind: 'listen',
+						my: 'ည',
+						roman: 'nya',
+						en: 'Night',
+						options: [
+							{ text: 'ည', sub: 'nya' },
+							{ text: 'ညနေ', sub: 'nya-nei' },
+							{ text: 'နေ့လယ်', sub: 'nei-leh' }
+						],
+						correct: 0
+					},
+					{
+						kind: 'match',
+						pairs: [
+							{ l: 'မနက်', lSub: 'ma-net', r: 'Morning' },
+							{ l: 'နေ့လယ်', lSub: 'nei-leh', r: 'Noon' },
+							{ l: 'ညနေ', lSub: 'nya-nei', r: 'Evening' },
+							{ l: 'ည', lSub: 'nya', r: 'Night' }
+						]
+					}
+				]
+			},
+			{
+				id: 'days-of-week',
+				title: 'Days of the week',
+				emoji: '🗓️',
+				exercises: [
+					{
+						kind: 'learn',
+						my: 'တနင်္လာနေ့',
+						roman: 'ta-nin-la-nei',
+						en: 'Monday',
+						emoji: '💼',
+						note: 'Every day name ends in နေ့ (day). Day names come from planets, like in English!'
+					},
+					{ kind: 'learn', my: 'သောကြာနေ့', roman: 'thauk-kya-nei', en: 'Friday', emoji: '🎉' },
+					{
+						kind: 'listen',
+						my: 'တနင်္လာနေ့',
+						roman: 'ta-nin-la-nei',
+						en: 'Monday',
+						options: [
+							{ text: 'တနင်္လာနေ့', sub: 'ta-nin-la-nei' },
+							{ text: 'သောကြာနေ့', sub: 'thauk-kya-nei' },
+							{ text: 'ဒီနေ့', sub: 'di-nei' }
+						],
+						correct: 0
+					},
+					{ kind: 'learn', my: 'စနေနေ့', roman: 'sa-nei-nei', en: 'Saturday', emoji: '🧺' },
+					{
+						kind: 'learn',
+						my: 'တနင်္ဂနွေနေ့',
+						roman: 'ta-nin-ga-nwei-nei',
+						en: 'Sunday',
+						emoji: '🏖️',
+						note: 'စနေ၊ တနင်္ဂနွေ — the weekend!'
+					},
+					{
+						kind: 'choice',
+						question: 'Which day is “Friday”?',
+						options: [
+							{ text: 'သောကြာနေ့', sub: 'thauk-kya-nei' },
+							{ text: 'စနေနေ့', sub: 'sa-nei-nei' },
+							{ text: 'တနင်္လာနေ့', sub: 'ta-nin-la-nei' }
+						],
+						correct: 0
+					},
+					{
+						kind: 'learn',
+						my: 'တွေ့မယ်',
+						roman: 'twei-meh',
+						en: '(We’ll) meet',
+						emoji: '🤝',
+						note: 'မနက်ဖြန် တွေ့မယ် — “see you tomorrow” — is how friends part.'
+					},
+					{
+						kind: 'assemble',
+						question: 'Build: “See you tomorrow”',
+						answer: [
+							{ t: 'မနက်ဖြန်', sub: 'ma-net-hpyan' },
+							{ t: 'တွေ့မယ်', sub: 'twei-meh' }
+						],
+						extras: [{ t: 'မနေ့က', sub: 'ma-nei-ga' }],
+						my: 'မနက်ဖြန် တွေ့မယ်',
+						roman: 'ma-net-hpyan twei-meh'
+					},
+					{
+						kind: 'match',
+						pairs: [
+							{ l: 'တနင်္လာနေ့', lSub: 'ta-nin-la-nei', r: 'Monday' },
+							{ l: 'သောကြာနေ့', lSub: 'thauk-kya-nei', r: 'Friday' },
+							{ l: 'စနေနေ့', lSub: 'sa-nei-nei', r: 'Saturday' },
+							{ l: 'တနင်္ဂနွေနေ့', lSub: 'ta-nin-ga-nwei-nei', r: 'Sunday' }
+						]
+					}
+				]
+			}
+		]
 	}
 ];
 

@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { progress, type Theme } from '$lib/progress.svelte';
 	import { srs } from '$lib/srs.svelte';
+	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { course } from '$lib/data/course';
 	import { totalGlyphs } from '$lib/data/script';
 	import { ui, immersionTier } from '$lib/i18n.svelte';
+	import { achievements } from '$lib/achievements';
 	import Mascot from '$lib/components/Mascot.svelte';
+	import Heatmap from '$lib/components/Heatmap.svelte';
 
 	const totalLessons = course.reduce((n, u) => n + u.lessons.length, 0);
 
@@ -16,6 +19,11 @@
 		})
 	);
 
+	const goalOptions = [10, 20, 30, 50];
+	const earnedCount = $derived(
+		achievements.filter((a) => a.id in progress.achievements).length
+	);
+
 	const themeOptions: { value: Theme; label: string }[] = [
 		{ value: 'system', label: 'System' },
 		{ value: 'light', label: 'Light' },
@@ -25,6 +33,7 @@
 	function resetCourse() {
 		if (confirm('Reset course progress (lessons, XP, streak)? This cannot be undone.')) {
 			progress.reset();
+			vocabSrs.reset();
 		}
 	}
 
@@ -38,6 +47,7 @@
 		if (confirm('Reset EVERYTHING? This cannot be undone.')) {
 			progress.reset();
 			srs.reset();
+			vocabSrs.reset();
 		}
 	}
 </script>
@@ -87,8 +97,45 @@
 		</div>
 	</section>
 
+	<section class="activity">
+		<h2>Activity</h2>
+		<Heatmap />
+	</section>
+
+	<section class="badges">
+		<h2>Achievements <span class="badge-count">{earnedCount}/{achievements.length}</span></h2>
+		<div class="badge-grid">
+			{#each achievements as a (a.id)}
+				{@const isEarned = a.id in progress.achievements}
+				<div class="badge" class:earned={isEarned} title={a.desc}>
+					<span class="badge-emoji">{a.emoji}</span>
+					<span class="badge-name">{a.name}</span>
+					<span class="badge-desc">{a.desc}</span>
+				</div>
+			{/each}
+		</div>
+	</section>
+
 	<section class="settings">
 		<h2>{ui('settings').text}</h2>
+		<div class="setting">
+			<span class="setting-text">
+				<span class="setting-title">Daily goal</span>
+				<span class="setting-desc">XP to earn each day — today: {progress.xpToday}/{progress.dailyGoal}.</span>
+			</span>
+			<div class="theme-picker" role="radiogroup" aria-label="Daily XP goal">
+				{#each goalOptions as g (g)}
+					<button
+						role="radio"
+						aria-checked={progress.dailyGoal === g}
+						class:active={progress.dailyGoal === g}
+						onclick={() => progress.setDailyGoal(g)}
+					>
+						{g}
+					</button>
+				{/each}
+			</div>
+		</div>
 		<label class="setting">
 			<span class="setting-text">
 				<span class="setting-title">Sound</span>
@@ -241,10 +288,58 @@
 		font-weight: 800;
 	}
 	.settings h2,
+	.activity h2,
+	.badges h2,
 	.danger h2 {
 		font-size: 1.1rem;
 		font-weight: 900;
 		padding: 26px 0 12px;
+	}
+	.badge-count {
+		font-size: 0.85rem;
+		font-weight: 800;
+		color: var(--ink-soft);
+		margin-left: 6px;
+	}
+	.badge-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 10px;
+	}
+	@media (max-width: 440px) {
+		.badge-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+	.badge {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		gap: 4px;
+		background: var(--card);
+		border-radius: var(--radius);
+		box-shadow: inset 0 0 0 2px var(--line);
+		padding: 14px 10px;
+	}
+	.badge:not(.earned) {
+		opacity: 0.45;
+		filter: grayscale(0.9);
+	}
+	.badge.earned {
+		box-shadow: inset 0 0 0 2px var(--gold);
+	}
+	.badge-emoji {
+		font-size: 1.7rem;
+	}
+	.badge-name {
+		font-weight: 900;
+		font-size: 0.85rem;
+	}
+	.badge-desc {
+		font-size: 0.72rem;
+		font-weight: 700;
+		color: var(--ink-soft);
 	}
 	.setting {
 		display: flex;
