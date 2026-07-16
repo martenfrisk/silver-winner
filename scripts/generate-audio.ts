@@ -32,6 +32,7 @@ for (const unit of course) {
 			else if (ex.kind === 'choice' && ex.promptMy) texts.add(ex.promptMy);
 			else if (ex.kind === 'match') for (const p of ex.pairs) texts.add(p.l);
 			else if (ex.kind === 'assemble') texts.add(ex.my);
+			else if (ex.kind === 'listen') texts.add(ex.my);
 		}
 	}
 }

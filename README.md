@@ -5,8 +5,8 @@ Meet **Shwe** (ရွှေ, "gold") — a golden Burmese cat who guides you thr
 
 ## Features
 
-- **Beginner course** — 4 units × 3 lessons (~85 exercises): Greetings, Numbers, The Script, Food & Drink. Real Burmese script with beginner-friendly romanization and cultural notes.
-- **4 exercise types** — new-word cards, multiple choice, tap-the-pairs matching, and sentence building from syllable tiles. Wrong answers are re-queued at the end of the lesson, Duolingo-style.
+- **Beginner course** — 4 units × 3 lessons (~105 exercises): Greetings, Numbers, The Script, Food & Drink. Real Burmese script with beginner-friendly romanization and cultural notes.
+- **5 exercise types** — new-word cards, multiple choice, tap-the-pairs matching, sentence building from syllable tiles, and listening comprehension ("tap what you hear" from audio alone, with the English meaning revealed after answering). Wrong answers are re-queued at the end of the lesson, Duolingo-style.
 - **Progress in localStorage** — XP, day streak, per-lesson star ratings (1–3 based on mistakes), and sequential lesson unlocking. No accounts, no backend.
 - **Audio** — every word/phrase has a pre-generated pronunciation MP3 (Microsoft Edge neural TTS, voice `my-MM-NilarNeural`) in `static/audio/`, with platform speech synthesis as a fallback. New words auto-play. Plus Web Audio-synthesized feedback sounds (correct chime, wrong buzz, match pop, completion fanfare). Toggleable from the header.
 - **Romanization toggle** — off by default (audio carries pronunciation); flip it on with the `Aa` button in the header or during a lesson.
