@@ -22,11 +22,17 @@ const precache = [
 	...files.filter((f) => !f.startsWith('/audio/'))
 ];
 
+// The page that installs the SW loads before the SW controls it, so it never
+// passes through the fetch handler — cache the top-level routes explicitly or
+// an offline reload of the very first page 404s. Lesson/practice pages visited
+// online are cached by the navigation handler as you go.
+const shellPages = ['/', '/script', '/practice', '/account', '/script/builder', '/script/practice'];
+
 sw.addEventListener('install', (event) => {
 	event.waitUntil(
 		caches
 			.open(CACHE)
-			.then((cache) => cache.addAll(precache))
+			.then((cache) => cache.addAll([...precache, ...shellPages]))
 			.then(() => sw.skipWaiting())
 	);
 });
