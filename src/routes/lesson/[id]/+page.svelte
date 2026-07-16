@@ -12,6 +12,7 @@
 	import ChoiceExercise from '$lib/components/ChoiceExercise.svelte';
 	import MatchExercise from '$lib/components/MatchExercise.svelte';
 	import AssembleExercise from '$lib/components/AssembleExercise.svelte';
+	import ListenExercise from '$lib/components/ListenExercise.svelte';
 
 	const found = findLesson(page.params.id ?? '');
 
@@ -36,7 +37,7 @@
 
 	const canCheck = $derived.by(() => {
 		if (!ex) return false;
-		if (ex.kind === 'choice') return selected !== null;
+		if (ex.kind === 'choice' || ex.kind === 'listen') return selected !== null;
 		if (ex.kind === 'assemble') return sequence.length > 0;
 		return false;
 	});
@@ -48,13 +49,17 @@
 			return o.sub && progress.showRoman ? `${o.text} (${o.sub})` : o.text;
 		}
 		if (ex.kind === 'assemble') return progress.showRoman ? `${ex.my} — ${ex.roman}` : ex.my;
+		if (ex.kind === 'listen') {
+			const base = progress.showRoman ? `${ex.my} (${ex.roman})` : ex.my;
+			return `${base} — ${ex.en}`;
+		}
 		return '';
 	});
 
 	function check() {
 		if (!ex || status !== 'answer') return;
 		let ok = false;
-		if (ex.kind === 'choice') ok = selected === ex.correct;
+		if (ex.kind === 'choice' || ex.kind === 'listen') ok = selected === ex.correct;
 		else if (ex.kind === 'assemble')
 			ok = sequence.join('') === ex.answer.map((a) => a.t).join('');
 
@@ -102,7 +107,7 @@
 				if (matchReady) advance();
 			} else if (canCheck) check();
 		}
-		if (ex.kind === 'choice' && status === 'answer') {
+		if ((ex.kind === 'choice' || ex.kind === 'listen') && status === 'answer') {
 			const n = Number(e.key);
 			if (n >= 1 && n <= ex.options.length) {
 				// Number keys map to displayed order; simplest is first..last as rendered.
@@ -178,6 +183,8 @@
 						<LearnCard my={ex.my} roman={ex.roman} en={ex.en} emoji={ex.emoji} note={ex.note} />
 					{:else if ex.kind === 'choice'}
 						<ChoiceExercise {ex} bind:selected {status} />
+					{:else if ex.kind === 'listen'}
+						<ListenExercise {ex} bind:selected {status} />
 					{:else if ex.kind === 'assemble'}
 						<AssembleExercise {ex} bind:sequence {status} />
 					{:else if ex.kind === 'match'}

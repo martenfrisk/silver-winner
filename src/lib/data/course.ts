@@ -30,6 +30,17 @@ export type Exercise =
 			pairs: { l: string; lSub?: string; r: string }[];
 	  }
 	| {
+			kind: 'listen';
+			/** The Burmese text that is played ("Tap what you hear"). Must have generated audio. */
+			my: string;
+			roman: string;
+			/** English meaning, revealed after answering. */
+			en: string;
+			/** Burmese-script options; one of them is `my`. */
+			options: Option[];
+			correct: number;
+	  }
+	| {
 			kind: 'assemble';
 			question: string;
 			/** Correct tiles in order. */
@@ -126,6 +137,18 @@ export const course: Unit[] = [
 						correct: 0
 					},
 					{
+						kind: 'listen',
+						my: 'ဟုတ်ကဲ့',
+						roman: 'hote-kéh',
+						en: 'Yes',
+						options: [
+							{ text: 'ဟုတ်ကဲ့', sub: 'hote-kéh' },
+							{ text: 'မဟုတ်ဘူး', sub: 'ma-hote-bu' },
+							{ text: 'မင်္ဂလာပါ', sub: 'min-ga-la-ba' }
+						],
+						correct: 0
+					},
+					{
 						kind: 'match',
 						pairs: [
 							{ l: 'မင်္ဂလာပါ', lSub: 'min-ga-la-ba', r: 'Hello' },
@@ -167,6 +190,18 @@ export const course: Unit[] = [
 						correct: 0
 					},
 					{
+						kind: 'listen',
+						my: 'နေကောင်းလား',
+						roman: 'nei-kaung-la',
+						en: 'How are you?',
+						options: [
+							{ text: 'နေကောင်းလား', sub: 'nei-kaung-la' },
+							{ text: 'နေကောင်းပါတယ်', sub: 'nei-kaung-ba-deh' },
+							{ text: 'မင်္ဂလာပါ', sub: 'min-ga-la-ba' }
+						],
+						correct: 0
+					},
+					{
 						kind: 'assemble',
 						question: 'Build the sentence: “I’m fine”',
 						answer: [
@@ -203,6 +238,18 @@ export const course: Unit[] = [
 						promptMy: 'တောင်းပန်ပါတယ်',
 						promptRoman: 'taung-ban-ba-deh',
 						options: [{ text: 'I’m sorry' }, { text: 'Bye!' }, { text: 'How are you?' }],
+						correct: 0
+					},
+					{
+						kind: 'listen',
+						my: 'တာ့တာ',
+						roman: 'ta-ta',
+						en: 'Bye!',
+						options: [
+							{ text: 'တာ့တာ', sub: 'ta-ta' },
+							{ text: 'တောင်းပန်ပါတယ်', sub: 'taung-ban-ba-deh' },
+							{ text: 'ဟုတ်ကဲ့', sub: 'hote-kéh' }
+						],
 						correct: 0
 					},
 					{
@@ -270,6 +317,18 @@ export const course: Unit[] = [
 						correct: 0
 					},
 					{
+						kind: 'listen',
+						my: 'ကျွန်မ',
+						roman: 'kyun-ma',
+						en: 'I (female speaker)',
+						options: [
+							{ text: 'ကျွန်မ', sub: 'kyun-ma' },
+							{ text: 'ကျွန်တော်', sub: 'kyun-daw' },
+							{ text: 'နာမည်', sub: 'nan-meh' }
+						],
+						correct: 0
+					},
+					{
 						kind: 'assemble',
 						question: 'Build the phrase: “Thank you”',
 						answer: [
@@ -284,6 +343,18 @@ export const course: Unit[] = [
 						],
 						my: 'ကျေးဇူးတင်ပါတယ်',
 						roman: 'kyei-zu tin-ba-deh'
+					},
+					{
+						kind: 'listen',
+						my: 'ရပါတယ်',
+						roman: 'ya-ba-deh',
+						en: 'It’s okay / no problem',
+						options: [
+							{ text: 'ရပါတယ်', sub: 'ya-ba-deh' },
+							{ text: 'နေကောင်းပါတယ်', sub: 'nei-kaung-ba-deh' },
+							{ text: 'ကျေးဇူးတင်ပါတယ်', sub: 'kyei-zu tin-ba-deh' }
+						],
+						correct: 0
 					},
 					{
 						kind: 'match',
@@ -329,6 +400,19 @@ export const course: Unit[] = [
 						correct: 0
 					},
 					{
+						kind: 'listen',
+						my: 'သုံး',
+						roman: 'thoun',
+						en: 'Three (3)',
+						options: [
+							{ text: 'သုံး', sub: 'thoun' },
+							{ text: 'တစ်', sub: 'tit' },
+							{ text: 'နှစ်', sub: 'hnit' },
+							{ text: 'ငါး', sub: 'nga' }
+						],
+						correct: 0
+					},
+					{
 						kind: 'match',
 						pairs: [
 							{ l: 'တစ်', lSub: 'tit', r: '1' },
@@ -353,6 +437,18 @@ export const course: Unit[] = [
 						options: [{ text: 'ခြောက်' }, { text: 'ခုနစ်' }, { text: 'ငါး' }],
 						correct: 0
 					},
+					{
+						kind: 'listen',
+						my: 'ခုနစ်',
+						roman: 'khu-hnit',
+						en: 'Seven (7)',
+						options: [
+							{ text: 'ခုနစ်', sub: 'khu-hnit' },
+							{ text: 'ခြောက်', sub: 'chauk' },
+							{ text: 'ငါး', sub: 'nga' }
+						],
+						correct: 0
+					},
 					{ kind: 'learn', my: 'ရှစ်', roman: 'shit', en: 'Eight (8)', emoji: '8️⃣' },
 					{ kind: 'learn', my: 'ကိုး', roman: 'kou', en: 'Nine (9)', emoji: '9️⃣' },
 					{ kind: 'learn', my: 'ဆယ်', roman: 'hseh', en: 'Ten (10)', emoji: '🔟' },
@@ -362,6 +458,19 @@ export const course: Unit[] = [
 						promptMy: 'ကိုး',
 						promptRoman: 'kou',
 						options: [{ text: '9' }, { text: '8' }, { text: '10' }],
+						correct: 0
+					},
+					{
+						kind: 'listen',
+						my: 'ဆယ်',
+						roman: 'hseh',
+						en: 'Ten (10)',
+						options: [
+							{ text: 'ဆယ်', sub: 'hseh' },
+							{ text: 'ရှစ်', sub: 'shit' },
+							{ text: 'ကိုး', sub: 'kou' },
+							{ text: 'ခြောက်', sub: 'chauk' }
+						],
 						correct: 0
 					},
 					{
@@ -402,6 +511,18 @@ export const course: Unit[] = [
 						correct: 0
 					},
 					{
+						kind: 'listen',
+						my: '၂',
+						roman: 'hnit',
+						en: '2',
+						options: [
+							{ text: '၂', sub: 'hnit' },
+							{ text: '၇', sub: 'khu-hnit' },
+							{ text: '၄', sub: 'lei' }
+						],
+						correct: 0
+					},
+					{
 						kind: 'match',
 						pairs: [
 							{ l: '၁', r: '1' },
@@ -420,6 +541,18 @@ export const course: Unit[] = [
 							{ l: '၉', r: '9' },
 							{ l: '၁၀', r: '10' }
 						]
+					},
+					{
+						kind: 'listen',
+						my: '၉',
+						roman: 'kou',
+						en: '9',
+						options: [
+							{ text: '၉', sub: 'kou' },
+							{ text: '၈', sub: 'shit' },
+							{ text: '၆', sub: 'chauk' }
+						],
+						correct: 0
 					},
 					{
 						kind: 'choice',
@@ -473,6 +606,19 @@ export const course: Unit[] = [
 						correct: 0
 					},
 					{
+						kind: 'listen',
+						my: 'ခ',
+						roman: 'kha',
+						en: 'The letter “kha”',
+						options: [
+							{ text: 'ခ', sub: 'kha' },
+							{ text: 'က', sub: 'ka' },
+							{ text: 'ဂ', sub: 'ga' },
+							{ text: 'င', sub: 'nga' }
+						],
+						correct: 0
+					},
+					{
 						kind: 'match',
 						pairs: [
 							{ l: 'က', r: 'ka' },
@@ -505,6 +651,19 @@ export const course: Unit[] = [
 						correct: 0
 					},
 					{
+						kind: 'listen',
+						my: 'ည',
+						roman: 'nya',
+						en: 'The letter “nya”',
+						options: [
+							{ text: 'ည', sub: 'nya' },
+							{ text: 'ဇ', sub: 'za' },
+							{ text: 'စ', sub: 'sa' },
+							{ text: 'ဆ', sub: 'hsa' }
+						],
+						correct: 0
+					},
+					{
 						kind: 'match',
 						pairs: [
 							{ l: 'စ', r: 'sa' },
@@ -528,12 +687,37 @@ export const course: Unit[] = [
 						options: [{ text: 'တ' }, { text: 'န' }, { text: 'ပ' }],
 						correct: 0
 					},
+					{
+						kind: 'listen',
+						my: 'န',
+						roman: 'na',
+						en: 'The letter “na”',
+						options: [
+							{ text: 'န', sub: 'na' },
+							{ text: 'တ', sub: 'ta' },
+							{ text: 'င', sub: 'nga' }
+						],
+						correct: 0
+					},
 					{ kind: 'learn', my: 'ပ', roman: 'pa', en: 'The letter “pa”', emoji: '🦜' },
 					{ kind: 'learn', my: 'မ', roman: 'ma', en: 'The letter “ma”', emoji: '💜', note: 'You already know it from မင်္ဂလာပါ!' },
 					{
 						kind: 'choice',
 						question: 'Which letter is “ma”?',
 						options: [{ text: 'မ' }, { text: 'ပ' }, { text: 'တ' }],
+						correct: 0
+					},
+					{
+						kind: 'listen',
+						my: 'မ',
+						roman: 'ma',
+						en: 'The letter “ma”',
+						options: [
+							{ text: 'မ', sub: 'ma' },
+							{ text: 'ပ', sub: 'pa' },
+							{ text: 'န', sub: 'na' },
+							{ text: 'တ', sub: 'ta' }
+						],
 						correct: 0
 					},
 					{
@@ -587,6 +771,18 @@ export const course: Unit[] = [
 						options: [{ text: 'Tea' }, { text: 'Coffee' }, { text: 'Water' }],
 						correct: 0
 					},
+					{
+						kind: 'listen',
+						my: 'ကော်ဖီ',
+						roman: 'kaw-fi',
+						en: 'Coffee',
+						options: [
+							{ text: 'ကော်ဖီ', sub: 'kaw-fi' },
+							{ text: 'လက်ဖက်ရည်', sub: 'la-hpet-yei' },
+							{ text: 'ကျေးဇူးတင်ပါတယ်', sub: 'kyei-zu tin-ba-deh' }
+						],
+						correct: 0
+					},
 					{ kind: 'learn', my: 'ရေ', roman: 'yei', en: 'Water', emoji: '💧' },
 					{ kind: 'learn', my: 'ထမင်း', roman: 'hta-min', en: 'Rice / a meal', emoji: '🍚', note: '“Have you eaten rice?” is a common way to say hi.' },
 					{
@@ -596,6 +792,18 @@ export const course: Unit[] = [
 							{ text: 'ရေ', sub: 'yei' },
 							{ text: 'ထမင်း', sub: 'hta-min' },
 							{ text: 'ကော်ဖီ', sub: 'kaw-fi' }
+						],
+						correct: 0
+					},
+					{
+						kind: 'listen',
+						my: 'ထမင်း',
+						roman: 'hta-min',
+						en: 'Rice / a meal',
+						options: [
+							{ text: 'ထမင်း', sub: 'hta-min' },
+							{ text: 'ရေ', sub: 'yei' },
+							{ text: 'လက်ဖက်ရည်', sub: 'la-hpet-yei' }
 						],
 						correct: 0
 					},
@@ -634,6 +842,18 @@ export const course: Unit[] = [
 						],
 						correct: 0
 					},
+					{
+						kind: 'listen',
+						my: 'မုန့်ဟင်းခါး',
+						roman: 'moun-hin-ga',
+						en: 'Mohinga (fish noodle soup)',
+						options: [
+							{ text: 'မုန့်ဟင်းခါး', sub: 'moun-hin-ga' },
+							{ text: 'လက်ဖက်ရည်', sub: 'la-hpet-yei' },
+							{ text: 'ထမင်း', sub: 'hta-min' }
+						],
+						correct: 0
+					},
 					{ kind: 'learn', my: 'စားချင်တယ်', roman: 'sa-chin-deh', en: 'I want to eat', emoji: '🍽️', note: 'စား (eat) + ချင် (want) + တယ်.' },
 					{ kind: 'learn', my: 'သောက်ချင်တယ်', roman: 'thauk-chin-deh', en: 'I want to drink', emoji: '🥤' },
 					{
@@ -667,6 +887,18 @@ export const course: Unit[] = [
 						],
 						my: 'ထမင်း စားချင်တယ်',
 						roman: 'hta-min sa-chin-deh'
+					},
+					{
+						kind: 'listen',
+						my: 'သောက်ချင်တယ်',
+						roman: 'thauk-chin-deh',
+						en: 'I want to drink',
+						options: [
+							{ text: 'သောက်ချင်တယ်', sub: 'thauk-chin-deh' },
+							{ text: 'စားချင်တယ်', sub: 'sa-chin-deh' },
+							{ text: 'ကောင်းတယ်', sub: 'kaung-deh' }
+						],
+						correct: 0
 					},
 					{
 						kind: 'match',
@@ -708,6 +940,18 @@ export const course: Unit[] = [
 						roman: 'yei pei-ba'
 					},
 					{
+						kind: 'listen',
+						my: 'ပေးပါ',
+						roman: 'pei-ba',
+						en: 'Please give (me)…',
+						options: [
+							{ text: 'ပေးပါ', sub: 'pei-ba' },
+							{ text: 'ရပါတယ်', sub: 'ya-ba-deh' },
+							{ text: 'တာ့တာ', sub: 'ta-ta' }
+						],
+						correct: 0
+					},
+					{
 						kind: 'learn',
 						my: 'ဘယ်လောက်လဲ',
 						roman: 'beh-lauk-léh',
@@ -720,6 +964,18 @@ export const course: Unit[] = [
 						options: [
 							{ text: 'ဘယ်လောက်လဲ', sub: 'beh-lauk-léh' },
 							{ text: 'နေကောင်းလား', sub: 'nei-kaung-la' },
+							{ text: 'ကောင်းတယ်', sub: 'kaung-deh' }
+						],
+						correct: 0
+					},
+					{
+						kind: 'listen',
+						my: 'ဘယ်လောက်လဲ',
+						roman: 'beh-lauk-léh',
+						en: 'How much is it?',
+						options: [
+							{ text: 'ဘယ်လောက်လဲ', sub: 'beh-lauk-léh' },
+							{ text: 'ပေးပါ', sub: 'pei-ba' },
 							{ text: 'ကောင်းတယ်', sub: 'kaung-deh' }
 						],
 						correct: 0
@@ -743,6 +999,18 @@ export const course: Unit[] = [
 						kind: 'choice',
 						question: 'The waiter says ရပါတယ် (ya-ba-deh). What do they mean?',
 						options: [{ text: 'No problem!' }, { text: 'How much?' }, { text: 'Goodbye' }],
+						correct: 0
+					},
+					{
+						kind: 'listen',
+						my: 'ရေ ပေးပါ',
+						roman: 'yei pei-ba',
+						en: 'Water, please',
+						options: [
+							{ text: 'ရေ ပေးပါ', sub: 'yei pei-ba' },
+							{ text: 'ကော်ဖီ ပေးပါ', sub: 'kaw-fi pei-ba' },
+							{ text: 'ဘယ်လောက်လဲ', sub: 'beh-lauk-léh' }
+						],
 						correct: 0
 					},
 					{
