@@ -29,6 +29,22 @@ bun run dev
 
 Then open the printed URL (defaults to http://localhost:5173).
 
+## Testing
+
+End-to-end smoke tests use [Playwright](https://playwright.dev) (Chromium only). One-time setup:
+
+```sh
+bunx playwright install chromium
+```
+
+Then run the suite (it starts its own dev server on port 4173):
+
+```sh
+bun run test:e2e
+```
+
+The tests live in `e2e/smoke.spec.ts` and are driven by the course data in `src/lib/data/course.ts`, so they answer every exercise correctly and keep passing when lesson content changes.
+
 ## Regenerating pronunciation audio
 
 After changing course content:

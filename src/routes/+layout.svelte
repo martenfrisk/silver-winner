@@ -1,8 +1,15 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
 
 	let { children } = $props();
+
+	// Marks the app as hydrated so tests (and tooling) can wait for
+	// interactivity instead of clicking server-rendered, inert markup.
+	onMount(() => {
+		document.body.dataset.hydrated = 'true';
+	});
 </script>
 
 <svelte:head>
