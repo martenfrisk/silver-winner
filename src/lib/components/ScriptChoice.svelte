@@ -95,6 +95,7 @@
 				onclick={() => tap(i)}
 				disabled={answered !== null}
 			>
+				<span class="key">{i + 1}</span>
 				<span class="{opt.my ? 'my glyph-label' : 'label'}">{opt.label}</span>
 				{#if opt.sub}<span class="sub">{opt.sub}</span>{/if}
 			</button>

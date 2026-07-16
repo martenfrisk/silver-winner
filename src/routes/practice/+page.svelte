@@ -6,6 +6,7 @@
 	import { progress } from '$lib/progress.svelte';
 	import { ui } from '$lib/i18n.svelte';
 	import { sfx, speak } from '$lib/audio';
+	import { clickNth, digitOf, isShortcutIgnored } from '$lib/keyboard';
 	import Mascot from '$lib/components/Mascot.svelte';
 	import Confetti from '$lib/components/Confetti.svelte';
 	import ChoiceExercise from '$lib/components/ChoiceExercise.svelte';
@@ -80,19 +81,21 @@
 	}
 
 	function onkeydown(e: KeyboardEvent) {
-		if (done || !ex) return;
+		if (isShortcutIgnored(e)) return;
+		if (done) {
+			if (e.key === 'Enter') quit();
+			return;
+		}
+		if (!ex) return;
 		if (e.key === 'Enter') {
 			e.preventDefault();
 			if (status !== 'answer') advance();
 			else if (canCheck) check();
+			return;
 		}
-		if (status === 'answer') {
-			const n = Number(e.key);
-			if (n >= 1 && n <= ex.options.length) {
-				const buttons = document.querySelectorAll<HTMLButtonElement>('.options .answer-card');
-				buttons[n - 1]?.click();
-			}
-		}
+		if (status !== 'answer') return;
+		const d = digitOf(e);
+		if (d !== null) clickNth('.options .answer-card', (d === 0 ? 10 : d) - 1);
 	}
 </script>
 

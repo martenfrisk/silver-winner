@@ -104,24 +104,7 @@
 		flex-direction: column;
 		gap: 12px;
 	}
-	.answer-card {
-		position: relative;
-	}
 	.main {
 		font-size: 1.25rem;
-	}
-	.key {
-		position: absolute;
-		left: 12px;
-		top: 50%;
-		translate: 0 -50%;
-		width: 24px;
-		height: 24px;
-		display: grid;
-		place-items: center;
-		border-radius: 8px;
-		box-shadow: inset 0 0 0 2px var(--line);
-		font-size: 0.75rem;
-		color: var(--ink-soft);
 	}
 </style>

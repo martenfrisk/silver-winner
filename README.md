@@ -10,6 +10,7 @@ Meet **Shwe** (ရွှေ, "gold") — a golden Burmese cat who guides you thr
 - **Progress in localStorage** — XP, day streak, per-lesson star ratings (1–3 based on mistakes), and sequential lesson unlocking. No accounts, no backend.
 - **Audio** — every word/phrase has a pre-generated pronunciation MP3 (Microsoft Edge neural TTS, voice `my-MM-NilarNeural`) in `static/audio/`, with platform speech synthesis as a fallback. New words auto-play. Plus Web Audio-synthesized feedback sounds (correct chime, wrong buzz, match pop, completion fanfare). Toggleable from the header.
 - **Romanization toggle** — off by default (audio carries pronunciation); flip it on with the `Aa` button in the header or during a lesson.
+- **Keyboard shortcuts** — 1–9 taps options, tiles and match cards; Enter checks/continues; Backspace removes the last assembled tile. Badges appear on devices with a keyboard.
 - **Animations** — springy `linear()` easings, animated mascot moods (idle/happy/sad/celebrate), confetti on lesson completion, and reduced-motion support.
 - **Script Studio** (optional track) — learn to *read* Burmese, built around how script learning actually works rather than the lesson-path model:
   - a living **alphabet chart** (51 glyphs in traditional rows) with per-glyph mastery heat; tap any glyph for its name, mnemonic, audio and lookalikes
