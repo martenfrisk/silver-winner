@@ -7,6 +7,7 @@
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { ui } from '$lib/i18n.svelte';
 	import { sfx, speak } from '$lib/audio';
+	import { clickNth, digitOf, isShortcutIgnored } from '$lib/keyboard';
 	import Mascot from '$lib/components/Mascot.svelte';
 	import Confetti from '$lib/components/Confetti.svelte';
 	import LearnCard from '$lib/components/LearnCard.svelte';
@@ -105,23 +106,35 @@
 	}
 
 	function onkeydown(e: KeyboardEvent) {
-		if (done || !ex) return;
+		if (isShortcutIgnored(e)) return;
+		if (done) {
+			if (e.key === 'Enter') quit();
+			return;
+		}
+		if (!ex) return;
 		if (e.key === 'Enter') {
 			e.preventDefault();
 			if (status !== 'answer' || ex.kind === 'learn') advance();
 			else if (ex.kind === 'match') {
 				if (matchReady) advance();
 			} else if (canCheck) check();
+			return;
 		}
-		if ((ex.kind === 'choice' || ex.kind === 'listen') && status === 'answer') {
-			const n = Number(e.key);
-			if (n >= 1 && n <= ex.options.length) {
-				// Number keys map to displayed order; simplest is first..last as rendered.
-				// The component shuffles internally, so map via its DOM order instead:
-				const buttons = document.querySelectorAll<HTMLButtonElement>('.options .answer-card');
-				buttons[n - 1]?.click();
-			}
+		if (status !== 'answer') return;
+		if (e.key === 'Backspace' && ex.kind === 'assemble') {
+			e.preventDefault();
+			const placed = document.querySelectorAll<HTMLButtonElement>('.slots .placed-tile');
+			placed[placed.length - 1]?.click();
+			return;
 		}
+		// Number keys map to displayed order (components shuffle internally),
+		// so dispatch via DOM order; 0 means the 10th card.
+		const d = digitOf(e);
+		if (d === null) return;
+		const n = d === 0 ? 10 : d;
+		if (ex.kind === 'choice' || ex.kind === 'listen') clickNth('.options .answer-card', n - 1);
+		else if (ex.kind === 'match') clickNth('.cols .answer-card', n - 1);
+		else if (ex.kind === 'assemble') clickNth('.bank .tile', n - 1);
 	}
 </script>
 

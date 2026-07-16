@@ -4,6 +4,7 @@
 	import type { ScriptEx } from '$lib/script-session';
 	import { starsFor } from '$lib/script-session';
 	import { sfx } from '$lib/audio';
+	import { clickNth, digitOf, isShortcutIgnored } from '$lib/keyboard';
 	import { progress } from '$lib/progress.svelte';
 	import { ui } from '$lib/i18n.svelte';
 	import Mascot from './Mascot.svelte';
@@ -84,7 +85,27 @@
 	function quit() {
 		goto('/script');
 	}
+
+	function onkeydown(e: KeyboardEvent) {
+		if (isShortcutIgnored(e)) return;
+		if (done) {
+			if (e.key === 'Enter') quit();
+			return;
+		}
+		if (e.key === 'Enter') {
+			e.preventDefault();
+			advance(); // no-ops unless canContinue
+			return;
+		}
+		// Number keys tap option cards on choice/word/sentence drills
+		// (components shuffle internally, so dispatch via DOM order).
+		if (answered !== null) return;
+		const d = digitOf(e);
+		if (d !== null) clickNth('.options .answer-card', (d === 0 ? 10 : d) - 1);
+	}
 </script>
+
+<svelte:window {onkeydown} />
 
 <svelte:head>
 	<title>{title} · MyanLingo</title>

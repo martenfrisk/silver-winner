@@ -49,6 +49,7 @@
 	<div class="options">
 		{#each options as opt, i (i)}
 			<button class="answer-card {cls(i)}" onclick={() => tap(i)} disabled={answered !== null}>
+				<span class="key">{i + 1}</span>
 				<span class="label">{opt}</span>
 			</button>
 		{/each}
