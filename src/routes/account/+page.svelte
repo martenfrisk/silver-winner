@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { progress, type Theme } from '$lib/progress.svelte';
 	import { srs } from '$lib/srs.svelte';
+	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { course } from '$lib/data/course';
 	import { totalGlyphs } from '$lib/data/script';
 	import { ui, immersionTier } from '$lib/i18n.svelte';
@@ -25,6 +26,7 @@
 	function resetCourse() {
 		if (confirm('Reset course progress (lessons, XP, streak)? This cannot be undone.')) {
 			progress.reset();
+			vocabSrs.reset();
 		}
 	}
 
@@ -38,6 +40,7 @@
 		if (confirm('Reset EVERYTHING? This cannot be undone.')) {
 			progress.reset();
 			srs.reset();
+			vocabSrs.reset();
 		}
 	}
 </script>

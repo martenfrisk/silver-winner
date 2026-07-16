@@ -2,6 +2,7 @@
 	import { course } from '$lib/data/course';
 	import { progress } from '$lib/progress.svelte';
 	import { srs } from '$lib/srs.svelte';
+	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { totalGlyphs } from '$lib/data/script';
 	import { ui } from '$lib/i18n.svelte';
 	import Mascot from '$lib/components/Mascot.svelte';
@@ -75,6 +76,27 @@
 			</h1>
 		</div>
 	</section>
+
+	{#if vocabSrs.introducedCount > 0}
+		<a class="script-card practice-card" href="/practice">
+			<span class="script-glyph practice-glyph">💪</span>
+			<span class="script-text">
+				<span class="script-title practice-title">{ui('practice').text}</span>
+				<span class="script-sub">
+					{#if vocabSrs.dueCount > 0}
+						{vocabSrs.dueCount} {ui('to-review').text}
+					{:else}
+						Keep your {vocabSrs.introducedCount} words fresh
+					{/if}
+				</span>
+			</span>
+			{#if vocabSrs.dueCount > 0}
+				<span class="script-due">{vocabSrs.dueCount}</span>
+			{:else}
+				<span class="script-arrow practice-arrow">→</span>
+			{/if}
+		</a>
+	{/if}
 
 	<a class="script-card" href="/script">
 		<span class="script-glyph my">အ</span>
@@ -297,6 +319,21 @@
 		font-size: 1.2rem;
 		font-weight: 900;
 		color: var(--plum-ink);
+	}
+
+	.practice-card {
+		box-shadow: 0 4px 0 var(--teal-dark), inset 0 0 0 2px var(--teal);
+	}
+	.practice-card:active {
+		translate: 0 4px;
+		box-shadow: 0 0 0 var(--teal-dark), inset 0 0 0 2px var(--teal);
+	}
+	.practice-glyph {
+		background: var(--teal-soft);
+	}
+	.practice-title,
+	.practice-arrow {
+		color: var(--teal-ink);
 	}
 
 	.path {

@@ -18,6 +18,7 @@ Meet **Shwe** (ရွှေ, "gold") — a golden Burmese cat who guides you thr
   - **minimal-pair listening drills** — hear a syllable, tap the written syllable you heard: aspiration contrasts (က/ခ, စ/ဆ, တ/ထ, ပ/ဖ) and low-vs-high tone (ာ vs ား)
   - an interactive **syllable builder** — snap vowel signs around a base consonant and hear the composed syllable; includes a challenge mode
   - **decodable words & sentences**: real Burmese words — and short real sentences in later units — readable using only components you've learned
+- **Practice & mistake review** — completed lessons feed their vocabulary into a Leitner-box spaced-repetition queue (localStorage); the home-screen Practice card shows what's due, and sessions drill recent mistakes first with listening and both-direction choice exercises.
 - **Immersion mode** (off by default) — UI buttons and labels switch to Burmese in three tiers as your script knowledge grows, like gradually setting your phone to the target language.
 - **Profile page** (`/account`) — stats, settings and reset options; still 100% localStorage.
 - **Dark mode** — warm charcoal/plum dark theme with gold kept as the hero accent. Follows the OS by default; force light/dark from the profile page (System / Light / Dark). Applied pre-paint, so no flash of the wrong theme.
