@@ -27,7 +27,7 @@ export interface ChoiceOption {
 
 export type ScriptEx =
 	| { kind: 'intro'; glyph: Glyph }
-	| { kind: 'trace'; glyph: Glyph }
+	| { kind: 'trace'; glyph: Glyph; fromMemory?: boolean }
 	| { kind: 'note'; note: UnitNote }
 	| {
 			kind: 'choice';
@@ -342,8 +342,13 @@ export function buildPracticeQueue(): { queue: ScriptEx[]; count: number } {
 		} else if (box === 3) {
 			queue.push(listen ?? syllableRead(g) ?? s2g(g));
 		} else {
-			// Mastered: keep it honest with a speed round.
-			queue.push(listen ?? g2s(g, 5));
+			// Mastered: keep it honest with a speed round — or, for traceable
+			// consonants, sometimes demand the shape from memory.
+			const memTrace =
+				g.traceable && g.type === 'consonant' && Math.random() < 0.4
+					? ({ kind: 'trace', glyph: g, fromMemory: true } as const)
+					: null;
+			queue.push(listen ?? memTrace ?? g2s(g, 5));
 		}
 	}
 
