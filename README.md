@@ -5,7 +5,7 @@ Meet **Shwe** (ရွှေ, "gold") — a golden Burmese cat who guides you thr
 
 ## Features
 
-- **Beginner course** — 4 units × 3 lessons (~105 exercises): Greetings, Numbers, The Script, Food & Drink. Real Burmese script with beginner-friendly romanization and cultural notes.
+- **Beginner course** — 7 units × 3 lessons (~180 exercises): Greetings, Numbers, The Script, Food & Drink, Family, Places & Directions, Time & Days. Real Burmese script with beginner-friendly romanization and cultural notes.
 - **5 exercise types** — new-word cards, multiple choice, tap-the-pairs matching, sentence building from syllable tiles, and listening comprehension ("tap what you hear" from audio alone, with the English meaning revealed after answering). Wrong answers are re-queued at the end of the lesson, Duolingo-style.
 - **Progress in localStorage** — XP, day streak, per-lesson star ratings (1–3 based on mistakes), and sequential lesson unlocking. No accounts, no backend.
 - **Audio** — every word/phrase has a pre-generated pronunciation MP3 (Microsoft Edge neural TTS, voice `my-MM-NilarNeural`) in `static/audio/`, with platform speech synthesis as a fallback. New words auto-play. Plus Web Audio-synthesized feedback sounds (correct chime, wrong buzz, match pop, completion fanfare). Toggleable from the header.
@@ -15,12 +15,14 @@ Meet **Shwe** (ရွှေ, "gold") — a golden Burmese cat who guides you thr
 - **Script Studio** (optional track) — learn to *read* Burmese, built around how script learning actually works rather than the lesson-path model:
   - a living **alphabet chart** (51 glyphs in traditional rows) with per-glyph mastery heat; tap any glyph for its name, mnemonic, audio and lookalikes
   - 11 **micro-intro units** ordered by letter frequency, with tracing (canvas), mnemonics from the traditional letter names, and confusable warnings — capped by a **stacked consonants** (ပါဌ်ဆင့်) unit: concept cards plus real Pali-loan reading (ကမ္ဘာ, မန္တလေး, သစ္စာ…)
+  - **stroke-order hints** on the tracing pad for common letters — animated draw-on strokes with numbered start dots (approximate paths; needs a native-speaker pass) — and **write-from-memory** drills at the top SRS box: a blank pad, the sound as the only prompt, and a hold-to-peek that honestly counts as a lapse
   - a **spaced-repetition Practice** session (Leitner boxes in localStorage) whose exercise type escalates with mastery: glyph→sound, sound→glyph with lookalike distractors, syllable reading, and timed speed rounds
   - **minimal-pair listening drills** — hear a syllable, tap the written syllable you heard: aspiration contrasts (က/ခ, စ/ဆ, တ/ထ, ပ/ဖ) and low-vs-high tone (ာ vs ား)
   - an interactive **syllable builder** — snap vowel signs around a base consonant and hear the composed syllable; includes a challenge mode
   - **decodable words & sentences**: real Burmese words — and short real sentences in later units — readable using only components you've learned
 - **Practice & mistake review** — completed lessons feed their vocabulary into a Leitner-box spaced-repetition queue (localStorage); the home-screen Practice card shows what's due, and sessions drill recent mistakes first with listening and both-direction choice exercises.
 - **Daily goal, activity heatmap & achievements** — settable XP goal with a progress ring on home, a 12-week activity calendar and a badge collection on the profile page.
+- **Crowns, combos & streak freezes** — completed lessons offer a 👑 hard mode (drills only; a perfect run earns the crown); consecutive correct answers build a combo with bonus XP at ×5; streak freezes (bought with XP on the profile page) silently cover missed days.
 - **Immersion mode** (off by default) — UI buttons and labels switch to Burmese in three tiers as your script knowledge grows, like gradually setting your phone to the target language.
 - **Install as an app / offline** — a web manifest + service worker precache the app shell and cache audio as it plays, so the app works offline after the first visit and can be added to a phone home screen.
 - **Profile page** (`/account`) — stats, settings and reset options; still 100% localStorage.
@@ -36,6 +38,12 @@ bun run dev
 Then open the printed URL (defaults to http://localhost:5173).
 
 ## Testing
+
+Unit tests (Vitest) cover the syllable composer, both spaced-repetition stores and the practice-queue builders:
+
+```sh
+bun run test
+```
 
 End-to-end smoke tests use [Playwright](https://playwright.dev) (Chromium only). One-time setup:
 

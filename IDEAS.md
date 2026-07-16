@@ -25,7 +25,7 @@ Legend: ✅ = implemented · 💤 = backlog
 
 ## Script Studio deepening
 
-6. 💤 **Stroke-order guidance in tracing** — animated stroke paths (or numbered
+6. ✅ **Stroke-order guidance in tracing** — animated stroke paths (or numbered
    start-dots) instead of free-form trace-over.
 7. ✅ **Minimal-pair listening drills** — aspirated vs. unaspirated (က/ခ, စ/ဆ,
    တ/ထ) and tone contrasts (မ/မာ/မား). These distinctions are *the* hard part of
@@ -34,18 +34,18 @@ Legend: ✅ = implemented · 💤 = backlog
    sentences (not just words) as a reading "graduation" exercise per unit.
 9. ✅ **Stacked consonants (ပါဌ်ဆင့်)** — currently unaddressed; even one intro
    unit makes real-world text much less alien.
-10. 💤 **Write-from-memory mode** — tracing with the template hidden (tap to
+10. ✅ **Write-from-memory mode** — tracing with the template hidden (tap to
     peek), as the top SRS box exercise for consonants.
 
 ## Gamification & retention
 
 11. ✅ **Achievements** — "First 10 glyphs", "7-day streak", "Perfect lesson ×5",
     "Read your first word"… shown on the profile page.
-12. 💤 **Crown levels / lesson leveling** — redo a completed lesson at a harder
+12. ✅ **Crown levels / lesson leveling** — redo a completed lesson at a harder
     tier (no hints, romanization forced off, timed).
-13. 💤 **Streak freeze** — earnable with XP; makes the streak feel ownable rather
+13. ✅ **Streak freeze** — earnable with XP; makes the streak feel ownable rather
     than fragile.
-14. 💤 **Combo meter in lessons** — consecutive correct answers give a small XP
+14. ✅ **Combo meter in lessons** — consecutive correct answers give a small XP
     multiplier with escalating SFX.
 
 ## UX & polish
@@ -66,7 +66,7 @@ Legend: ✅ = implemented · 💤 = backlog
 
 ## Engineering quality
 
-21. 💤 **Unit tests** — `buildSyllable`, SRS scheduling math, and the drill-queue
+21. ✅ **Unit tests** — `buildSyllable`, SRS scheduling math, and the drill-queue
     generators are pure functions begging for `bun test`.
 22. ✅ **Content lint script** — `bun run lint:content`: every exercise's answer
     is among its options, every confusable ID exists, every speakable string has
