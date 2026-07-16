@@ -77,6 +77,21 @@ const warn = (category: string, msg: string) => add(warnings, category, msg);
 						if (seen.has(o.text)) err(cat, `${at}: duplicate option "${o.text}"`);
 						seen.add(o.text);
 					}
+				} else if (ex.kind === 'listen') {
+					if (!ex.my) err(cat, `${at}: empty "my"`);
+					if (!ex.roman) err(cat, `${at}: empty "roman"`);
+					if (!ex.en) err(cat, `${at}: empty "en"`);
+					if (ex.options.length < 2) err(cat, `${at}: fewer than 2 options`);
+					if (!Number.isInteger(ex.correct) || ex.correct < 0 || ex.correct >= ex.options.length)
+						err(cat, `${at}: correct index ${ex.correct} out of range (${ex.options.length} options)`);
+					else if (ex.options[ex.correct].text !== ex.my)
+						err(cat, `${at}: correct option "${ex.options[ex.correct].text}" is not the played text "${ex.my}"`);
+					const seen = new Set<string>();
+					for (const o of ex.options) {
+						if (!o.text) err(cat, `${at}: option with empty text`);
+						if (seen.has(o.text)) err(cat, `${at}: duplicate option "${o.text}"`);
+						seen.add(o.text);
+					}
 				} else if (ex.kind === 'match') {
 					if (ex.pairs.length === 0) err(cat, `${at}: no pairs`);
 					const seenL = new Set<string>();
@@ -206,6 +221,7 @@ const warn = (category: string, msg: string) => add(warnings, category, msg);
 		for (const lesson of unit.lessons) {
 			for (const ex of lesson.exercises) {
 				if (ex.kind === 'learn') texts.add(ex.my);
+				else if (ex.kind === 'listen') texts.add(ex.my);
 				else if (ex.kind === 'choice' && ex.promptMy) texts.add(ex.promptMy);
 				else if (ex.kind === 'match') for (const p of ex.pairs) texts.add(p.l);
 				else if (ex.kind === 'assemble') texts.add(ex.my);
