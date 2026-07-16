@@ -42,6 +42,7 @@
 	let last: { x: number; y: number } | null = null;
 	let peeking = $state(false);
 	let hintPlaying = $state(false);
+	let hintRun = $state(0);
 	let reducedMotion = $state(false);
 	let hintTimer: ReturnType<typeof setTimeout>;
 
@@ -106,14 +107,11 @@
 
 	function playHint() {
 		if (!strokes || done) return;
-		hintPlaying = false;
 		clearTimeout(hintTimer);
-		// Restart CSS animations by remounting the overlay on the next frame.
-		requestAnimationFrame(() => {
-			hintPlaying = true;
-			const total = reducedMotion ? 2.5 : strokes!.length * (STROKE_SECS + STROKE_GAP) + 0.8;
-			hintTimer = setTimeout(() => (hintPlaying = false), total * 1000);
-		});
+		hintRun++; // remounts the overlay via {#key}, restarting the CSS animations
+		hintPlaying = true;
+		const total = reducedMotion ? 2.5 : strokes.length * (STROKE_SECS + STROKE_GAP) + 0.8;
+		hintTimer = setTimeout(() => (hintPlaying = false), total * 1000);
 	}
 
 	function pos(e: PointerEvent) {
@@ -223,17 +221,19 @@
 			<div class="peek-overlay my" aria-hidden="true">{char}</div>
 		{/if}
 		{#if hintPlaying && strokes}
-			<svg class="hint" class:static={reducedMotion} viewBox="0 0 100 100" aria-hidden="true">
-				{#each strokes as s, i (i)}
-					<path
-						d={s.d}
-						pathLength="1"
-						style="animation-delay: {reducedMotion ? 0 : i * (STROKE_SECS + STROKE_GAP)}s"
-					/>
-					<circle class="dot" cx={s.start[0]} cy={s.start[1]} r="5.5" />
-					<text class="dot-num" x={s.start[0]} y={s.start[1]}>{i + 1}</text>
-				{/each}
-			</svg>
+			{#key hintRun}
+				<svg class="hint" class:static={reducedMotion} viewBox="0 0 100 100" aria-hidden="true">
+					{#each strokes as s, i (i)}
+						<path
+							d={s.d}
+							pathLength="1"
+							style="animation-delay: {reducedMotion ? 0 : i * (STROKE_SECS + STROKE_GAP)}s"
+						/>
+						<circle class="dot" cx={s.start[0]} cy={s.start[1]} r="5.5" />
+						<text class="dot-num" x={s.start[0]} y={s.start[1]}>{i + 1}</text>
+					{/each}
+				</svg>
+			{/key}
 		{/if}
 		{#if done}
 			<div class="stamp">✓</div>

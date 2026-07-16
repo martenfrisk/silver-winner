@@ -136,6 +136,43 @@ test('completes lesson 1, persists progress and unlocks lesson 2', async ({ page
 	}
 });
 
+test('earns a crown with a perfect hard-mode run', async ({ page }) => {
+	// Seed lesson 1 as already completed so hard mode is meaningful.
+	await page.addInitScript(
+		([key, lessonId]) => {
+			localStorage.setItem(key, JSON.stringify({ sound: false, stars: { [lessonId]: 3 } }));
+		},
+		[STORAGE_KEY, lesson1.id] as const
+	);
+	await gotoApp(page, '/');
+
+	// The completed node carries a crown chip linking to hard mode.
+	const chip = page.getByRole('link', { name: `Hard mode for ${lesson1.title}` });
+	await expect(chip).toBeVisible();
+	await chip.click();
+	await page.locator('body[data-hydrated="true"]').waitFor();
+
+	// Hard mode is drills only — solve exactly the non-learn exercises.
+	await expect(page.locator('.hard-badge')).toBeVisible();
+	for (const ex of lesson1.exercises.filter((e) => e.kind !== 'learn')) {
+		await solveExercise(page, ex);
+	}
+
+	// Perfect run: the crown is announced and persisted.
+	await expect(page.locator('.crown-result')).toHaveClass(/won/);
+	const saved = await page.evaluate(
+		(key) => JSON.parse(localStorage.getItem(key) ?? 'null'),
+		STORAGE_KEY
+	);
+	expect(saved?.crowns?.[lesson1.id]).toBeDefined();
+
+	// Home now shows the chip in its crowned state.
+	await page.locator('.complete').getByRole('button', { name: 'Continue' }).click();
+	await expect(page.getByRole('link', { name: `Hard mode for ${lesson1.title}` })).toHaveClass(
+		/crowned/
+	);
+});
+
 test('script studio hub renders the alphabet chart', async ({ page }) => {
 	await gotoApp(page, '/script');
 
