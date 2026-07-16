@@ -40,6 +40,16 @@ bun run audio
 
 This writes MP3s for any new Burmese strings to `static/audio/` and refreshes `src/lib/audio-manifest.json`. Set `TTS_VOICE=my-MM-ThihaNeural` for the male voice, or `EDGE_TTS=/path/to/edge-tts` if the binary isn't on PATH.
 
+## Linting content
+
+After editing `course.ts` or `script.ts`:
+
+```sh
+bun run lint:content
+```
+
+This validates the course (choice answers in range, unique options, match pairs, assemble tiles composing the target sentence, unique ids), the script data (confusable/unit references, decodable words using only already-taught glyphs and recomposing their Burmese text), and audio coverage. Missing audio is reported as a warning — regenerate with `bun run audio` — and only fails the run with `--strict-audio`; structural errors always exit 1.
+
 ## Structure
 
 - `src/lib/data/course.ts` — all course content (units → lessons → exercises)

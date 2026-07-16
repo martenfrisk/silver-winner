@@ -116,7 +116,7 @@ export const chartSections: { title: string; sub?: string; ids: string[] }[] = [
 
 // ── Syllable composition (the abugida machinery) ─────────────────────
 /** Consonants that take the tall ါ instead of ာ. */
-const TALL_AA = new Set(['kha', 'ga', 'nga', 'da', 'pa', 'wa']);
+export const TALL_AA = new Set(['kha', 'ga', 'nga', 'da', 'pa', 'wa']);
 
 const INITIAL: Record<string, string> = {
 	ka: 'k', kha: 'kh', ga: 'g', gha: 'g', nga: 'ng',
