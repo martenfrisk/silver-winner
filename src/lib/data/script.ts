@@ -255,9 +255,9 @@ export const decodableWords: Record<string, DecodableWord[]> = {
 	stacked: [
 		{ my: 'ကမ္ဘာ', roman: 'ka-ba', en: 'world', parts: ['ka', 'ma', 'bha', 'aa'] },
 		{ my: 'မန္တလေး', roman: 'man-da-lay:', en: 'Mandalay', parts: ['ma', 'na', 'ta', 'la', 'ay', 'visarga'] },
-		{ my: 'သစ္စာ', roman: 'thit-sa', en: 'truth / loyalty', parts: ['tha', 'sa', 'aa'] },
+		{ my: 'သစ္စာ', roman: 'thit-sa', en: 'truth / loyalty', parts: ['tha', 'sa', 'sa', 'aa'] },
 		{ my: 'ဗုဒ္ဓ', roman: 'boke-da.', en: 'Buddha', parts: ['ba', 'u', 'da', 'dha'] },
-		{ my: 'စက္ကူ', roman: 'set-ku', en: 'paper', parts: ['sa', 'ka', 'uu'] }
+		{ my: 'စက္ကူ', roman: 'set-ku', en: 'paper', parts: ['sa', 'ka', 'ka', 'uu'] }
 	]
 };
 

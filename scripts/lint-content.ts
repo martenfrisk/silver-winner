@@ -18,11 +18,14 @@
 import { course } from '../src/lib/data/course';
 import {
 	allAudioSyllables,
+	aspirationPairs,
 	chartSections,
+	decodableSentences,
 	decodableWords,
 	glyphById,
 	glyphs,
 	scriptUnits,
+	unitNotes,
 	TALL_AA
 } from '../src/lib/data/script';
 import { existsSync, readFileSync } from 'node:fs';
@@ -167,6 +170,27 @@ const warn = (category: string, msg: string) => add(warnings, category, msg);
 		for (const id of section.ids)
 			if (!glyphById.has(id)) err(cat, `chart section "${section.title}": unknown glyph id "${id}"`);
 
+	for (const [a, b] of aspirationPairs) {
+		if (!glyphById.has(a)) err(cat, `aspirationPairs: unknown glyph id "${a}"`);
+		if (!glyphById.has(b)) err(cat, `aspirationPairs: unknown glyph id "${b}"`);
+	}
+
+	for (const [key, notes] of Object.entries(unitNotes)) {
+		if (!unitIds.has(key)) err(cat, `unitNotes key "${key}" is not a script unit id`);
+		for (const n of notes)
+			if (!n.title || !n.body) err(cat, `unitNotes "${key}": note with empty title or body`);
+	}
+
+	for (const [key, sentences] of Object.entries(decodableSentences)) {
+		if (!unitIds.has(key)) err(cat, `decodableSentences key "${key}" is not a script unit id`);
+		for (const s of sentences) {
+			const at = `unit "${key}" sentence "${s.my}"`;
+			if (!s.my) err(cat, `unit "${key}": decodable sentence with empty "my"`);
+			if (!s.roman) err(cat, `${at}: empty "roman"`);
+			if (!s.en) err(cat, `${at}: empty "en"`);
+		}
+	}
+
 	// Decodable words: keys ↔ units, and each unit needs an entry (even []).
 	for (const key of Object.keys(decodableWords))
 		if (!unitIds.has(key)) err(cat, `decodableWords key "${key}" is not a script unit id`);
@@ -202,8 +226,12 @@ const warn = (category: string, msg: string) => add(warnings, category, msg);
 				composed += id === 'aa' && TALL_AA.has(prevId) ? 'ါ' : g.char;
 				prevId = id;
 			}
-			if (!broken && composed !== w.my)
-				err(cat, `${at}: parts [${w.parts.join(', ')}] compose "${composed}", not "${w.my}"`);
+			// The virama (္) that forms consonant stacks is invisible to the
+			// parts model — both stacked consonants are listed, the join mark
+			// isn't. Compare against the word with viramas stripped.
+			const target = w.my.replace(/္/g, '');
+			if (!broken && composed !== target)
+				err(cat, `${at}: parts [${w.parts.join(', ')}] compose "${composed}", not "${target}"`);
 		}
 	}
 }
@@ -231,6 +259,7 @@ const warn = (category: string, msg: string) => add(warnings, category, msg);
 	for (const g of glyphs) texts.add(g.speak);
 	for (const s of allAudioSyllables()) texts.add(s.text);
 	for (const words of Object.values(decodableWords)) for (const w of words) texts.add(w.my);
+	for (const sentences of Object.values(decodableSentences)) for (const s of sentences) texts.add(s.my);
 
 	const missing: string[] = [];
 	for (const text of texts) {
