@@ -3,6 +3,7 @@
 	import { fly, scale } from 'svelte/transition';
 	import type { ScriptEx } from '$lib/script-session';
 	import { starsFor } from '$lib/script-session';
+	import { strokeData } from '$lib/data/script';
 	import { sfx } from '$lib/audio';
 	import { clickNth, digitOf, isShortcutIgnored } from '$lib/keyboard';
 	import { progress } from '$lib/progress.svelte';
@@ -40,6 +41,7 @@
 	let solved = $state(0);
 	let answered = $state<null | boolean>(null); // for choice/word
 	let traced = $state(false);
+	let peeked = $state(false); // memory-trace: peeking counts as a lapse
 	let done = $state(false);
 	let stars = $state(0);
 	let xpEarned = $state(0);
@@ -72,6 +74,7 @@
 		idx++;
 		answered = null;
 		traced = false;
+		peeked = false;
 		if (idx >= queue.length) finish();
 	}
 
@@ -152,7 +155,19 @@
 					{#if ex.kind === 'intro'}
 						<GlyphIntro glyph={ex.glyph} />
 					{:else if ex.kind === 'trace'}
-						<TraceExercise char={ex.glyph.char} oncomplete={() => (traced = true)} />
+						<TraceExercise
+							char={ex.glyph.char}
+							label={ex.glyph.sound}
+							fromMemory={ex.fromMemory ?? false}
+							strokes={strokeData[ex.glyph.id]}
+							onpeek={() => (peeked = true)}
+							oncomplete={() => {
+								traced = true;
+								// Memory traces are SRS-graded: clean recall passes,
+								// peeking or skipping counts as a lapse.
+								if (ex.kind === 'trace' && ex.fromMemory) ongrade?.(ex.glyph.id, !peeked);
+							}}
+						/>
 					{:else if ex.kind === 'choice'}
 						<ScriptChoice
 							question={ex.question}

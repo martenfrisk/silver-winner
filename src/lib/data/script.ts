@@ -114,6 +114,34 @@ export const chartSections: { title: string; sub?: string; ids: string[] }[] = [
 	{ title: 'Digits', ids: ['d0', 'd1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9'] }
 ];
 
+// ── Stroke-order hints (tracing guidance) ────────────────────────────
+/** One drawing stroke: an SVG path in 100×100 space + where the pen starts. */
+export interface Stroke {
+	d: string;
+	start: [number, number];
+}
+
+// APPROXIMATE hint strokes for the tracing pad, hand-tuned against the
+// Padauk rendering (glyph body ≈ x 30–70, y 35–75 of the 100-box). They
+// teach order and direction — one continuous stroke per loop, circles
+// before tails, left before right — not calligraphic precision, and the
+// set only covers the most-traced letters so far. Glyphs without an
+// entry simply show no hint. Deserves a native-speaker review (IDEAS #24).
+export const strokeData: Record<string, Stroke[]> = {
+	wa: [{ d: 'M47.5,42 A14,14 0 1,0 47.5,70 A14,14 0 1,0 47.5,42', start: [47.5, 42] }],
+	sa: [{ d: 'M49,41 A14,14 0 1,0 49,69 A14,14 0 1,0 49,41 L59,59', start: [49, 41] }],
+	nga: [{ d: 'M61,41 A14,13 0 1,0 63,58 Q66.5,62 62,68', start: [61, 41] }],
+	pa: [{ d: 'M37.5,41 L37.5,58 A13,12 0 0,0 64.5,58 L64.5,40', start: [37.5, 41] }],
+	ka: [
+		{ d: 'M37,66 C35,50 39,42 48,45 Q50,48 49,52', start: [37, 66] },
+		{ d: 'M49,47 C52,40 64,41 64,52 L64,68', start: [49, 47] }
+	],
+	ma: [
+		{ d: 'M43,47 Q49,53 55,47', start: [43, 47] },
+		{ d: 'M49,43 A13.5,13.5 0 1,0 49,70 A13.5,13.5 0 1,0 49,43', start: [49, 43] }
+	]
+};
+
 // ── Syllable composition (the abugida machinery) ─────────────────────
 /** Consonants that take the tall ါ instead of ာ. */
 export const TALL_AA = new Set(['kha', 'ga', 'nga', 'da', 'pa', 'wa']);
