@@ -16,7 +16,7 @@
 		onanswer
 	}: {
 		question: string;
-		questionKey?: 'what-sound' | 'what-say';
+		questionKey?: 'what-sound' | 'what-say' | 'which-hear';
 		promptBig?: string;
 		promptSpeak?: string;
 		options: ChoiceOption[];
@@ -81,6 +81,12 @@
 				<SpeakButton text={promptSpeak} />
 			{/if}
 		</div>
+	{:else if promptSpeak}
+		<!-- Listening drill: audio-only prompt, tap to replay. -->
+		<div class="prompt listen">
+			<span class="listen-ear" aria-hidden="true">👂</span>
+			<SpeakButton text={promptSpeak} size="lg" />
+		</div>
 	{/if}
 	<div class="options" class:glyph-grid={options.some((o) => o.my)}>
 		{#each options as opt, i (i)}
@@ -134,6 +140,12 @@
 	.big {
 		font-size: 4.2rem;
 		line-height: 1.4;
+	}
+	.prompt.listen {
+		padding: 18px 0;
+	}
+	.listen-ear {
+		font-size: 2.4rem;
 	}
 	.options {
 		display: flex;

@@ -96,7 +96,7 @@
 					onclick={() => openUnit(unit.id, unlocked)}
 					disabled={!unlocked}
 				>
-					<span class="unit-glyph my">{unlocked ? glyphById.get(unit.glyphIds[0])?.char : '🔒'}</span>
+					<span class="unit-glyph my">{unlocked ? (unit.icon ?? glyphById.get(unit.glyphIds[0])?.char) : '🔒'}</span>
 					<span class="unit-text">
 						<span class="unit-title">{unit.title}</span>
 						<span class="unit-blurb">{unit.blurb}</span>

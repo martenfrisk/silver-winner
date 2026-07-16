@@ -11,7 +11,9 @@
 	import GlyphIntro from './GlyphIntro.svelte';
 	import TraceExercise from './TraceExercise.svelte';
 	import ScriptChoice from './ScriptChoice.svelte';
+	import ScriptNote from './ScriptNote.svelte';
 	import WordRead from './WordRead.svelte';
+	import SentenceRead from './SentenceRead.svelte';
 
 	let {
 		initialQueue,
@@ -47,7 +49,7 @@
 	function grade(ok: boolean) {
 		answered = ok;
 		const g = ex && 'glyph' in ex ? ex.glyph.id : ex?.kind === 'choice' ? ex.glyphId : undefined;
-		if (ex?.kind === 'choice' || ex?.kind === 'word') {
+		if (ex?.kind === 'choice' || ex?.kind === 'word' || ex?.kind === 'sentence') {
 			if (g) ongrade?.(g, ok);
 			if (!ok) {
 				mistakes++;
@@ -58,7 +60,7 @@
 
 	const canContinue = $derived.by(() => {
 		if (!ex) return false;
-		if (ex.kind === 'intro') return true;
+		if (ex.kind === 'intro' || ex.kind === 'note') return true;
 		if (ex.kind === 'trace') return traced;
 		return answered !== null;
 	});
@@ -143,6 +145,10 @@
 						/>
 					{:else if ex.kind === 'word'}
 						<WordRead word={ex.word} options={ex.options} correct={ex.correct} onanswer={grade} />
+					{:else if ex.kind === 'sentence'}
+						<SentenceRead sentence={ex.sentence} options={ex.options} correct={ex.correct} onanswer={grade} />
+					{:else if ex.kind === 'note'}
+						<ScriptNote note={ex.note} />
 					{/if}
 				</div>
 			{/key}
