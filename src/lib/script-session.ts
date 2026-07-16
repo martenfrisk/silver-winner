@@ -3,13 +3,18 @@
 // point of script drills is discriminating similar shapes.
 import {
 	AUDIO_VOWELS,
+	aspirationMate,
 	buildSyllable,
+	decodableSentences,
 	decodableWords,
 	glyphById,
 	glyphs,
+	unitNotes,
+	type DecodableSentence,
 	type DecodableWord,
 	type Glyph,
-	type ScriptUnit
+	type ScriptUnit,
+	type UnitNote
 } from '$lib/data/script';
 import { srs, MAX_BOX } from '$lib/srs.svelte';
 
@@ -23,12 +28,13 @@ export interface ChoiceOption {
 export type ScriptEx =
 	| { kind: 'intro'; glyph: Glyph }
 	| { kind: 'trace'; glyph: Glyph }
+	| { kind: 'note'; note: UnitNote }
 	| {
 			kind: 'choice';
 			/** Glyph credited/blamed for the answer (drives SRS grading). */
 			glyphId?: string;
 			question: string;
-			questionKey?: 'what-sound' | 'what-say';
+			questionKey?: 'what-sound' | 'what-say' | 'which-hear';
 			promptBig?: string;
 			promptSpeak?: string;
 			options: ChoiceOption[];
@@ -36,7 +42,8 @@ export type ScriptEx =
 			/** Seconds allowed (speed round); omit for untimed. */
 			timed?: number;
 	  }
-	| { kind: 'word'; word: DecodableWord; options: string[]; correct: number };
+	| { kind: 'word'; word: DecodableWord; options: string[]; correct: number }
+	| { kind: 'sentence'; sentence: DecodableSentence; options: string[]; correct: number };
 
 function shuffle<T>(a: T[]): T[] {
 	return [...a].sort(() => Math.random() - 0.5);
@@ -162,6 +169,72 @@ export function syllableRead(glyph: Glyph): ScriptEx | null {
 	return null;
 }
 
+/**
+ * Minimal-pair listening drill for aspiration contrasts (က/ခ, စ/ဆ, တ/ထ, ပ/ဖ):
+ * play one member's syllable, learner picks which written syllable they heard.
+ * Only built from `allAudioSyllables()` material, so the prompt always has
+ * a real MP3. Graded against the practiced glyph's SRS entry.
+ */
+export function pairListen(glyph: Glyph): ScriptEx | null {
+	const mateId = aspirationMate.get(glyph.id);
+	if (!mateId || !srs.isIntroduced(mateId)) return null;
+	const vowels = learnedAudioVowels();
+	if (vowels.length === 0) return null;
+	const v = pick(vowels, 1)[0];
+	const a = buildSyllable(glyph.id, v);
+	const b = buildSyllable(mateId, v);
+	const [played, other] = Math.random() < 0.5 ? [a, b] : [b, a];
+	const { options, correct } = withCorrect(
+		[{ label: other.text, my: true }],
+		{ label: played.text, my: true }
+	);
+	return {
+		kind: 'choice',
+		glyphId: glyph.id,
+		question: 'Which one did you hear?',
+		questionKey: 'which-hear',
+		promptSpeak: played.text,
+		options,
+		correct
+	};
+}
+
+/**
+ * Tone-contrast listening drill: low tone (…ာ) vs high tone (…ား) of the
+ * same syllable. Graded against the visarga (း) SRS entry.
+ */
+export function toneListen(): ScriptEx | null {
+	if (!srs.isIntroduced('visarga')) return null;
+	const cons = learnedConsonants();
+	const vowels = learnedAudioVowels();
+	if (cons.length === 0 || vowels.length === 0) return null;
+	const c = pick(cons, 1)[0];
+	const v = pick(vowels, 1)[0];
+	const low = buildSyllable(c.id, v, false);
+	const high = buildSyllable(c.id, v, true);
+	const [played, other] = Math.random() < 0.5 ? [low, high] : [high, low];
+	const { options, correct } = withCorrect(
+		[{ label: other.text, my: true }],
+		{ label: played.text, my: true }
+	);
+	return {
+		kind: 'choice',
+		glyphId: 'visarga',
+		question: 'Which one did you hear?',
+		questionKey: 'which-hear',
+		promptSpeak: played.text,
+		options,
+		correct
+	};
+}
+
+/** Listening drill for a practiced glyph, if one applies. */
+function listenDrill(glyph: Glyph): ScriptEx | null {
+	if (glyph.id === 'visarga') return toneListen();
+	if (glyph.type === 'consonant') return pairListen(glyph);
+	return null;
+}
+
 export function wordRead(word: DecodableWord, allWords: DecodableWord[]): ScriptEx {
 	const others = pick(
 		allWords.filter((w) => w.my !== word.my && w.roman !== word.roman),
@@ -171,9 +244,23 @@ export function wordRead(word: DecodableWord, allWords: DecodableWord[]): Script
 	return { kind: 'word', word, options, correct: options.indexOf(word.roman) };
 }
 
+export function sentenceRead(s: DecodableSentence, all: DecodableSentence[]): ScriptEx {
+	const others = pick(
+		all.filter((x) => x.my !== s.my && x.en !== s.en),
+		2
+	).map((x) => x.en);
+	const options = shuffle([s.en, ...others]);
+	return { kind: 'sentence', sentence: s, options, correct: options.indexOf(s.en) };
+}
+
 /** All decodable words from finished units (for practice sprinkles). */
 function unlockedWords(): DecodableWord[] {
 	return srs.unitsDone.flatMap((u) => decodableWords[u] ?? []);
+}
+
+/** All decodable sentences from finished units. */
+function unlockedSentences(): DecodableSentence[] {
+	return srs.unitsDone.flatMap((u) => decodableSentences[u] ?? []);
 }
 
 // ── Intro lesson queue ────────────────────────────────────────────────
@@ -181,6 +268,9 @@ export function buildIntroQueue(unit: ScriptUnit): ScriptEx[] {
 	const queue: ScriptEx[] = [];
 	const unitGlyphs = unit.glyphIds.map((id) => glyphById.get(id)!);
 	const isDigits = unit.id === 'digits';
+
+	// Concept units (e.g. stacked consonants) open with explainer cards.
+	for (const note of unitNotes[unit.id] ?? []) queue.push({ kind: 'note', note });
 
 	unitGlyphs.forEach((g, i) => {
 		queue.push({ kind: 'intro', glyph: g });
@@ -201,10 +291,23 @@ export function buildIntroQueue(unit: ScriptUnit): ScriptEx[] {
 		.filter((x): x is ScriptEx => x !== null);
 	queue.push(...pick(sylls, 3));
 
-	// Decodable words: the payoff.
+	// Decodable words: the payoff. Glyphless concept units lean on words
+	// entirely, so they read all of them (plus a couple of re-quizzes).
 	const words = decodableWords[unit.id] ?? [];
 	const allWords = [...words, ...unlockedWords()];
-	for (const w of pick(words, 4)) queue.push(wordRead(w, allWords));
+	if (unitGlyphs.length === 0) {
+		for (const w of shuffle(words)) queue.push(wordRead(w, allWords));
+		for (const w of pick(words, 2)) queue.push(wordRead(w, allWords));
+	} else {
+		for (const w of pick(words, 4)) queue.push(wordRead(w, allWords));
+	}
+
+	// Decodable sentences: later units close with real reading.
+	const sentences = decodableSentences[unit.id] ?? [];
+	if (sentences.length > 0) {
+		const pool = [...sentences, ...unlockedSentences()];
+		for (const s of pick(sentences, 2)) queue.push(sentenceRead(s, pool));
+	}
 
 	return queue;
 }
@@ -229,21 +332,28 @@ export function buildPracticeQueue(): { queue: ScriptEx[]; count: number } {
 		const g = glyphById.get(id);
 		if (!g) continue;
 		const box = srs.box(id);
+		// Once the shape is known (box ≥ 2), sometimes swap in a minimal-pair
+		// listening drill — hearing the contrast is the hard part.
+		const listen = box >= 2 && Math.random() < 0.5 ? listenDrill(g) : null;
 		if (box <= 1) {
 			queue.push(g2s(g));
 		} else if (box === 2) {
-			queue.push(s2g(g));
+			queue.push(listen ?? s2g(g));
 		} else if (box === 3) {
-			queue.push(syllableRead(g) ?? s2g(g));
+			queue.push(listen ?? syllableRead(g) ?? s2g(g));
 		} else {
 			// Mastered: keep it honest with a speed round.
-			queue.push(g2s(g, 5));
+			queue.push(listen ?? g2s(g, 5));
 		}
 	}
 
 	// Sprinkle in real reading.
 	const words = unlockedWords();
 	for (const w of pick(words, Math.min(2, words.length))) queue.push(wordRead(w, words));
+	const sentences = unlockedSentences();
+	if (sentences.length >= 3) {
+		for (const s of pick(sentences, 1)) queue.push(sentenceRead(s, sentences));
+	}
 
 	return { queue: shuffle(queue), count: ids.length };
 }

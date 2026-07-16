@@ -13,10 +13,11 @@ Meet **Shwe** (ရွှေ, "gold") — a golden Burmese cat who guides you thr
 - **Animations** — springy `linear()` easings, animated mascot moods (idle/happy/sad/celebrate), confetti on lesson completion, and reduced-motion support.
 - **Script Studio** (optional track) — learn to *read* Burmese, built around how script learning actually works rather than the lesson-path model:
   - a living **alphabet chart** (51 glyphs in traditional rows) with per-glyph mastery heat; tap any glyph for its name, mnemonic, audio and lookalikes
-  - 10 **micro-intro units** ordered by letter frequency, with tracing (canvas), mnemonics from the traditional letter names, and confusable warnings
+  - 11 **micro-intro units** ordered by letter frequency, with tracing (canvas), mnemonics from the traditional letter names, and confusable warnings — capped by a **stacked consonants** (ပါဌ်ဆင့်) unit: concept cards plus real Pali-loan reading (ကမ္ဘာ, မန္တလေး, သစ္စာ…)
   - a **spaced-repetition Practice** session (Leitner boxes in localStorage) whose exercise type escalates with mastery: glyph→sound, sound→glyph with lookalike distractors, syllable reading, and timed speed rounds
+  - **minimal-pair listening drills** — hear a syllable, tap the written syllable you heard: aspiration contrasts (က/ခ, စ/ဆ, တ/ထ, ပ/ဖ) and low-vs-high tone (ာ vs ား)
   - an interactive **syllable builder** — snap vowel signs around a base consonant and hear the composed syllable; includes a challenge mode
-  - **decodable words**: real Burmese words readable using only components you've learned
+  - **decodable words & sentences**: real Burmese words — and short real sentences in later units — readable using only components you've learned
 - **Immersion mode** (off by default) — UI buttons and labels switch to Burmese in three tiers as your script knowledge grows, like gradually setting your phone to the target language.
 - **Profile page** (`/account`) — stats, settings and reset options; still 100% localStorage.
 
