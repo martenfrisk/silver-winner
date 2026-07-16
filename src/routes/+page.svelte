@@ -10,6 +10,7 @@
 	import { goto } from '$app/navigation';
 
 	const totalLessons = course.reduce((n, u) => n + u.lessons.length, 0);
+	const goalPct = $derived(Math.min(1, progress.xpToday / Math.max(1, progress.dailyGoal)));
 
 	function openLesson(id: string, unlocked: boolean) {
 		if (!unlocked) {
@@ -39,7 +40,24 @@
 			<span class="brand-name">MyanLingo</span>
 		</div>
 		<div class="pills">
-			<span class="pill" title="Day streak">🔥 {progress.streak}</span>
+			<span
+				class="pill goal-pill"
+				class:reached={goalPct >= 1}
+				title="{progress.xpToday} / {progress.dailyGoal} XP today · 🔥 {progress.streak}-day streak"
+				aria-label="Daily goal: {progress.xpToday} of {progress.dailyGoal} XP. Streak: {progress.streak} days."
+			>
+				<svg class="ring" viewBox="0 0 22 22" aria-hidden="true">
+					<circle class="ring-bg" cx="11" cy="11" r="8.5" />
+					<circle
+						class="ring-fill"
+						cx="11"
+						cy="11"
+						r="8.5"
+						stroke-dasharray="{goalPct * 53.4} 53.4"
+					/>
+				</svg>
+				🔥 {progress.streak}
+			</span>
 			<span class="pill" title="Total XP">⚡ {progress.xp} XP</span>
 			<button
 				class="pill toggle"
@@ -228,6 +246,38 @@
 		color: var(--ink-soft);
 		text-decoration: line-through;
 		opacity: 0.7;
+	}
+	.goal-pill {
+		gap: 6px;
+	}
+	.ring {
+		width: 22px;
+		height: 22px;
+		rotate: -90deg;
+	}
+	.ring circle {
+		fill: none;
+		stroke-width: 3.5;
+		stroke-linecap: round;
+	}
+	.ring-bg {
+		stroke: var(--line);
+	}
+	.ring-fill {
+		stroke: var(--gold);
+		transition: stroke-dasharray 0.6s var(--pop);
+	}
+	.goal-pill.reached .ring-fill {
+		stroke: var(--green);
+	}
+	.goal-pill.reached {
+		animation: goal-pop 0.4s ease-in-out;
+	}
+	@keyframes goal-pop {
+		0% { scale: 1; }
+		35% { scale: 1.08; }
+		70% { scale: 0.98; }
+		100% { scale: 1; }
 	}
 
 	.hero {
