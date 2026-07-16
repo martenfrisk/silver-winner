@@ -93,6 +93,13 @@ export const achievements: AchievementDef[] = [
 		earned: () => progress.xp >= 2000
 	},
 	{
+		id: 'first-crown',
+		emoji: '👑',
+		name: 'Perfectionist',
+		desc: 'Earn a crown with a perfect hard-mode run',
+		earned: () => Object.keys(progress.crowns).length >= 1
+	},
+	{
 		id: 'goal-7',
 		emoji: '🎖️',
 		name: 'Habit formed',

@@ -22,6 +22,8 @@
 	let xpEarned = $state(0);
 	let stars = $state(0);
 	let selected = $state<number | null>(null);
+	let combo = $state(0);
+	let maxCombo = $state(0);
 
 	const item = $derived(queue[idx]);
 	const ex = $derived(item?.ex);
@@ -48,12 +50,16 @@
 		vocabSrs.grade(item.my, ok);
 		if (ok) {
 			status = 'correct';
+			combo++;
+			maxCombo = Math.max(maxCombo, combo);
 			sfx.correct();
+			if (combo > 0 && combo % 5 === 0) sfx.match(); // combo milestone
 			// Reinforce the word's sound on my→en drills, where it wasn't the prompt.
 			if (ex.kind === 'choice' && ex.promptMy) speak(ex.promptMy);
 		} else {
 			status = 'wrong';
 			mistakes++;
+			combo = 0;
 			sfx.wrong();
 			queue = [...queue, item]; // practice it again at the end
 		}
@@ -70,7 +76,7 @@
 
 	function finish() {
 		stars = starsFor(mistakes);
-		xpEarned = 10 + (stars === 3 ? 5 : 0);
+		xpEarned = 10 + (stars === 3 ? 5 : 0) + (maxCombo >= 5 ? 5 : 0);
 		progress.addXp(xpEarned);
 		done = true;
 		sfx.fanfare();
@@ -175,6 +181,9 @@
 					<div class="feedback-text">
 						<strong>{['ကောင်းတယ်! Nice!', 'Great job!', 'ဟုတ်ပြီ! Correct!'][solved % 3]}</strong>
 					</div>
+					{#if combo >= 2}
+						<span class="combo-chip" class:hot={combo >= 5}>🔥×{combo}</span>
+					{/if}
 					<button class="btn green" onclick={advance}>{ui('continue').text}</button>
 				</div>
 			{:else if status === 'wrong'}
@@ -307,6 +316,21 @@
 	.answer {
 		color: var(--red-ink);
 		font-size: 0.95rem;
+	}
+	.combo-chip {
+		font-weight: 900;
+		font-size: 0.95rem;
+		color: var(--gold-ink);
+		background: var(--gold-soft);
+		border-radius: 99px;
+		padding: 6px 12px;
+		white-space: nowrap;
+		animation: pulse-pop 0.4s ease-in-out;
+	}
+	.combo-chip.hot {
+		color: #fff;
+		background: var(--coral);
+		box-shadow: 0 2px 0 var(--coral-dark);
 	}
 
 	.empty,

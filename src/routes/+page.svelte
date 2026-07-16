@@ -57,6 +57,9 @@
 					/>
 				</svg>
 				🔥 {progress.streak}
+				{#if progress.freezes > 0}
+					<span class="freeze-mini" title="{progress.freezes} streak freeze{progress.freezes > 1 ? 's' : ''} held">🧊{progress.freezes}</span>
+				{/if}
 			</span>
 			<span class="pill" title="Total XP">⚡ {progress.xp} XP</span>
 			<button
@@ -150,23 +153,38 @@
 						{@const stars = progress.stars[lesson.id] ?? 0}
 						{@const isCurrent = progress.currentLesson === lesson.id}
 						<div class="node-row" style="--offset: {[0, 1, -1][i % 3]}">
-							<button
-								class="node {unlocked ? '' : 'locked'} {stars > 0 ? 'completed' : ''} {isCurrent ? 'current' : ''}"
-								style="--unit-color: {unit.color}"
-								onclick={() => openLesson(lesson.id, unlocked)}
-								disabled={!unlocked}
-								aria-label="{lesson.title}{unlocked ? '' : ' (locked)'}"
-							>
-								{#if isCurrent}
-									<span class="start-bubble" class:my={ui('start').my}>{ui('start').text}</span>
-								{/if}
-								<span class="node-emoji">{unlocked ? lesson.emoji : '🔒'}</span>
+							<div class="node-wrap">
+								<button
+									class="node {unlocked ? '' : 'locked'} {stars > 0 ? 'completed' : ''} {isCurrent ? 'current' : ''}"
+									style="--unit-color: {unit.color}"
+									onclick={() => openLesson(lesson.id, unlocked)}
+									disabled={!unlocked}
+									aria-label="{lesson.title}{unlocked ? '' : ' (locked)'}"
+								>
+									{#if isCurrent}
+										<span class="start-bubble" class:my={ui('start').my}>{ui('start').text}</span>
+									{/if}
+									<span class="node-emoji">{unlocked ? lesson.emoji : '🔒'}</span>
+									{#if stars > 0}
+										<span class="node-stars">
+											{'★'.repeat(stars)}<span class="dim">{'★'.repeat(3 - stars)}</span>
+										</span>
+									{/if}
+								</button>
 								{#if stars > 0}
-									<span class="node-stars">
-										{'★'.repeat(stars)}<span class="dim">{'★'.repeat(3 - stars)}</span>
-									</span>
+									<a
+										class="crown-chip"
+										class:crowned={progress.isCrowned(lesson.id)}
+										href="/lesson/{lesson.id}?mode=hard"
+										title={progress.isCrowned(lesson.id)
+											? 'Crowned! Replay hard mode anytime'
+											: 'Hard mode: a perfect drills-only run earns the crown'}
+										aria-label="Hard mode for {lesson.title}"
+									>
+										👑
+									</a>
 								{/if}
-							</button>
+							</div>
 							<span class="node-title {unlocked ? '' : 'muted'}">{lesson.title}</span>
 						</div>
 					{/each}
@@ -420,6 +438,41 @@
 		align-items: center;
 		gap: 8px;
 		translate: calc(var(--offset) * 72px) 0;
+	}
+	.node-wrap {
+		position: relative;
+	}
+	.crown-chip {
+		position: absolute;
+		top: -8px;
+		right: -14px;
+		display: grid;
+		place-items: center;
+		width: 30px;
+		height: 30px;
+		border-radius: 50%;
+		background: var(--card);
+		box-shadow: inset 0 0 0 2px var(--line), 0 2px 0 var(--line);
+		text-decoration: none;
+		font-size: 0.95rem;
+		filter: grayscale(1);
+		opacity: 0.75;
+		transition: scale 0.15s var(--pop), filter 0.2s ease, opacity 0.2s ease;
+	}
+	.crown-chip:hover {
+		scale: 1.15;
+		filter: grayscale(0.3);
+		opacity: 1;
+	}
+	.crown-chip.crowned {
+		filter: none;
+		opacity: 1;
+		box-shadow: inset 0 0 0 2px var(--gold), 0 2px 0 var(--gold-dark);
+	}
+	.freeze-mini {
+		font-size: 0.75rem;
+		font-weight: 900;
+		color: var(--teal-ink);
 	}
 	.node {
 		position: relative;
