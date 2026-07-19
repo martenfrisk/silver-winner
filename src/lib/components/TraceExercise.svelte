@@ -2,12 +2,43 @@
 	import { onMount } from 'svelte';
 	import { sfx } from '$lib/audio';
 	import { ui } from '$lib/i18n.svelte';
+	import type { Stroke } from '$lib/data/script';
 
-	let { char, oncomplete }: { char: string; oncomplete: () => void } = $props();
+	let {
+		char,
+		label,
+		fromMemory = false,
+		strokes,
+		oncomplete,
+		onpeek
+	}: {
+		char: string;
+		/** Shown instead of the glyph in memory mode (e.g. the sound). */
+		label?: string;
+		/** Hide the template: draw the glyph from memory (top-box SRS drill). */
+		fromMemory?: boolean;
+		/** Stroke-order hint paths (100×100 space), if authored for this glyph. */
+		strokes?: Stroke[];
+		oncomplete: () => void;
+		/** Called when the learner peeks (or skips) in memory mode. */
+		onpeek?: () => void;
+	} = $props();
+
+	// Stroke-order hints are disabled. The authored paths in `strokeData` were
+	// tuned against an HTML text rendering, but this pad paints the glyph with
+	// canvas fillText, whose metrics differ — the strokes land at roughly 70px
+	// over a ~96px glyph, so they read as plainly wrong rather than helpful.
+	// The data and the animation code below are kept intact: re-enabling means
+	// deriving the paths from the same fillText metrics the pad uses (measure
+	// the painted glyph's bounding box, then author in that space) and
+	// flipping this flag. See IDEAS.md #6.
+	const STROKE_HINTS_ENABLED = false;
 
 	const SIZE = 260; // CSS pixels
 	const GRID = 64; // coverage-check resolution
 	const DONE_AT = 0.5; // fraction of the glyph you must cover
+	const STROKE_SECS = 1.1; // hint draw time per stroke
+	const STROKE_GAP = 0.25;
 
 	let canvas: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D;
@@ -19,11 +50,19 @@
 	let done = $state(false);
 	let drawing = false;
 	let last: { x: number; y: number } | null = null;
+	let peeking = $state(false);
+	let hintPlaying = $state(false);
+	let hintRun = $state(0);
+	/** Hint paths, or undefined while the feature is disabled. */
+	const hint = $derived(STROKE_HINTS_ENABLED ? strokes : undefined);
+	let reducedMotion = $state(false);
+	let hintTimer: ReturnType<typeof setTimeout>;
 
 	const FONT = '“Padauk”, “Myanmar MN”, “Noto Sans Myanmar”, sans-serif';
 
 	function drawGuide() {
 		ctx.clearRect(0, 0, SIZE, SIZE);
+		if (fromMemory) return; // memory mode: blank pad
 		ctx.save();
 		// Theme-aware guide tint — canvas can't use var() directly.
 		ctx.fillStyle =
@@ -65,8 +104,27 @@
 	}
 
 	onMount(() => {
+		reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		void init();
+		// Auto-play the stroke hint once when tracing over the template.
+		if (hint && hint.length > 0 && !fromMemory) {
+			const t = setTimeout(playHint, 500);
+			return () => {
+				clearTimeout(t);
+				clearTimeout(hintTimer);
+			};
+		}
+		return () => clearTimeout(hintTimer);
 	});
+
+	function playHint() {
+		if (!hint || done) return;
+		clearTimeout(hintTimer);
+		hintRun++; // remounts the overlay via {#key}, restarting the CSS animations
+		hintPlaying = true;
+		const total = reducedMotion ? 2.5 : hint.length * (STROKE_SECS + STROKE_GAP) + 0.8;
+		hintTimer = setTimeout(() => (hintPlaying = false), total * 1000);
+	}
 
 	function pos(e: PointerEvent) {
 		const r = canvas.getBoundingClientRect();
@@ -137,10 +195,31 @@
 		done = false;
 		drawGuide();
 	}
+
+	function peekDown() {
+		if (!peeking) onpeek?.();
+		peeking = true;
+	}
+
+	function peekUp() {
+		peeking = false;
+	}
+
+	function skip() {
+		if (fromMemory) onpeek?.(); // skipping a memory drill counts as not knowing it
+		done = true;
+		oncomplete();
+	}
 </script>
 
 <div class="trace">
-	<h2 class="question">✍️ {ui('trace-it').text} <span class="my target">{char}</span></h2>
+	<h2 class="question">
+		{#if fromMemory}
+			🧠 Draw <span class="memory-label">“{label ?? char}”</span> from memory
+		{:else}
+			✍️ {ui('trace-it').text} <span class="my target">{char}</span>
+		{/if}
+	</h2>
 	<div class="pad" class:done>
 		<canvas
 			bind:this={canvas}
@@ -150,6 +229,24 @@
 			onpointerup={up}
 			onpointercancel={up}
 		></canvas>
+		{#if peeking}
+			<div class="peek-overlay my" aria-hidden="true">{char}</div>
+		{/if}
+		{#if hintPlaying && hint}
+			{#key hintRun}
+				<svg class="hint" class:static={reducedMotion} viewBox="0 0 100 100" aria-hidden="true">
+					{#each hint as s, i (i)}
+						<path
+							d={s.d}
+							pathLength="1"
+							style="animation-delay: {reducedMotion ? 0 : i * (STROKE_SECS + STROKE_GAP)}s"
+						/>
+						<circle class="dot" cx={s.start[0]} cy={s.start[1]} r="5.5" />
+						<text class="dot-num" x={s.start[0]} y={s.start[1]}>{i + 1}</text>
+					{/each}
+				</svg>
+			{/key}
+		{/if}
 		{#if done}
 			<div class="stamp">✓</div>
 		{/if}
@@ -159,10 +256,22 @@
 	</div>
 	<div class="row">
 		<button class="mini" onclick={clear}>↺ Clear</button>
-		{#if !done}
-			<button class="mini skip-trace" onclick={() => { done = true; oncomplete(); }}>
-				Can’t draw right now
+		{#if hint && hint.length > 0 && !fromMemory && !done}
+			<button class="mini" onclick={playHint}>▶ Show strokes</button>
+		{/if}
+		{#if fromMemory && !done}
+			<button
+				class="mini peek"
+				onpointerdown={peekDown}
+				onpointerup={peekUp}
+				onpointercancel={peekUp}
+				onpointerleave={peekUp}
+			>
+				👁 Hold to peek
 			</button>
+		{/if}
+		{#if !done}
+			<button class="mini skip-trace" onclick={skip}>Can’t draw right now</button>
 		{/if}
 	</div>
 </div>
@@ -182,6 +291,9 @@
 		font-size: 1.7rem;
 		color: var(--gold-ink);
 	}
+	.memory-label {
+		color: var(--plum-ink);
+	}
 	.pad {
 		position: relative;
 		border-radius: var(--radius);
@@ -198,6 +310,55 @@
 		display: block;
 		border-radius: var(--radius);
 		cursor: crosshair;
+	}
+	.peek-overlay {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		font-size: 170px;
+		line-height: 1;
+		color: var(--trace-guide, rgba(74, 53, 32, 0.13));
+		pointer-events: none;
+		padding-top: 16px;
+	}
+	.hint {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+	}
+	.hint path {
+		fill: none;
+		stroke: var(--teal);
+		stroke-width: 4.5;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		opacity: 0.9;
+		stroke-dasharray: 1;
+		stroke-dashoffset: 1;
+		animation: draw-stroke 1.1s ease-in-out forwards;
+	}
+	.hint.static path {
+		stroke-dashoffset: 0;
+		animation: none;
+		opacity: 0.5;
+	}
+	.hint .dot {
+		fill: var(--teal);
+	}
+	.hint .dot-num {
+		fill: #fff;
+		font-size: 7px;
+		font-weight: 900;
+		text-anchor: middle;
+		dominant-baseline: central;
+	}
+	@keyframes draw-stroke {
+		to {
+			stroke-dashoffset: 0;
+		}
 	}
 	.stamp {
 		position: absolute;
@@ -223,6 +384,8 @@
 	.row {
 		display: flex;
 		gap: 16px;
+		flex-wrap: wrap;
+		justify-content: center;
 	}
 	.mini {
 		font-size: 0.85rem;
@@ -232,6 +395,10 @@
 		border-radius: 10px;
 		box-shadow: inset 0 0 0 2px var(--line);
 		background: var(--card);
+	}
+	.mini.peek {
+		color: var(--plum-ink);
+		touch-action: none;
 	}
 	.skip-trace {
 		color: var(--ink-soft);

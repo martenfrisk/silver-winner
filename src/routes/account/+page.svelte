@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { progress, type Theme } from '$lib/progress.svelte';
+	import { progress, FREEZE_COST, MAX_FREEZES, type Theme } from '$lib/progress.svelte';
 	import { srs } from '$lib/srs.svelte';
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { course } from '$lib/data/course';
@@ -135,6 +135,22 @@
 					</button>
 				{/each}
 			</div>
+		</div>
+		<div class="setting">
+			<span class="setting-text">
+				<span class="setting-title">Streak freeze 🧊</span>
+				<span class="setting-desc">
+					Each one silently covers a missed day so your streak survives.
+					Holding {progress.freezes}/{MAX_FREEZES}.
+				</span>
+			</span>
+			<button
+				class="buy-btn"
+				disabled={progress.xp < FREEZE_COST || progress.freezes >= MAX_FREEZES}
+				onclick={() => progress.buyFreeze()}
+			>
+				{progress.freezes >= MAX_FREEZES ? 'Max held' : `Buy · ${FREEZE_COST} XP`}
+			</button>
 		</div>
 		<label class="setting">
 			<span class="setting-text">
@@ -417,6 +433,22 @@
 		color: #fff;
 		background: var(--gold);
 		box-shadow: 0 2px 0 var(--gold-dark);
+	}
+	.buy-btn {
+		padding: 10px 16px;
+		border-radius: 12px;
+		font-weight: 800;
+		font-size: 0.85rem;
+		color: #fff;
+		background: var(--teal);
+		box-shadow: 0 3px 0 var(--teal-dark);
+		flex-shrink: 0;
+	}
+	.buy-btn:disabled {
+		color: var(--disabled-ink, var(--ink-soft));
+		background: var(--disabled-bg, var(--line));
+		box-shadow: 0 3px 0 var(--disabled-shadow, var(--line));
+		cursor: not-allowed;
 	}
 	.danger-row {
 		display: flex;
