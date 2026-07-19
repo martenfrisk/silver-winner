@@ -25,14 +25,25 @@ Legend: ✅ = implemented · 💤 = backlog
 
 ## Script Studio deepening
 
-6. 💤 **Stroke-order guidance in tracing** — animated stroke paths (or numbered
-   start-dots) instead of free-form trace-over. *Built once and disabled:* the
-   paths in `strokeData` (`src/lib/data/script.ts`) were authored against an
-   HTML text rendering, but the pad paints its glyph with canvas `fillText`,
-   so they land at the wrong scale (~70px of stroke over a ~96px glyph). Code
-   and data are kept; re-enabling means re-deriving the paths from the pad's
-   own `fillText` metrics and flipping `STROKE_HINTS_ENABLED` in
-   `TraceExercise.svelte`.
+6. 💤 **Handwriting practice — rebuild the tracing pad** (supersedes
+   "stroke-order guidance"). **The whole pad is currently gated off**
+   (`TRACING_ENABLED` in `src/lib/script-session.ts`), so no `trace` exercise
+   reaches either queue. Two separate defects sank it:
+   - *Grading was fake.* Completion was a pixel-coverage ratio — paint over
+     ~50% of the glyph's cells and it passed. That can't distinguish writing
+     the letter from scribbling across its area, so it cut the exercise off
+     mid-letter and passed everyone (which also made #10's SRS grade
+     meaningless).
+   - *Stroke hints were misaligned.* The paths in `strokeData`
+     (`src/lib/data/script.ts`) were authored against an HTML text rendering,
+     but the pad paints its glyph with canvas `fillText`, so they landed at
+     the wrong scale (~70px of stroke over a ~96px glyph). Separately gated by
+     `STROKE_HINTS_ENABLED` in `TraceExercise.svelte`.
+
+   All the code and data are kept. A real rebuild needs per-stroke path
+   comparison (direction, order, start point) against authored strokes rather
+   than a coverage ratio, and stroke paths derived from the pad's own
+   `fillText` metrics.
 7. ✅ **Minimal-pair listening drills** — aspirated vs. unaspirated (က/ခ, စ/ဆ,
    တ/ထ) and tone contrasts (မ/မာ/မား). These distinctions are *the* hard part of
    Burmese phonology and the syllable audio set already contains the pairs.
@@ -40,8 +51,11 @@ Legend: ✅ = implemented · 💤 = backlog
    sentences (not just words) as a reading "graduation" exercise per unit.
 9. ✅ **Stacked consonants (ပါဌ်ဆင့်)** — currently unaddressed; even one intro
    unit makes real-world text much less alien.
-10. ✅ **Write-from-memory mode** — tracing with the template hidden (tap to
-    peek), as the top SRS box exercise for consonants.
+10. 💤 **Write-from-memory mode** — tracing with the template hidden (tap to
+    peek), as the top SRS box exercise for consonants. *Built once and
+    disabled* along with the rest of the tracing pad (see the note under #6):
+    its SRS grade was only as good as the pad's pass/fail, which any scribble
+    satisfied.
 
 ## Gamification & retention
 

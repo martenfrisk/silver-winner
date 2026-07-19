@@ -263,6 +263,22 @@ function unlockedSentences(): DecodableSentence[] {
 	return srs.unitsDone.flatMap((u) => decodableSentences[u] ?? []);
 }
 
+/**
+ * The canvas tracing pad is disabled — no `trace` exercise is queued while
+ * this is false.
+ *
+ * It graded by template coverage: paint over ~50% of the glyph's pixels and
+ * it passes. That can't tell drawing the letter apart from scribbling across
+ * its area, so it ended the exercise early (mid-letter) and passed everyone,
+ * which also made the write-from-memory drill's SRS grade meaningless.
+ *
+ * TraceExercise.svelte, the ScriptSession wiring and the stroke-hint data are
+ * all kept. Re-enabling needs real handwriting validation — per-stroke path
+ * comparison against authored strokes, not a pixel-coverage ratio — plus the
+ * stroke-hint realignment noted in IDEAS.md #6.
+ */
+const TRACING_ENABLED = false;
+
 // ── Intro lesson queue ────────────────────────────────────────────────
 export function buildIntroQueue(unit: ScriptUnit): ScriptEx[] {
 	const queue: ScriptEx[] = [];
@@ -274,14 +290,15 @@ export function buildIntroQueue(unit: ScriptUnit): ScriptEx[] {
 
 	unitGlyphs.forEach((g, i) => {
 		queue.push({ kind: 'intro', glyph: g });
-		if (g.traceable && g.type === 'consonant') queue.push({ kind: 'trace', glyph: g });
+		if (TRACING_ENABLED && g.traceable && g.type === 'consonant')
+			queue.push({ kind: 'trace', glyph: g });
 		// Quiz the letter right away, and re-quiz an earlier one for contrast.
 		queue.push(g2s(g));
 		if (i >= 1 && i % 2 === 1) queue.push(s2g(unitGlyphs[i - 1]));
 	});
 
 	// A couple of trace exercises for digits (they're quick).
-	if (isDigits) {
+	if (TRACING_ENABLED && isDigits) {
 		for (const g of pick(unitGlyphs, 2)) queue.push({ kind: 'trace', glyph: g });
 	}
 
@@ -345,7 +362,7 @@ export function buildPracticeQueue(): { queue: ScriptEx[]; count: number } {
 			// Mastered: keep it honest with a speed round — or, for traceable
 			// consonants, sometimes demand the shape from memory.
 			const memTrace =
-				g.traceable && g.type === 'consonant' && Math.random() < 0.4
+				TRACING_ENABLED && g.traceable && g.type === 'consonant' && Math.random() < 0.4
 					? ({ kind: 'trace', glyph: g, fromMemory: true } as const)
 					: null;
 			queue.push(listen ?? memTrace ?? g2s(g, 5));

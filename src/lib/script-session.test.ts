@@ -114,6 +114,16 @@ describe('buildIntroQueue', () => {
 		const wordReads = queue.filter((ex) => ex.kind === 'word');
 		expect(wordReads.length).toBeGreaterThan(0);
 	});
+
+	// Tracing is gated off (see TRACING_ENABLED in script-session.ts).
+	it('queues no trace exercises in any unit while tracing is gated off', () => {
+		for (const unit of scriptUnits) {
+			const queue = buildIntroQueue(unit);
+			expect(queue.some((ex) => ex.kind === 'trace')).toBe(false);
+			// The lesson must still be worth doing without the pad.
+			expect(queue.length).toBeGreaterThanOrEqual(4);
+		}
+	});
 });
 
 describe('buildPracticeQueue', () => {
@@ -133,10 +143,10 @@ describe('buildPracticeQueue', () => {
 		}
 	});
 
-	it('serves mastered items as timed speed rounds when no trace/listen rolls', () => {
+	it('serves mastered items as timed speed rounds when no listen drill rolls', () => {
 		srs.introduce(['ma']);
 		for (let i = 0; i < 4; i++) srs.grade('ma', true); // box 4 (no aspiration mate → no listen)
-		vi.spyOn(Math, 'random').mockReturnValue(0.9); // above the memory-trace roll
+		vi.spyOn(Math, 'random').mockReturnValue(0.9);
 		const { queue } = buildPracticeQueue();
 		vi.restoreAllMocks();
 		const drill = queue.find((ex) => ex.kind === 'choice' && ex.glyphId === 'ma');
@@ -144,15 +154,19 @@ describe('buildPracticeQueue', () => {
 		if (drill?.kind === 'choice') expect(drill.timed).toBe(5);
 	});
 
-	it('serves mastered traceable glyphs as write-from-memory drills on a low roll', () => {
+	// The tracing pad is gated off (TRACING_ENABLED) because its coverage-based
+	// grading passed any scribble. Mastered traceable glyphs must therefore fall
+	// through to a speed round rather than a write-from-memory trace, whatever
+	// the random roll. Flip these expectations when tracing is reinstated.
+	it('never queues a trace drill while tracing is gated off', () => {
 		srs.introduce(['ma']);
 		for (let i = 0; i < 4; i++) srs.grade('ma', true);
-		vi.spyOn(Math, 'random').mockReturnValue(0.1);
+		vi.spyOn(Math, 'random').mockReturnValue(0.1); // would have rolled a memory trace
 		const { queue } = buildPracticeQueue();
 		vi.restoreAllMocks();
-		const trace = queue.find((ex) => ex.kind === 'trace' && ex.glyph.id === 'ma');
-		expect(trace).toBeDefined();
-		if (trace?.kind === 'trace') expect(trace.fromMemory).toBe(true);
+		expect(queue.some((ex) => ex.kind === 'trace')).toBe(false);
+		const drill = queue.find((ex) => ex.kind === 'choice' && ex.glyphId === 'ma');
+		expect(drill).toBeDefined();
 	});
 });
 
