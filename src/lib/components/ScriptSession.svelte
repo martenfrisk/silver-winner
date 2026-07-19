@@ -5,6 +5,7 @@
 	import { starsFor } from '$lib/script-session';
 	import { strokeData } from '$lib/data/script';
 	import { sfx } from '$lib/audio';
+	import { scriptSheet } from '$lib/script-sheet.svelte';
 	import { clickNth, digitOf, isShortcutIgnored } from '$lib/keyboard';
 	import { progress } from '$lib/progress.svelte';
 	import { ui } from '$lib/i18n.svelte';
@@ -90,7 +91,7 @@
 	}
 
 	function onkeydown(e: KeyboardEvent) {
-		if (isShortcutIgnored(e)) return;
+		if (isShortcutIgnored(e) || scriptSheet.open) return;
 		if (done) {
 			if (e.key === 'Enter') quit();
 			return;
@@ -174,6 +175,7 @@
 							questionKey={ex.questionKey}
 							promptBig={ex.promptBig}
 							promptSpeak={ex.promptSpeak}
+							speakAfter={ex.speakAfter}
 							options={ex.options}
 							correct={ex.correct}
 							timed={ex.timed}

@@ -6,11 +6,32 @@
 	import { totalGlyphs } from '$lib/data/script';
 	import { ui } from '$lib/i18n.svelte';
 	import Mascot from '$lib/components/Mascot.svelte';
+	import { scriptSheet } from '$lib/script-sheet.svelte';
 	import { sfx } from '$lib/audio';
 	import { goto } from '$app/navigation';
 
 	const totalLessons = course.reduce((n, u) => n + u.lessons.length, 0);
 	const goalPct = $derived(Math.min(1, progress.xpToday / Math.max(1, progress.dailyGoal)));
+	const goalRemaining = $derived(Math.max(0, progress.dailyGoal - progress.xpToday));
+
+	const allLessons = course.flatMap((u) => u.lessons);
+
+	/** The single best "do this next" action, for the daily-goal nudge. */
+	const suggestion = $derived.by(() => {
+		if (vocabSrs.dueCount > 0)
+			return { href: '/practice', label: `a word review (${vocabSrs.dueCount} due)` };
+		if (srs.dueCount > 0)
+			return { href: '/script/practice', label: `a glyph drill (${srs.dueCount} due)` };
+		const next = progress.currentLesson;
+		if (next) {
+			const lesson = allLessons.find((l) => l.id === next);
+			return { href: `/lesson/${next}`, label: `the next lesson: ${lesson?.title ?? 'continue'}` };
+		}
+		const uncrowned = allLessons.find((l) => !progress.isCrowned(l.id));
+		if (uncrowned)
+			return { href: `/lesson/${uncrowned.id}?mode=hard`, label: `a 👑 crown run of ${uncrowned.title}` };
+		return { href: '/practice', label: 'a practice round' };
+	});
 
 	function openLesson(id: string, unlocked: boolean) {
 		if (!unlocked) {
@@ -72,6 +93,14 @@
 				Aa
 			</button>
 			<button
+				class="pill toggle my"
+				onclick={() => scriptSheet.show()}
+				title="Script table"
+				aria-label="Open the script reference table"
+			>
+				က
+			</button>
+			<button
 				class="pill toggle"
 				onclick={() => progress.toggleSound()}
 				title={progress.sound ? 'Sound on' : 'Sound off'}
@@ -97,6 +126,29 @@
 			</h1>
 		</div>
 	</section>
+
+	<a class="nudge" class:reached={goalRemaining === 0} href={suggestion.href}>
+		<span class="nudge-ring" aria-hidden="true">
+			<svg viewBox="0 0 34 34">
+				<circle class="nudge-ring-bg" cx="17" cy="17" r="13.5" />
+				<circle class="nudge-ring-fill" cx="17" cy="17" r="13.5" stroke-dasharray="{goalPct * 84.8} 84.8" />
+			</svg>
+			<span class="nudge-ring-label">{goalRemaining === 0 ? '✓' : Math.round(goalPct * 100) + '%'}</span>
+		</span>
+		<span class="nudge-text">
+			{#if goalRemaining === 0}
+				<strong>Daily goal reached! 🎉</strong>
+				<span class="nudge-sub">On a roll — how about {suggestion.label}?</span>
+			{:else if progress.xpToday === 0}
+				<strong>Start today's {progress.dailyGoal} XP</strong>
+				<span class="nudge-sub">Keep the 🔥 streak alive — try {suggestion.label}</span>
+			{:else}
+				<strong>{goalRemaining} XP to today's goal</strong>
+				<span class="nudge-sub">Almost there — try {suggestion.label}</span>
+			{/if}
+		</span>
+		<span class="nudge-arrow" aria-hidden="true">→</span>
+	</a>
 
 	{#if vocabSrs.introducedCount > 0}
 		<a class="script-card practice-card" href="/practice">
@@ -136,6 +188,15 @@
 		{:else}
 			<span class="script-arrow">→</span>
 		{/if}
+	</a>
+
+	<a class="script-card reader-card" href="/reader">
+		<span class="script-glyph reader-glyph">📖</span>
+		<span class="script-text">
+			<span class="script-title reader-title">Reader track <span class="optional-tag">for script readers</span></span>
+			<span class="script-sub">Read the course in Burmese script only — no romanization</span>
+		</span>
+		<span class="script-arrow reader-arrow">→</span>
 	</a>
 
 	<div class="path">
@@ -317,6 +378,93 @@
 		color: var(--ink-soft);
 	}
 
+	.nudge {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		margin-top: 6px;
+		padding: 12px 16px;
+		border-radius: var(--radius);
+		background: var(--gold-soft);
+		box-shadow: inset 0 0 0 2px var(--gold);
+		text-decoration: none;
+		color: var(--ink);
+		transition: translate 0.1s ease;
+	}
+	.nudge:active {
+		translate: 0 2px;
+	}
+	.nudge.reached {
+		background: var(--green-soft);
+		box-shadow: inset 0 0 0 2px var(--green);
+	}
+	.nudge-ring {
+		position: relative;
+		width: 44px;
+		height: 44px;
+		flex-shrink: 0;
+	}
+	.nudge-ring svg {
+		width: 100%;
+		height: 100%;
+		rotate: -90deg;
+	}
+	.nudge-ring circle {
+		fill: none;
+		stroke-width: 4;
+		stroke-linecap: round;
+	}
+	.nudge-ring-bg {
+		stroke: color-mix(in srgb, var(--gold) 35%, transparent);
+	}
+	.nudge-ring-fill {
+		stroke: var(--gold-dark);
+		transition: stroke-dasharray 0.6s var(--pop);
+	}
+	.nudge.reached .nudge-ring-bg {
+		stroke: color-mix(in srgb, var(--green) 35%, transparent);
+	}
+	.nudge.reached .nudge-ring-fill {
+		stroke: var(--green);
+	}
+	.nudge-ring-label {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		font-size: 0.62rem;
+		font-weight: 900;
+		color: var(--gold-ink);
+	}
+	.nudge.reached .nudge-ring-label {
+		color: var(--green-ink);
+		font-size: 0.95rem;
+	}
+	.nudge-text {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+		min-width: 0;
+	}
+	.nudge-text strong {
+		font-weight: 900;
+		font-size: 0.98rem;
+	}
+	.nudge-sub {
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--ink-soft);
+	}
+	.nudge-arrow {
+		font-weight: 900;
+		font-size: 1.15rem;
+		color: var(--gold-ink);
+	}
+	.nudge.reached .nudge-arrow {
+		color: var(--green-ink);
+	}
+
 	.script-card {
 		display: flex;
 		align-items: center;
@@ -387,6 +535,21 @@
 		font-size: 1.2rem;
 		font-weight: 900;
 		color: var(--plum-ink);
+	}
+
+	.reader-card {
+		box-shadow: 0 4px 0 var(--teal-dark), inset 0 0 0 2px var(--teal);
+	}
+	.reader-card:active {
+		translate: 0 4px;
+		box-shadow: 0 0 0 var(--teal-dark), inset 0 0 0 2px var(--teal);
+	}
+	.reader-glyph {
+		background: var(--teal-soft);
+	}
+	.reader-title,
+	.reader-arrow {
+		color: var(--teal-ink);
 	}
 
 	.practice-card {

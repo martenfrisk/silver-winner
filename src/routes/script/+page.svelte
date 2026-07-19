@@ -82,6 +82,22 @@
 				{srs.isUnitDone('first-letters') ? 'Snap sounds together' : 'Unlocks after unit 1'}
 			</span>
 		</button>
+		<button
+			class="card loanword-card"
+			disabled={!srs.isUnitDone('first-letters')}
+			onclick={() => {
+				sfx.tap();
+				goto('/script/loanwords');
+			}}
+		>
+			<span class="card-emoji">☕</span>
+			<span class="card-title">Loanword Lab</span>
+			<span class="card-sub">
+				{srs.isUnitDone('first-letters')
+					? 'Decode words you already know'
+					: 'Unlocks after unit 1'}
+			</span>
+		</button>
 	</section>
 
 	<section class="units">
@@ -235,6 +251,9 @@
 	}
 	.card:disabled {
 		opacity: 0.55;
+	}
+	.loanword-card {
+		grid-column: 1 / -1;
 	}
 	.card-emoji {
 		font-size: 1.7rem;

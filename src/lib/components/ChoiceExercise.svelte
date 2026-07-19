@@ -10,11 +10,14 @@
 	let {
 		ex,
 		selected = $bindable(null),
-		status
+		status,
+		onpick
 	}: {
 		ex: ChoiceEx;
 		selected: number | null;
 		status: 'answer' | 'correct' | 'wrong';
+		/** Called right after a tap selects an option (one-tap checking). */
+		onpick?: () => void;
 	} = $props();
 
 	// Options are shown in a shuffled order so the answer isn't always first.
@@ -31,7 +34,10 @@
 	function pick(i: number) {
 		if (status !== 'answer') return;
 		selected = i;
-		sfx.tap();
+		// One tap answers: the parent checks immediately (and plays the
+		// correct/wrong sound), so no tap blip of our own.
+		onpick?.();
+		if (!onpick) sfx.tap();
 	}
 
 	function cls(i: number): string {

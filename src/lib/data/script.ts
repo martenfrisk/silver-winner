@@ -322,6 +322,36 @@ export const decodableSentences: Record<string, DecodableSentence[]> = {
 };
 
 // ── Unit explainer notes (concept cards shown during intro lessons) ───
+// ── Loanwords (the Loanword Lab) ─────────────────────────────────────
+// Borrowed words the learner already knows from English. Decoding them gives
+// an instant "aha — it says coffee!" that anchors glyph sounds to meaning with
+// no romanization in the loop.
+export interface LoanWord {
+	my: string;
+	en: string;
+	emoji: string;
+}
+
+export const loanWords: LoanWord[] = [
+	{ my: 'ကော်ဖီ', en: 'coffee', emoji: '☕' },
+	{ my: 'ကား', en: 'car', emoji: '🚗' },
+	{ my: 'ဘတ်စ်ကား', en: 'bus', emoji: '🚌' },
+	{ my: 'တက္ကစီ', en: 'taxi', emoji: '🚕' },
+	{ my: 'ဟိုတယ်', en: 'hotel', emoji: '🏨' },
+	{ my: 'ဘဏ်', en: 'bank', emoji: '🏦' },
+	{ my: 'ကွန်ပျူတာ', en: 'computer', emoji: '💻' },
+	{ my: 'ဖုန်း', en: 'phone', emoji: '📱' },
+	{ my: 'အင်တာနက်', en: 'internet', emoji: '🌐' },
+	{ my: 'ရေဒီယို', en: 'radio', emoji: '📻' },
+	{ my: 'တီဗီ', en: 'TV', emoji: '📺' },
+	{ my: 'ကင်မရာ', en: 'camera', emoji: '📷' },
+	{ my: 'ချောကလက်', en: 'chocolate', emoji: '🍫' },
+	{ my: 'ပီဇာ', en: 'pizza', emoji: '🍕' },
+	{ my: 'ဘီယာ', en: 'beer', emoji: '🍺' },
+	{ my: 'ဗီဒီယို', en: 'video', emoji: '🎬' },
+	{ my: 'စူပါမားကက်', en: 'supermarket', emoji: '🛒' }
+];
+
 export interface UnitNote {
 	title: string;
 	body: string;

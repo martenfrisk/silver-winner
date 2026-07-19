@@ -42,19 +42,17 @@ async function solveExercise(page: Page, ex: Exercise) {
 			break;
 
 		case 'choice': {
+			// One-tap answering: the tap checks immediately, no Check step.
 			const correct = ex.options[ex.correct];
 			await byExactText(page, page.locator('.options .answer-card'), correct.text).click();
-			await page.getByRole('button', { name: 'Check' }).click();
 			await continueBtn.click(); // correct-answer feedback footer
 			break;
 		}
 
 		case 'listen': {
-			// Same select → Check → Continue flow as choice; the correct
-			// option is the one showing the played text.
+			// Same one-tap flow as choice; the correct option shows the played text.
 			const correct = ex.options[ex.correct];
 			await byExactText(page, page.locator('.options .answer-card'), correct.text).click();
-			await page.getByRole('button', { name: 'Check' }).click();
 			await continueBtn.click();
 			break;
 		}

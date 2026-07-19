@@ -39,7 +39,8 @@ const STRINGS = {
 	'what-say': { en: 'What does it say?', my: 'ဘာဖတ်ရလဲ?', tier: 2 },
 	'which-hear': { en: 'Which one did you hear?', my: 'ဘာကြားရလဲ?', tier: 2 },
 	'what-mean': { en: 'What does it mean?', my: 'ဘာအဓိပ္ပာယ်လဲ?', tier: 2 },
-	'trace-it': { en: 'Trace it!', my: 'ရေးကြည့်ပါ!', tier: 2 }
+	'trace-it': { en: 'Trace it!', my: 'ရေးကြည့်ပါ!', tier: 2 },
+	'tap-answer': { en: 'Tap the right answer', my: 'အဖြေမှန်ကို နှိပ်ပါ', tier: 2 }
 } satisfies Record<string, UiString>;
 
 export type UiKey = keyof typeof STRINGS;

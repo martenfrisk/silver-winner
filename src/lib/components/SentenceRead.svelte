@@ -22,11 +22,10 @@
 		if (answered !== null) return;
 		answered = i;
 		const ok = i === correct;
-		if (ok) {
-			sfx.correct();
-			// The reveal: hear the sentence you just read.
-			setTimeout(() => speak(sentence.my), 250);
-		} else sfx.wrong();
+		if (ok) sfx.correct();
+		else sfx.wrong();
+		// The reveal: hear the sentence — after a miss too, so the sound sticks.
+		setTimeout(() => speak(sentence.my), ok ? 250 : 500);
 		onanswer(ok);
 	}
 
