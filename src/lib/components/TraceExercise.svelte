@@ -24,6 +24,16 @@
 		onpeek?: () => void;
 	} = $props();
 
+	// Stroke-order hints are disabled. The authored paths in `strokeData` were
+	// tuned against an HTML text rendering, but this pad paints the glyph with
+	// canvas fillText, whose metrics differ — the strokes land at roughly 70px
+	// over a ~96px glyph, so they read as plainly wrong rather than helpful.
+	// The data and the animation code below are kept intact: re-enabling means
+	// deriving the paths from the same fillText metrics the pad uses (measure
+	// the painted glyph's bounding box, then author in that space) and
+	// flipping this flag. See IDEAS.md #6.
+	const STROKE_HINTS_ENABLED = false;
+
 	const SIZE = 260; // CSS pixels
 	const GRID = 64; // coverage-check resolution
 	const DONE_AT = 0.5; // fraction of the glyph you must cover
@@ -43,6 +53,8 @@
 	let peeking = $state(false);
 	let hintPlaying = $state(false);
 	let hintRun = $state(0);
+	/** Hint paths, or undefined while the feature is disabled. */
+	const hint = $derived(STROKE_HINTS_ENABLED ? strokes : undefined);
 	let reducedMotion = $state(false);
 	let hintTimer: ReturnType<typeof setTimeout>;
 
@@ -95,7 +107,7 @@
 		reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		void init();
 		// Auto-play the stroke hint once when tracing over the template.
-		if (strokes && strokes.length > 0 && !fromMemory) {
+		if (hint && hint.length > 0 && !fromMemory) {
 			const t = setTimeout(playHint, 500);
 			return () => {
 				clearTimeout(t);
@@ -106,11 +118,11 @@
 	});
 
 	function playHint() {
-		if (!strokes || done) return;
+		if (!hint || done) return;
 		clearTimeout(hintTimer);
 		hintRun++; // remounts the overlay via {#key}, restarting the CSS animations
 		hintPlaying = true;
-		const total = reducedMotion ? 2.5 : strokes.length * (STROKE_SECS + STROKE_GAP) + 0.8;
+		const total = reducedMotion ? 2.5 : hint.length * (STROKE_SECS + STROKE_GAP) + 0.8;
 		hintTimer = setTimeout(() => (hintPlaying = false), total * 1000);
 	}
 
@@ -220,10 +232,10 @@
 		{#if peeking}
 			<div class="peek-overlay my" aria-hidden="true">{char}</div>
 		{/if}
-		{#if hintPlaying && strokes}
+		{#if hintPlaying && hint}
 			{#key hintRun}
 				<svg class="hint" class:static={reducedMotion} viewBox="0 0 100 100" aria-hidden="true">
-					{#each strokes as s, i (i)}
+					{#each hint as s, i (i)}
 						<path
 							d={s.d}
 							pathLength="1"
@@ -244,7 +256,7 @@
 	</div>
 	<div class="row">
 		<button class="mini" onclick={clear}>↺ Clear</button>
-		{#if strokes && strokes.length > 0 && !fromMemory && !done}
+		{#if hint && hint.length > 0 && !fromMemory && !done}
 			<button class="mini" onclick={playHint}>▶ Show strokes</button>
 		{/if}
 		{#if fromMemory && !done}

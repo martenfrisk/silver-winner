@@ -25,8 +25,14 @@ Legend: ✅ = implemented · 💤 = backlog
 
 ## Script Studio deepening
 
-6. ✅ **Stroke-order guidance in tracing** — animated stroke paths (or numbered
-   start-dots) instead of free-form trace-over.
+6. 💤 **Stroke-order guidance in tracing** — animated stroke paths (or numbered
+   start-dots) instead of free-form trace-over. *Built once and disabled:* the
+   paths in `strokeData` (`src/lib/data/script.ts`) were authored against an
+   HTML text rendering, but the pad paints its glyph with canvas `fillText`,
+   so they land at the wrong scale (~70px of stroke over a ~96px glyph). Code
+   and data are kept; re-enabling means re-deriving the paths from the pad's
+   own `fillText` metrics and flipping `STROKE_HINTS_ENABLED` in
+   `TraceExercise.svelte`.
 7. ✅ **Minimal-pair listening drills** — aspirated vs. unaspirated (က/ခ, စ/ဆ,
    တ/ထ) and tone contrasts (မ/မာ/မား). These distinctions are *the* hard part of
    Burmese phonology and the syllable audio set already contains the pairs.

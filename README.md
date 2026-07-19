@@ -15,7 +15,7 @@ Meet **Shwe** (ရွှေ, "gold") — a golden Burmese cat who guides you thr
 - **Script Studio** (optional track) — learn to *read* Burmese, built around how script learning actually works rather than the lesson-path model:
   - a living **alphabet chart** (51 glyphs in traditional rows) with per-glyph mastery heat; tap any glyph for its name, mnemonic, audio and lookalikes
   - 11 **micro-intro units** ordered by letter frequency, with tracing (canvas), mnemonics from the traditional letter names, and confusable warnings — capped by a **stacked consonants** (ပါဌ်ဆင့်) unit: concept cards plus real Pali-loan reading (ကမ္ဘာ, မန္တလေး, သစ္စာ…)
-  - **stroke-order hints** on the tracing pad for common letters — animated draw-on strokes with numbered start dots (approximate paths; needs a native-speaker pass) — and **write-from-memory** drills at the top SRS box: a blank pad, the sound as the only prompt, and a hold-to-peek that honestly counts as a lapse
+  - **write-from-memory** drills at the top SRS box: a blank pad, the sound as the only prompt, and a hold-to-peek that honestly counts as a lapse
   - a **spaced-repetition Practice** session (Leitner boxes in localStorage) whose exercise type escalates with mastery: glyph→sound, sound→glyph with lookalike distractors, syllable reading, and timed speed rounds
   - **minimal-pair listening drills** — hear a syllable, tap the written syllable you heard: aspiration contrasts (က/ခ, စ/ဆ, တ/ထ, ပ/ဖ) and low-vs-high tone (ာ vs ား)
   - an interactive **syllable builder** — snap vowel signs around a base consonant and hear the composed syllable; includes a challenge mode
