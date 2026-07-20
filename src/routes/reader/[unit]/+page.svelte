@@ -331,6 +331,20 @@
 			min-width: 170px;
 		}
 	}
+	/* Phones: fewer pixels on chrome so the panel leaves room for the drill. */
+	@media (max-width: 559px) {
+		footer {
+			padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+		}
+		.feedback.stacked,
+		.verdict-row {
+			gap: 8px;
+		}
+		.verdict-row :global(.shwe) {
+			width: 38px;
+			height: 38px;
+		}
+	}
 	footer.correct strong {
 		color: var(--green-ink);
 		font-size: 1.15rem;

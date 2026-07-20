@@ -495,6 +495,21 @@
 			min-width: 170px;
 		}
 	}
+	/* Phones: the panel shares the screen with the exercise, so spend fewer
+	   pixels on chrome — smaller mascot, tighter gaps and padding. */
+	@media (max-width: 559px) {
+		footer {
+			padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+		}
+		.feedback.stacked,
+		.verdict-row {
+			gap: 8px;
+		}
+		.verdict-row :global(.shwe) {
+			width: 38px;
+			height: 38px;
+		}
+	}
 	footer.correct strong {
 		color: var(--green-ink);
 		font-size: 1.15rem;
