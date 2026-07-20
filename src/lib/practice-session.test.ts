@@ -52,6 +52,14 @@ describe('exerciseFor', () => {
 		for (const e of ex.extras) expect(answerTiles.has(e.t)).toBe(false);
 	});
 
+	it('script readers skip the recognition rung — production formats from box 0', () => {
+		introduceLessons(3);
+		// Same call that yields 'listen' for everyone else at box 0…
+		expect(exerciseFor(item, 0, 0).kind).toBe('listen');
+		// …starts at the production rung for script readers.
+		expect(exerciseFor(item, 0, 0, 'script-reader').kind).toBe('assemble');
+	});
+
 	it('climbs to free recall at box 4, alternating with assemble', () => {
 		introduceLessons(3);
 		const a = exerciseFor(item, 0, 4);

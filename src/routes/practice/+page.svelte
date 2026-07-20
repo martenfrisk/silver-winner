@@ -20,7 +20,7 @@
 	import { silentSafe } from '$lib/silent-mode';
 
 	// The queue is built once at mount; requeues append copies.
-	let queue = $state<VocabEx[]>(buildVocabPracticeQueue());
+	let queue = $state<VocabEx[]>(buildVocabPracticeQueue(progress.profile));
 	let idx = $state(0);
 	let status = $state<'answer' | 'correct' | 'wrong'>('answer');
 	let done = $state(false);

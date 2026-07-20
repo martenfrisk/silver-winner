@@ -44,6 +44,7 @@
 	let stars = $state(0);
 	let matchReady = $state(false);
 	let crowned = $state(false);
+	let testedOut = $state(false);
 
 	// Combo: consecutive correct answers. ≥5 at any point earns bonus XP.
 	let combo = $state(0);
@@ -136,8 +137,18 @@
 		if (hard) {
 			crowned = mistakes === 0;
 			if (crowned) progress.awardCrown(found!.lesson.id);
-			xpEarned = 15 + (crowned ? 10 : 0) + comboBonus;
-			progress.addXp(xpEarned);
+			if (crowned && !progress.isCompleted(found!.lesson.id)) {
+				// Test-out: a perfect hard run on a lesson never done normally
+				// completes it too (and so unlocks the next one) — for learners
+				// who already speak Burmese and shouldn't have to sit through
+				// vocabulary they know.
+				testedOut = true;
+				xpEarned = progress.completeLesson(found!.lesson.id, 3) + 10 + comboBonus;
+				progress.addXp(10 + comboBonus); // crown bonus on top of the completion XP
+			} else {
+				xpEarned = 15 + (crowned ? 10 : 0) + comboBonus;
+				progress.addXp(xpEarned);
+			}
 		} else {
 			xpEarned = progress.completeLesson(found!.lesson.id, stars) + comboBonus;
 			if (comboBonus > 0) progress.addXp(comboBonus);
@@ -204,7 +215,9 @@
 		<p class="my complete-my">အရမ်းကောင်းတယ်! <span class="complete-roman">(a-yan kaung-deh — awesome!)</span></p>
 		{#if hard}
 			<p class="crown-result" class:won={crowned}>
-				{#if crowned}
+				{#if testedOut}
+					⚡👑 Tested out — lesson complete, crown earned!
+				{:else if crowned}
 					👑 Crown earned — a perfect run!
 				{:else}
 					👑 No crown this time — a crown needs a mistake-free run.

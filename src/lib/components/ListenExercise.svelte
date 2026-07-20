@@ -4,6 +4,7 @@
 	import type { Exercise } from '$lib/data/course';
 	import { sfx, speak } from '$lib/audio';
 	import { progress } from '$lib/progress.svelte';
+	import { srs } from '$lib/srs.svelte';
 	import { ui } from '$lib/i18n.svelte';
 
 	type ListenEx = Extract<Exercise, { kind: 'listen' }>;
@@ -27,6 +28,13 @@
 	const order = ex.options.map((_, i) => i).sort(() => Math.random() - 0.5);
 
 	let playing = $state(false);
+
+	// Absolute beginners can't read the script yet, so bare Burmese options
+	// reduce this drill to shape-matching. Force romanization under the
+	// options until they've picked up some letters, whatever the global
+	// roman toggle says.
+	const forceRoman = $derived(progress.profile === 'beginner' && srs.introducedCount < 10);
+	const showSub = $derived(progress.showRoman || forceRoman);
 
 	function play() {
 		if (!speak(ex.my)) return;
@@ -73,10 +81,13 @@
 			>
 				<span class="key">{n + 1}</span>
 				<span class="my main">{opt.text}</span>
-				{#if opt.sub && progress.showRoman}<span class="sub">{opt.sub}</span>{/if}
+				{#if opt.sub && showSub}<span class="sub">{opt.sub}</span>{/if}
 			</button>
 		{/each}
 	</div>
+	{#if forceRoman}
+		<p class="roman-note">Romanization shown until you’ve learned some letters — see the Script Studio.</p>
+	{/if}
 	{#if status !== 'answer'}
 		<p class="reveal" in:fly={{ y: 10, duration: 250 }}>
 			<span class="my">{ex.my}</span>
@@ -139,6 +150,13 @@
 	}
 	.main {
 		font-size: 1.25rem;
+	}
+	.roman-note {
+		margin: 0;
+		text-align: center;
+		font-size: 0.78rem;
+		font-weight: 700;
+		color: var(--ink-soft);
 	}
 	.reveal {
 		margin: 0;
