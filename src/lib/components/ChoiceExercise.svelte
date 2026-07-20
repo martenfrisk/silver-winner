@@ -46,9 +46,23 @@
 		if (i === ex.correct) return 'correct';
 		return selected === i ? 'wrong' : '';
 	}
+
+	let root = $state<HTMLElement>();
+
+	// The feedback footer grows over the options on short screens, and the
+	// correct answer is exactly what the learner needs to see. Bring it into
+	// view once it's revealed.
+	$effect(() => {
+		if (status === 'answer') return;
+		const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		root?.querySelector('.answer-card.correct')?.scrollIntoView({
+			block: 'nearest',
+			behavior: smooth ? 'smooth' : 'auto'
+		});
+	});
 </script>
 
-<div class="choice">
+<div class="choice" bind:this={root}>
 	<h2 class="question">{ex.question}</h2>
 	{#if ex.promptMy}
 		<div class="prompt">

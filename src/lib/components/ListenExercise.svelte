@@ -62,9 +62,23 @@
 		if (i === ex.correct) return 'correct';
 		return selected === i ? 'wrong' : '';
 	}
+
+	let root = $state<HTMLElement>();
+
+	// The feedback footer grows over the options on short screens, and the
+	// correct answer is exactly what the learner needs to see. Bring it into
+	// view once it's revealed.
+	$effect(() => {
+		if (status === 'answer') return;
+		const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		root?.querySelector('.answer-card.correct')?.scrollIntoView({
+			block: 'nearest',
+			behavior: smooth ? 'smooth' : 'auto'
+		});
+	});
 </script>
 
-<div class="listen">
+<div class="listen" bind:this={root}>
 	<h2 class="question">🎧 {ui('tap-hear').text}</h2>
 	<button class="replay" class:playing onclick={play} aria-label="Play the audio again" title="Play again">
 		🔊

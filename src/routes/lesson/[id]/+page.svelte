@@ -310,20 +310,20 @@
 					<button class="btn green" onclick={advance}>{ui('continue').text}</button>
 				</div>
 			{:else if status === 'wrong'}
-				<div class="feedback" in:fly={{ y: 24, duration: 250 }}>
-					<Mascot mood="sad" size={64} />
-					<div class="feedback-text">
+				<div class="feedback stacked" in:fly={{ y: 24, duration: 250 }}>
+					<div class="verdict-row">
+						<Mascot mood="sad" size={52} />
 						<strong>{ui('not-quite').text}</strong>
-						{#if reveal}
-							<AnswerReveal
-								my={reveal.my}
-								sub={reveal.sub}
-								en={reveal.en}
-								speakText={reveal.speak}
-								tip={grammarTip(reveal.my)}
-							/>
-						{/if}
 					</div>
+					{#if reveal}
+						<AnswerReveal
+							my={reveal.my}
+							sub={reveal.sub}
+							en={reveal.en}
+							speakText={reveal.speak}
+							tip={grammarTip(reveal.my)}
+						/>
+					{/if}
 					<button class="btn red" onclick={advance}>{ui('got-it').text}</button>
 				</div>
 			{:else if ex.kind === 'learn'}
@@ -471,6 +471,29 @@
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
+	}
+	/* Wrong answers carry the most content: the verdict, the correct answer
+	   with its meaning, and a grammar tip. In the one-row layout that left the
+	   reveal card ~136px wide on a phone, with the tip wrapped into a 79px
+	   column. Stacking spends the footer's vertical space instead. */
+	.feedback.stacked {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 10px;
+	}
+	.verdict-row {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+	.feedback.stacked .btn {
+		align-self: stretch;
+	}
+	@media (min-width: 560px) {
+		.feedback.stacked .btn {
+			align-self: flex-end;
+			min-width: 170px;
+		}
 	}
 	footer.correct strong {
 		color: var(--green-ink);
