@@ -100,6 +100,12 @@
 		</button>
 	</section>
 
+	{#if srs.isUnitDone('first-letters')}
+		<p class="crosslink">
+			Reading the letters already? <a href="/reader">Learn the course's words through script in the Reader track →</a>
+		</p>
+	{/if}
+
 	<section class="units">
 		<h2 class="section-title">Lessons</h2>
 		<div class="unit-list">
@@ -225,6 +231,16 @@
 		padding: 7px 13px;
 		font-size: 0.9rem;
 		font-weight: 800;
+	}
+
+	.crosslink {
+		margin: 10px 0 0;
+		font-size: 0.88rem;
+		font-weight: 700;
+		color: var(--ink-soft);
+	}
+	.crosslink a {
+		color: var(--teal-ink);
 	}
 
 	.hero-cards {

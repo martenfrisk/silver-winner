@@ -9,11 +9,12 @@ const lesson2 = allLessons[1]?.lesson;
 
 test.beforeEach(async ({ page }) => {
 	// Mute app audio (Web Audio SFX + pronunciation playback) so headless runs
-	// never depend on autoplay policies. The app reads this key on boot.
+	// never depend on autoplay policies, and answer the home hero's "where are
+	// you starting from?" as a beginner so tests exercise the settled layout.
 	// Only seed when the key is absent — reloads must keep earned progress.
 	await page.addInitScript(([key]) => {
 		if (!localStorage.getItem(key)) {
-			localStorage.setItem(key, JSON.stringify({ sound: false }));
+			localStorage.setItem(key, JSON.stringify({ sound: false, profile: 'beginner' }));
 		}
 	}, [STORAGE_KEY]);
 });
@@ -92,6 +93,32 @@ test('home loads with brand, mascot and lesson 1 ready to start', async ({ page 
 	const node1 = page.getByRole('button', { name: lesson1.title, exact: true });
 	await expect(node1).toBeEnabled();
 	await expect(node1.locator('.start-bubble')).toHaveText('START');
+});
+
+test('start chooser asks once and personalizes the home screen', async ({ page }) => {
+	await gotoApp(page, '/');
+	// Wipe the seeded profile so the hero asks, like a real first visit.
+	await page.evaluate((key) => {
+		localStorage.setItem(key, JSON.stringify({ sound: false }));
+	}, STORAGE_KEY);
+	await page.reload();
+	await page.locator('body[data-hydrated="true"]').waitFor();
+
+	const chooser = page.locator('.chooser');
+	await expect(chooser).toBeVisible();
+
+	// A heritage speaker picks "I speak it, but can't read it" → home leads
+	// with the Script Studio, but the course path stays visible below.
+	await chooser.getByRole('button', { name: /I speak it/ }).click();
+	await expect(chooser).toBeHidden();
+	await expect(page.locator('.primary-card')).toContainText('Continue the script');
+	await expect(page.getByRole('button', { name: lesson1.title, exact: true })).toBeVisible();
+
+	// The choice persists — no re-asking on the next visit.
+	await page.reload();
+	await page.locator('body[data-hydrated="true"]').waitFor();
+	await expect(page.locator('.chooser')).toBeHidden();
+	await expect(page.locator('.primary-card')).toContainText('Continue the script');
 });
 
 test('completes lesson 1, persists progress and unlocks lesson 2', async ({ page }) => {

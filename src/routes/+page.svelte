@@ -3,9 +3,12 @@
 	import { progress } from '$lib/progress.svelte';
 	import { srs } from '$lib/srs.svelte';
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
-	import { totalGlyphs } from '$lib/data/script';
+	import { scriptUnits, totalGlyphs } from '$lib/data/script';
+	import { readerStarsKey } from '$lib/reader-session';
+	import { primaryTrack, suggestFor, tracks } from '$lib/tracks';
 	import { ui } from '$lib/i18n.svelte';
 	import Mascot from '$lib/components/Mascot.svelte';
+	import StartChooser from '$lib/components/StartChooser.svelte';
 	import { stories } from '$lib/data/stories';
 	import { scriptSheet } from '$lib/script-sheet.svelte';
 	import { sfx } from '$lib/audio';
@@ -20,21 +23,53 @@
 		stories.filter((s) => s.requires.every((id) => progress.isCompleted(id))).length
 	);
 
+	// ── Profile-driven track routing (see src/lib/tracks.ts) ──────────
+	const primary = $derived(primaryTrack(progress.profile));
+	const courseNext = $derived(allLessons.find((l) => l.id === progress.currentLesson));
+	const readerNext = $derived(course.find((u) => !(readerStarsKey(u.id) in progress.stars)));
+	const scriptNext = $derived(scriptUnits.find((u) => !srs.isUnitDone(u.id)));
+	const uncrowned = $derived(allLessons.find((l) => !progress.isCrowned(l.id)));
+
 	/** The single best "do this next" action, for the daily-goal nudge. */
-	const suggestion = $derived.by(() => {
-		if (vocabSrs.dueCount > 0)
-			return { href: '/practice', label: `a word review (${vocabSrs.dueCount} due)` };
-		if (srs.dueCount > 0)
-			return { href: '/script/practice', label: `a glyph drill (${srs.dueCount} due)` };
-		const next = progress.currentLesson;
-		if (next) {
-			const lesson = allLessons.find((l) => l.id === next);
-			return { href: `/lesson/${next}`, label: `the next lesson: ${lesson?.title ?? 'continue'}` };
+	const suggestion = $derived(
+		suggestFor(progress.profile, {
+			vocabDue: vocabSrs.dueCount,
+			glyphsDue: srs.dueCount,
+			nextLesson: courseNext,
+			nextReaderUnit: readerNext,
+			nextScriptUnit: scriptNext,
+			uncrownedLesson: uncrowned
+		})
+	);
+
+	/** The big "continue" card for the profile's primary track. */
+	const primaryCard = $derived.by(() => {
+		if (primary === 'reader') {
+			return readerNext
+				? { href: `/reader/${readerNext.id}`, title: 'Continue reading', sub: `Next: ${readerNext.title}` }
+				: { href: '/reader', title: 'Reader track', sub: 'All units read — keep them fresh' };
 		}
-		const uncrowned = allLessons.find((l) => !progress.isCrowned(l.id));
-		if (uncrowned)
-			return { href: `/lesson/${uncrowned.id}?mode=hard`, label: `a 👑 crown run of ${uncrowned.title}` };
-		return { href: '/practice', label: 'a practice round' };
+		if (primary === 'script') {
+			return scriptNext
+				? { href: '/script', title: 'Continue the script', sub: `Next: ${scriptNext.title} · ${srs.introducedCount}/${totalGlyphs} glyphs` }
+				: { href: '/script', title: 'Script Studio', sub: 'All letters learned — keep them sharp' };
+		}
+		return courseNext
+			? { href: `/lesson/${courseNext.id}`, title: 'Continue the course', sub: `Next: ${courseNext.title}` }
+			: { href: uncrowned ? `/lesson/${uncrowned.id}?mode=hard` : '/practice', title: 'Course complete!', sub: uncrowned ? `Go for 👑 crowns — next: ${uncrowned.title}` : 'Keep everything fresh in Practice' };
+	});
+
+	/** href for a track's compact card in "More ways to learn". */
+	function trackHref(id: string): string {
+		if (id === 'course') return courseNext ? `/lesson/${courseNext.id}` : '/practice';
+		return tracks.find((t) => t.id === id)!.href;
+	}
+
+	const heroSub = $derived.by(() => {
+		if (progress.completedCount > 0) return null; // progress messaging takes over
+		if (progress.profile === 'script-reader') return 'You already read the script — let’s fill in the words.';
+		if (progress.profile === 'speaker') return 'Let’s get you reading what you already speak.';
+		return null;
 	});
 
 	function openLesson(id: string, unlocked: boolean) {
@@ -116,20 +151,24 @@
 		</div>
 	</header>
 
-	<section class="hero">
-		<Mascot mood={progress.completedCount === totalLessons ? 'celebrate' : 'idle'} size={130} />
-		<div class="hero-text">
-			<h1>
-				{#if progress.completedCount === 0}
-					မင်္ဂလာပါ! <span class="hero-sub">I’m Shwe. Let’s learn Burmese!</span>
-				{:else if progress.completedCount === totalLessons}
-					You finished the course! <span class="hero-sub">ဂုဏ်ယူပါတယ် — congratulations!</span>
-				{:else}
-					{ui('welcome-back').text} <span class="hero-sub">{progress.completedCount}/{totalLessons} lessons done. Keep going!</span>
-				{/if}
-			</h1>
-		</div>
-	</section>
+	{#if progress.profile === null}
+		<StartChooser />
+	{:else}
+		<section class="hero">
+			<Mascot mood={progress.completedCount === totalLessons ? 'celebrate' : 'idle'} size={130} />
+			<div class="hero-text">
+				<h1>
+					{#if progress.completedCount === 0}
+						မင်္ဂလာပါ! <span class="hero-sub">{heroSub ?? 'I’m Shwe. Let’s learn Burmese!'}</span>
+					{:else if progress.completedCount === totalLessons}
+						You finished the course! <span class="hero-sub">ဂုဏ်ယူပါတယ် — congratulations!</span>
+					{:else}
+						{ui('welcome-back').text} <span class="hero-sub">{progress.completedCount}/{totalLessons} lessons done. Keep going!</span>
+					{/if}
+				</h1>
+			</div>
+		</section>
+	{/if}
 
 	<a class="nudge" class:reached={goalRemaining === 0} href={suggestion.href}>
 		<span class="nudge-ring" aria-hidden="true">
@@ -154,6 +193,17 @@
 		<span class="nudge-arrow" aria-hidden="true">→</span>
 	</a>
 
+	<a class="primary-card" href={primaryCard.href}>
+		<span class="primary-emoji" class:my={primary === 'script'}>
+			{primary === 'course' ? '🐱' : primary === 'reader' ? '📖' : 'အ'}
+		</span>
+		<span class="primary-text">
+			<span class="primary-title">{primaryCard.title}</span>
+			<span class="primary-sub">{primaryCard.sub}</span>
+		</span>
+		<span class="primary-arrow">→</span>
+	</a>
+
 	{#if vocabSrs.introducedCount > 0}
 		<a class="script-card practice-card" href="/practice">
 			<span class="script-glyph practice-glyph">💪</span>
@@ -175,25 +225,6 @@
 		</a>
 	{/if}
 
-	<a class="script-card" href="/script">
-		<span class="script-glyph my">အ</span>
-		<span class="script-text">
-			<span class="script-title">{ui('script-studio').text} <span class="optional-tag">optional</span></span>
-			<span class="script-sub">
-				{#if srs.introducedCount === 0}
-					Learn to read Burmese — start with the letters
-				{:else}
-					{srs.introducedCount}/{totalGlyphs} glyphs · {srs.masteredCount} mastered
-				{/if}
-			</span>
-		</span>
-		{#if srs.dueCount > 0}
-			<span class="script-due">{srs.dueCount}</span>
-		{:else}
-			<span class="script-arrow">→</span>
-		{/if}
-	</a>
-
 	{#if unlockedStories > 0}
 		<a class="script-card stories-card" href="/stories">
 			<span class="script-glyph stories-glyph">📚</span>
@@ -207,14 +238,23 @@
 		</a>
 	{/if}
 
-	<a class="script-card reader-card" href="/reader">
-		<span class="script-glyph reader-glyph">📖</span>
-		<span class="script-text">
-			<span class="script-title reader-title">Reader track <span class="optional-tag">for script readers</span></span>
-			<span class="script-sub">Read the course in Burmese script only — no romanization</span>
-		</span>
-		<span class="script-arrow reader-arrow">→</span>
-	</a>
+	<section class="more">
+		<h2 class="more-title">More ways to learn</h2>
+		{#each tracks.filter((t) => t.id !== primary) as t (t.id)}
+			<a class="more-card" href={trackHref(t.id)}>
+				<span class="more-emoji" class:my={t.id === 'script'}>{t.emoji}</span>
+				<span class="more-text">
+					<span class="more-name">{t.title}</span>
+					<span class="more-audience">{t.audience}</span>
+				</span>
+				{#if t.id === 'script' && srs.dueCount > 0}
+					<span class="script-due">{srs.dueCount}</span>
+				{:else}
+					<span class="more-arrow">→</span>
+				{/if}
+			</a>
+		{/each}
+	</section>
 
 	<div class="path">
 		{#each course as unit (unit.id)}
@@ -249,6 +289,16 @@
 										</span>
 									{/if}
 								</button>
+								{#if !unlocked && progress.profile === 'speaker'}
+									<a
+										class="testout-chip"
+										href="/lesson/{lesson.id}?mode=hard"
+										title="Test out: a perfect drills-only run completes this lesson"
+										aria-label="Test out of {lesson.title}"
+									>
+										⚡
+									</a>
+								{/if}
 								{#if stars > 0}
 									<a
 										class="crown-chip"
@@ -520,17 +570,6 @@
 		font-weight: 900;
 		color: var(--plum-ink);
 	}
-	.optional-tag {
-		font-size: 0.65rem;
-		font-weight: 900;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: var(--ink-soft);
-		background: var(--line);
-		border-radius: 6px;
-		padding: 2px 6px;
-		vertical-align: middle;
-	}
 	.script-sub {
 		font-size: 0.85rem;
 		font-weight: 700;
@@ -554,6 +593,134 @@
 		color: var(--plum-ink);
 	}
 
+	.primary-card {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		margin-top: 14px;
+		padding: 18px 20px;
+		border-radius: var(--radius);
+		background: var(--gold);
+		box-shadow: 0 5px 0 var(--gold-dark);
+		text-decoration: none;
+		color: #fff;
+		transition: translate 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
+	}
+	.primary-card:hover {
+		filter: brightness(1.05);
+	}
+	.primary-card:active {
+		translate: 0 5px;
+		box-shadow: 0 0 0 var(--gold-dark);
+	}
+	.primary-emoji {
+		width: 54px;
+		height: 54px;
+		display: grid;
+		place-items: center;
+		font-size: 1.9rem;
+		border-radius: 16px;
+		background: rgb(255 255 255 / 22%);
+		flex-shrink: 0;
+	}
+	.primary-text {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+	.primary-title {
+		font-weight: 900;
+		font-size: 1.15rem;
+	}
+	.primary-sub {
+		font-size: 0.9rem;
+		font-weight: 700;
+		opacity: 0.9;
+	}
+	.primary-arrow {
+		font-size: 1.4rem;
+		font-weight: 900;
+	}
+
+	.more {
+		margin-top: 22px;
+	}
+	.more-title {
+		font-size: 0.78rem;
+		font-weight: 900;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--ink-soft);
+		margin-bottom: 8px;
+	}
+	.more-card {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 11px 14px;
+		margin-bottom: 8px;
+		border-radius: 14px;
+		background: var(--card);
+		box-shadow: inset 0 0 0 2px var(--line);
+		text-decoration: none;
+		color: var(--ink);
+		transition: box-shadow 0.15s ease;
+	}
+	.more-card:hover {
+		box-shadow: inset 0 0 0 2px var(--plum);
+	}
+	.more-emoji {
+		width: 38px;
+		height: 38px;
+		display: grid;
+		place-items: center;
+		font-size: 1.2rem;
+		border-radius: 11px;
+		background: var(--plum-soft);
+		color: var(--plum-ink);
+		flex-shrink: 0;
+	}
+	.more-text {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+		min-width: 0;
+	}
+	.more-name {
+		font-weight: 900;
+		font-size: 0.95rem;
+	}
+	.more-audience {
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: var(--ink-soft);
+	}
+	.more-arrow {
+		font-weight: 900;
+		color: var(--ink-soft);
+	}
+
+	.testout-chip {
+		position: absolute;
+		top: -8px;
+		right: -14px;
+		display: grid;
+		place-items: center;
+		width: 30px;
+		height: 30px;
+		border-radius: 50%;
+		background: var(--card);
+		box-shadow: inset 0 0 0 2px var(--teal), 0 2px 0 var(--teal-dark);
+		text-decoration: none;
+		font-size: 0.9rem;
+		transition: scale 0.15s var(--pop);
+	}
+	.testout-chip:hover {
+		scale: 1.15;
+	}
+
 	.stories-card {
 		box-shadow: 0 4px 0 var(--coral-dark), inset 0 0 0 2px var(--coral);
 	}
@@ -567,21 +734,6 @@
 	.stories-title,
 	.stories-arrow {
 		color: var(--coral-ink);
-	}
-
-	.reader-card {
-		box-shadow: 0 4px 0 var(--teal-dark), inset 0 0 0 2px var(--teal);
-	}
-	.reader-card:active {
-		translate: 0 4px;
-		box-shadow: 0 0 0 var(--teal-dark), inset 0 0 0 2px var(--teal);
-	}
-	.reader-glyph {
-		background: var(--teal-soft);
-	}
-	.reader-title,
-	.reader-arrow {
-		color: var(--teal-ink);
 	}
 
 	.practice-card {

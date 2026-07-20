@@ -177,6 +177,10 @@
 
 html {
 	height: 100%;
+	/* Always reserve the scrollbar's width. Without this, any page whose
+	   height crosses the viewport (home as cards appear, the account page)
+	   toggles the scrollbar and shifts all centred content sideways. */
+	scrollbar-gutter: stable;
 }
 
 body {
@@ -211,6 +215,10 @@ button {
 	color: inherit;
 	padding: 0;
 	-webkit-tap-highlight-color: transparent;
+	/* Skip the double-tap-to-zoom wait so taps register instantly, and stop
+	   fast repeated taps from selecting the label text. */
+	touch-action: manipulation;
+	user-select: none;
 }
 
 button:disabled {

@@ -167,10 +167,12 @@
 {/if}
 
 <style>
+	/* Fixed-height column: story lines accumulate, so `main` scrolls
+	   internally and the footer button stays put. */
 	.story {
 		display: flex;
 		flex-direction: column;
-		min-height: 100dvh;
+		height: 100dvh;
 		max-width: 620px;
 		margin: 0 auto;
 		padding: 0 20px;
@@ -205,7 +207,11 @@
 	}
 	main {
 		flex: 1;
+		min-height: 0;
 		padding-bottom: 24px;
+		overflow-y: auto;
+		overflow-x: hidden;
+		overscroll-behavior: contain;
 	}
 	.lines {
 		display: flex;
@@ -310,8 +316,7 @@
 		gap: 10px;
 	}
 	footer {
-		position: sticky;
-		bottom: 0;
+		flex-shrink: 0;
 		margin: 0 -20px;
 		padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
 		border-top: 2px solid var(--line);

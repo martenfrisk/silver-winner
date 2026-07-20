@@ -5,6 +5,16 @@ const STORAGE_KEY = 'myanlingo-progress-v1';
 
 export type Theme = 'system' | 'light' | 'dark';
 
+/**
+ * Where the learner is starting from — set once via the home-hero chooser
+ * (StartChooser) and changeable in settings. Drives which track home leads
+ * with plus small content tweaks; never hides or locks anything.
+ * 'explorer' = "just exploring": stop asking, keep the neutral layout.
+ */
+export type Profile = 'beginner' | 'script-reader' | 'speaker' | 'explorer';
+
+const PROFILES: readonly Profile[] = ['beginner', 'script-reader', 'speaker', 'explorer'];
+
 interface Saved {
 	xp: number;
 	streak: number;
@@ -14,6 +24,7 @@ interface Saved {
 	showRoman: boolean;
 	immersion: boolean;
 	theme: Theme;
+	profile: Profile | null;
 	createdAt: number;
 	activity: Record<string, number>; // YYYY-MM-DD -> XP earned that day
 	dailyGoal: number;
@@ -56,6 +67,8 @@ class Progress {
 	immersion = $state(false);
 	// 'system' follows the OS preference; 'light'/'dark' force it via data-theme on <html>.
 	theme = $state<Theme>('system');
+	// null = the home hero hasn't asked "where are you starting from?" yet.
+	profile = $state<Profile | null>(null);
 	createdAt = $state(Date.now());
 	// Per-day XP history (drives the daily goal ring and the heatmap).
 	activity = $state<Record<string, number>>({});
@@ -81,6 +94,7 @@ class Progress {
 					this.showRoman = s.showRoman ?? false;
 					this.immersion = s.immersion ?? false;
 					this.theme = s.theme === 'light' || s.theme === 'dark' ? s.theme : 'system';
+					this.profile = PROFILES.includes(s.profile as Profile) ? s.profile : null;
 					this.createdAt = s.createdAt ?? Date.now();
 					this.activity = s.activity ?? {};
 					this.dailyGoal = s.dailyGoal ?? 20;
@@ -133,6 +147,7 @@ class Progress {
 			showRoman: this.showRoman,
 			immersion: this.immersion,
 			theme: this.theme,
+			profile: this.profile,
 			createdAt: this.createdAt,
 			activity: this.activity,
 			dailyGoal: this.dailyGoal,
@@ -265,6 +280,11 @@ class Progress {
 		this.applyTheme();
 	}
 
+	setProfile(profile: Profile) {
+		this.profile = profile;
+		this.save();
+	}
+
 	reset() {
 		this.xp = 0;
 		this.streak = 0;
@@ -274,6 +294,7 @@ class Progress {
 		this.achievements = {};
 		this.freezes = 0;
 		this.crowns = {};
+		this.profile = null; // re-ask on the next home visit
 		this.save();
 	}
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { progress, FREEZE_COST, MAX_FREEZES, type Theme } from '$lib/progress.svelte';
+	import { progress, FREEZE_COST, MAX_FREEZES, type Profile, type Theme } from '$lib/progress.svelte';
 	import { srs } from '$lib/srs.svelte';
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { course } from '$lib/data/course';
@@ -28,6 +28,13 @@
 		{ value: 'system', label: 'System' },
 		{ value: 'light', label: 'Light' },
 		{ value: 'dark', label: 'Dark' }
+	];
+
+	const profileOptions: { value: Profile; label: string }[] = [
+		{ value: 'beginner', label: 'New to Burmese' },
+		{ value: 'script-reader', label: 'Read, learning words' },
+		{ value: 'speaker', label: 'Speak, learning script' },
+		{ value: 'explorer', label: 'Exploring' }
 	];
 
 	function resetCourse() {
@@ -118,6 +125,28 @@
 
 	<section class="settings">
 		<h2>{ui('settings').text}</h2>
+		<div class="setting">
+			<span class="setting-text">
+				<span class="setting-title">Starting point</span>
+				<span class="setting-desc">
+					Which track home leads with — everything stays open either way.
+					Speakers also get ⚡ test-out on locked lessons; beginners get romanization
+					on listening drills until they've learned some letters.
+				</span>
+			</span>
+			<div class="theme-picker profile-picker" role="radiogroup" aria-label="Starting point">
+				{#each profileOptions as opt (opt.value)}
+					<button
+						role="radio"
+						aria-checked={progress.profile === opt.value}
+						class:active={progress.profile === opt.value}
+						onclick={() => progress.setProfile(opt.value)}
+					>
+						{opt.label}
+					</button>
+				{/each}
+			</div>
+		</div>
 		<div class="setting">
 			<span class="setting-text">
 				<span class="setting-title">Daily goal</span>
@@ -443,6 +472,11 @@
 			background 0.15s ease,
 			color 0.15s ease,
 			box-shadow 0.15s ease;
+	}
+	.profile-picker {
+		flex-wrap: wrap;
+		justify-content: flex-end;
+		max-width: 240px;
 	}
 	.theme-picker button.active {
 		color: #fff;

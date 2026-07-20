@@ -10,6 +10,7 @@
 // Producing an answer beats recognizing one (the testing effect), so items
 // climb from tapping options to building words to recalling them cold.
 import type { Exercise, Option } from '$lib/data/course';
+import type { Profile } from '$lib/progress.svelte';
 import { allVocab, vocabByMy, vocabSrs, type VocabItem } from '$lib/vocab-srs.svelte';
 
 /** The course-exercise kinds a practice session generates. */
@@ -138,8 +139,18 @@ function recallEx(item: VocabItem): RecallEx {
 	return { kind: 'recall', my: item.my, roman: item.roman, en: item.en };
 }
 
-/** One exercise for a vocab item — format climbs the recall ladder with its box. */
-export function exerciseFor(item: VocabItem, i: number, box = 0): PracticeStep {
+/**
+ * One exercise for a vocab item — format climbs the recall ladder with its box.
+ * Script readers skip the recognition rung entirely: it exists to scaffold
+ * script decoding, which they don't need, so they start at production.
+ */
+export function exerciseFor(
+	item: VocabItem,
+	i: number,
+	box = 0,
+	profile: Profile | null = null
+): PracticeStep {
+	if (profile === 'script-reader') box = Math.max(box, 2);
 	if (box >= 4) return i % 2 === 0 ? recallEx(item) : assembleEx(item);
 	if (box >= 2) {
 		const kind = i % 3;
@@ -154,7 +165,7 @@ export function exerciseFor(item: VocabItem, i: number, box = 0): PracticeStep {
 }
 
 // ── Practice queue (mistakes first, then SRS) ─────────────────────────
-export function buildVocabPracticeQueue(): VocabEx[] {
+export function buildVocabPracticeQueue(profile: Profile | null = null): VocabEx[] {
 	// 1. Recent mistakes (already deduped, most recent first).
 	const ids = vocabSrs.mistakes.filter((m) => vocabByMy.has(m));
 
@@ -178,7 +189,7 @@ export function buildVocabPracticeQueue(): VocabEx[] {
 
 	return ids
 		.slice(0, MAX_ITEMS)
-		.map((my, i) => ({ my, ex: exerciseFor(vocabByMy.get(my)!, i, vocabSrs.box(my)) }));
+		.map((my, i) => ({ my, ex: exerciseFor(vocabByMy.get(my)!, i, vocabSrs.box(my), profile) }));
 }
 
 export function starsFor(mistakes: number): number {

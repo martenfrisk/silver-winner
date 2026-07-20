@@ -20,7 +20,7 @@
 	import { silentSafe } from '$lib/silent-mode';
 
 	// The queue is built once at mount; requeues append copies.
-	let queue = $state<VocabEx[]>(buildVocabPracticeQueue());
+	let queue = $state<VocabEx[]>(buildVocabPracticeQueue(progress.profile));
 	let idx = $state(0);
 	let status = $state<'answer' | 'correct' | 'wrong'>('answer');
 	let done = $state(false);
@@ -254,20 +254,20 @@
 					<button class="btn green" onclick={advance}>{ui('continue').text}</button>
 				</div>
 			{:else if status === 'wrong'}
-				<div class="feedback" in:fly={{ y: 24, duration: 250 }}>
-					<Mascot mood="sad" size={64} />
-					<div class="feedback-text">
+				<div class="feedback stacked" in:fly={{ y: 24, duration: 250 }}>
+					<div class="verdict-row">
+						<Mascot mood="sad" size={52} />
 						<strong>{ui('not-quite').text}</strong>
-						{#if reveal}
-							<AnswerReveal
-								my={reveal.my}
-								sub={reveal.sub}
-								en={reveal.en}
-								speakText={reveal.speak}
-								tip={grammarTip(reveal.my)}
-							/>
-						{/if}
 					</div>
+					{#if reveal}
+						<AnswerReveal
+							my={reveal.my}
+							sub={reveal.sub}
+							en={reveal.en}
+							speakText={reveal.speak}
+							tip={grammarTip(reveal.my)}
+						/>
+					{/if}
 					<button class="btn red" onclick={advance}>{ui('got-it').text}</button>
 				</div>
 			{:else if ex.kind === 'assemble'}
@@ -290,10 +290,12 @@
 {/if}
 
 <style>
+	/* Fixed-height column so footer state changes never reflow the exercise
+	   above (see the note in the lesson player). */
 	.practice {
 		display: flex;
 		flex-direction: column;
-		min-height: 100dvh;
+		height: 100dvh;
 		max-width: 680px;
 		margin: 0 auto;
 		padding: 0 20px;
@@ -345,15 +347,18 @@
 	}
 	main {
 		flex: 1;
+		min-height: 0;
 		display: grid;
 		padding: 12px 0 24px;
+		overflow-y: auto;
+		overflow-x: hidden;
+		overscroll-behavior: contain;
 	}
 	.stage {
 		grid-area: 1 / 1;
 	}
 	footer {
-		position: sticky;
-		bottom: 0;
+		flex-shrink: 0;
 		margin: 0 -20px;
 		padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
 		border-top: 2px solid var(--line);
@@ -387,6 +392,41 @@
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
+	}
+	/* Wrong answers stack so the reveal card gets the full width — see the
+	   note in the lesson player. */
+	.feedback.stacked {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 10px;
+	}
+	.verdict-row {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+	.feedback.stacked .btn {
+		align-self: stretch;
+	}
+	@media (min-width: 560px) {
+		.feedback.stacked .btn {
+			align-self: flex-end;
+			min-width: 170px;
+		}
+	}
+	/* Phones: fewer pixels on chrome so the panel leaves room for the drill. */
+	@media (max-width: 559px) {
+		footer {
+			padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+		}
+		.feedback.stacked,
+		.verdict-row {
+			gap: 8px;
+		}
+		.verdict-row :global(.shwe) {
+			width: 38px;
+			height: 38px;
+		}
 	}
 	footer.correct strong {
 		color: var(--green-ink);

@@ -39,14 +39,22 @@
 <style>
 	.reveal-card {
 		display: flex;
-		align-items: center;
+		/* Top-aligned so the speaker button sits beside the word it speaks,
+		   not floating next to the meaning or the tip below it. */
+		align-items: flex-start;
 		gap: 12px;
 		background: var(--card);
 		border-radius: 14px;
 		box-shadow: inset 0 0 0 2px var(--green);
-		padding: 10px 14px;
-		margin-top: 6px;
-		align-self: flex-start;
+		padding: 9px 12px;
+		/* Fills its row — the parent decides the width. Shrink-wrapping here
+		   used to squeeze the card into a narrow column on phones. */
+		align-self: stretch;
+		/* Hard ceiling: a long tip must never push the feedback panel over
+		   the exercise. Past this the card scrolls instead of growing. */
+		max-height: 26dvh;
+		overflow-y: auto;
+		overscroll-behavior: contain;
 	}
 	.reveal-text {
 		display: flex;
@@ -55,10 +63,12 @@
 		min-width: 0;
 	}
 	.reveal-main {
-		font-size: 1.35rem;
+		font-size: 1.3rem;
 		font-weight: 800;
 		color: var(--ink);
-		line-height: 1.5;
+		/* Tighter than the global Burmese line-height (1.7), which wastes
+		   vertical space in a compact card. */
+		line-height: 1.35;
 	}
 	.reveal-meta {
 		display: flex;
@@ -80,7 +90,7 @@
 		font-size: 0.85rem;
 		font-weight: 700;
 		color: var(--teal-ink);
-		max-width: 340px;
 		line-height: 1.4;
+		text-wrap: pretty;
 	}
 </style>

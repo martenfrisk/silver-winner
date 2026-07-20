@@ -58,6 +58,42 @@ All six items from the first user-testing round, ✅ implemented:
   "seen" state lives in `no-audio-prompt.svelte.ts`, reset on reload by
   design so the nudge can resurface next real session.
 
+## Round 7 — learner profiles: a self-explaining structure (2026-07-20)
+
+The three tracks confused testers ("which do I choose?"). Root cause: home
+presented Script Studio, Reader track and the course as peers with no
+statement of who each is for. Fix: a **profile** routes between them —
+reordering and framing only, never hiding or locking (no silos).
+
+- ✅ **`progress.profile`** — `'beginner' | 'script-reader' | 'speaker' |
+  'explorer'` (persisted; `null` = not asked; `reset()` clears it so a fresh
+  start re-asks).
+- ✅ **`StartChooser.svelte`** — first visit, the home hero becomes Shwe's
+  inline question ("What's your Burmese like today?") with the three
+  personas + "Just exploring" (→ `'explorer'`, never asks again).
+- ✅ **`tracks.ts`** — pure track descriptors with audience one-liners,
+  `primaryTrack(profile)` (beginner/explorer→course, script-reader→reader,
+  speaker→script) and `suggestFor(profile, state)` (the daily nudge now
+  reorders per profile). Unit-tested.
+- ✅ **Home restructure** — a big gold "Continue …" card for the primary
+  track (next lesson / next reader unit / next script unit); the other two
+  tracks collapse into a compact "More ways to learn" list with their
+  audience lines; Practice and Stories stay as activity cards; the course
+  path always renders below.
+- ✅ **Per-profile content tweaks** (one each):
+  - *beginner*: listening drills force romanization under options until
+    10 glyphs are learned (fixes "tap what you hear" being shape-matching
+    for script-illiterate users);
+  - *script-reader*: `/practice` skips the recognition rung — production
+    formats from box 0 (recognition only exists to scaffold script
+    decoding);
+  - *speaker*: **⚡ test out** — locked lessons show a chip (speaker
+    profile only; the URL works for anyone); a perfect hard-mode run on a
+    never-completed lesson completes + crowns it and unlocks the next.
+- ✅ **Settings** — "Starting point" picker on the account page.
+- ✅ **Cross-link** — Script Studio hub points letter-readers at the
+  Reader track.
+
 ## Round 6b — no unanswerable exercises while muted (2026-07-20)
 
 Muting has to change *what gets asked*, not just silence the speaker — a

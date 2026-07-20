@@ -6,6 +6,20 @@ import { progress } from './progress.svelte';
 afterEach(() => {
 	progress.sound = true;
 	progress.tempMute = false;
+	progress.profile = null;
+});
+
+describe('profile', () => {
+	it('starts unset so the home hero asks', () => {
+		expect(progress.profile).toBeNull();
+	});
+
+	it('setProfile stores the choice; reset clears it for re-asking', () => {
+		progress.setProfile('speaker');
+		expect(progress.profile).toBe('speaker');
+		progress.reset();
+		expect(progress.profile).toBeNull();
+	});
 });
 
 describe('audioOn', () => {

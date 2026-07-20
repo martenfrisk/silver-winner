@@ -26,12 +26,21 @@
 
 {#if progress.tempMute}
 	<div class="chip muted" in:fly={{ y: -8, duration: 180 }} role="status">
-		<span>🔇 Audio muted for this session</span>
+		<span>
+			🔇 Muted
+			<span class="detail">for this session</span>
+		</span>
 		<button class="link-btn" onclick={unmute}>Turn back on</button>
 	</div>
 {:else if showPrompt}
 	<div class="chip prompt" in:fly={{ y: -8, duration: 180 }} role="status">
-		<span>🎧 No headphones? This plays pronunciation out loud.</span>
+		<!-- The detail sentence is dropped on phones, where it would wrap the
+		     chip to three rows and eat the exercise's space. "No headphones?"
+		     next to "Mute for now" carries the meaning on its own. -->
+		<span>
+			🎧 No headphones?
+			<span class="detail">This plays pronunciation out loud.</span>
+		</span>
 		<div class="actions">
 			<button class="link-btn" onclick={muteForNow}>Mute for now</button>
 			<button class="dismiss" onclick={dismiss} aria-label="Dismiss">✕</button>
@@ -52,6 +61,17 @@
 		border-radius: 12px;
 		font-size: 0.85rem;
 		font-weight: 700;
+	}
+	@media (max-width: 559px) {
+		.detail {
+			display: none;
+		}
+		.chip {
+			gap: 8px;
+			margin-bottom: 8px;
+			padding: 7px 11px;
+			font-size: 0.8rem;
+		}
 	}
 	.chip.prompt {
 		background: var(--teal-soft);
