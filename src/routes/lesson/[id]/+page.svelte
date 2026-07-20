@@ -353,10 +353,16 @@
 {/if}
 
 <style>
+	/* Fixed-height column, not min-height: the footer swaps between three very
+	   different heights (question ~112px, correct ~98px, wrong-with-reveal
+	   ~182px). With min-height those changes reflowed the whole page and
+	   toggled the document scrollbar, which shifted everything sideways.
+	   Pinning the column to the viewport and scrolling `main` internally keeps
+	   the exercise perfectly still while the footer grows. */
 	.lesson {
 		display: flex;
 		flex-direction: column;
-		min-height: 100dvh;
+		height: 100dvh;
 		max-width: 680px;
 		margin: 0 auto;
 		padding: 0 20px;
@@ -417,15 +423,18 @@
 	}
 	main {
 		flex: 1;
+		min-height: 0; /* let it shrink instead of pushing the page taller */
 		display: grid;
 		padding: 12px 0 24px;
+		overflow-y: auto;
+		overflow-x: hidden; /* clips the fly-in transition */
+		overscroll-behavior: contain;
 	}
 	.stage {
 		grid-area: 1 / 1;
 	}
 	footer {
-		position: sticky;
-		bottom: 0;
+		flex-shrink: 0;
 		margin: 0 -20px;
 		padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
 		border-top: 2px solid var(--line);

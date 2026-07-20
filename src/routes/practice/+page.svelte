@@ -290,10 +290,12 @@
 {/if}
 
 <style>
+	/* Fixed-height column so footer state changes never reflow the exercise
+	   above (see the note in the lesson player). */
 	.practice {
 		display: flex;
 		flex-direction: column;
-		min-height: 100dvh;
+		height: 100dvh;
 		max-width: 680px;
 		margin: 0 auto;
 		padding: 0 20px;
@@ -345,15 +347,18 @@
 	}
 	main {
 		flex: 1;
+		min-height: 0;
 		display: grid;
 		padding: 12px 0 24px;
+		overflow-y: auto;
+		overflow-x: hidden;
+		overscroll-behavior: contain;
 	}
 	.stage {
 		grid-area: 1 / 1;
 	}
 	footer {
-		position: sticky;
-		bottom: 0;
+		flex-shrink: 0;
 		margin: 0 -20px;
 		padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
 		border-top: 2px solid var(--line);
