@@ -6,6 +6,7 @@
 	import { strokeData } from '$lib/data/script';
 	import { sfx } from '$lib/audio';
 	import { scriptSheet } from '$lib/script-sheet.svelte';
+	import { scriptNeedsAudio } from '$lib/silent-mode';
 	import { clickNth, digitOf, isShortcutIgnored } from '$lib/keyboard';
 	import { progress } from '$lib/progress.svelte';
 	import { ui } from '$lib/i18n.svelte';
@@ -17,6 +18,7 @@
 	import ScriptNote from './ScriptNote.svelte';
 	import WordRead from './WordRead.svelte';
 	import SentenceRead from './SentenceRead.svelte';
+	import NoAudioPrompt from './NoAudioPrompt.svelte';
 
 	let {
 		initialQueue,
@@ -49,6 +51,17 @@
 
 	const ex = $derived(queue[idx]);
 	const pct = $derived(queue.length === 0 ? 0 : (solved / queue.length) * 100);
+
+	// Muting mid-session (the in-session prompt sits right above this) can
+	// leave the learner on a drill whose prompt is audio only. "Which one did
+	// you hear?" has no silent form — both options are written syllables — so
+	// drop it from the queue instead of trapping them on it. Removing rather
+	// than skipping keeps the progress bar's denominator honest.
+	$effect(() => {
+		if (progress.audioOn || !ex || !scriptNeedsAudio(ex)) return;
+		queue = queue.filter((_, i) => i !== idx);
+		if (idx >= queue.length) finish();
+	});
 
 	function grade(ok: boolean) {
 		answered = ok;
@@ -149,6 +162,8 @@
 				<div class="fill" style="width: {pct}%"></div>
 			</div>
 		</header>
+
+		<NoAudioPrompt />
 
 		<main>
 			{#key idx}

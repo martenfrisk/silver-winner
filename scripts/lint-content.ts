@@ -16,6 +16,7 @@
 //   Audio   — every speakable string (collected exactly like
 //             scripts/generate-audio.ts) has a manifest entry and an mp3.
 import { course } from '../src/lib/data/course';
+import { lineMy, stories } from '../src/lib/data/stories';
 import {
 	allAudioSyllables,
 	aspirationPairs,
@@ -262,6 +263,7 @@ const warn = (category: string, msg: string) => add(warnings, category, msg);
 	for (const words of Object.values(decodableWords)) for (const w of words) texts.add(w.my);
 	for (const sentences of Object.values(decodableSentences)) for (const s of sentences) texts.add(s.my);
 	for (const w of loanWords) texts.add(w.my);
+	for (const story of stories) for (const line of story.lines) texts.add(lineMy(line));
 
 	const missing: string[] = [];
 	for (const text of texts) {

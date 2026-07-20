@@ -5,7 +5,7 @@
 	import { progress } from '$lib/progress.svelte';
 	import ScriptSession from '$lib/components/ScriptSession.svelte';
 
-	const queue = buildLoanwordQueue();
+	const queue = buildLoanwordQueue(progress.audioOn);
 
 	function onfinish({ stars }: { stars: number }) {
 		const xp = 15 + (stars === 3 ? 5 : 0);

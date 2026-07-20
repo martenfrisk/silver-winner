@@ -40,6 +40,77 @@ All six items from the first user-testing round, ✅ implemented:
   labels — the one remaining romanization in the studio. Fully replacing it
   needs tappable audio options; see #18/#24.
 
+## Round 6 — temporary no-audio mode (2026-07-20)
+
+- ✅ **Session-only mute, separate from the permanent Sound setting** —
+  `progress.tempMute` (deliberately *not* persisted — resets on reload,
+  matching "just for right now"). `progress.audioOn` getter
+  (`sound && !tempMute`) is the single gate `audio.ts`'s `play()`/`speak()`
+  now check, instead of `progress.sound` directly.
+- ✅ **Settings toggle** — a "No-audio mode 🎧" checkbox on the account page,
+  next to (but distinct from) the permanent Sound toggle.
+- ✅ **In-session prompt** — `NoAudioPrompt.svelte`, shown once per app load
+  right where audio would actually play (lesson player, /practice,
+  ScriptSession — covers Script Studio practice/learn/Loanword Lab —
+  /reader, /stories): "🎧 No headphones? This plays pronunciation out loud."
+  with **Mute for now** / dismiss ✕. Once muted, the same slot shows a
+  "🔇 Audio muted for this session — Turn back on" chip. Session-scoped
+  "seen" state lives in `no-audio-prompt.svelte.ts`, reset on reload by
+  design so the nudge can resurface next real session.
+
+## Round 6b — no unanswerable exercises while muted (2026-07-20)
+
+Muting has to change *what gets asked*, not just silence the speaker — a
+"Tap what you hear" card with no sound is unanswerable. `silent-mode.ts`
+handles two shapes differently:
+
+- ✅ **Course `listen` drills convert** — options are written Burmese, so
+  only the question is lost. `silentSafe()` swaps it for "Which one says
+  *X*?" over the *same options and correct index*, so grading, mistake
+  recording and the reveal all keep working. Applied at **render time**
+  (`$derived`) in the lesson player, /practice and /reader, so muting
+  mid-session converts the drills still ahead rather than stranding the
+  learner on one.
+- ✅ **Script Studio drills that can't convert get dropped** — minimal-pair
+  and tone drills show two written syllables and ask which you *heard*;
+  with no audio both options are equally valid, so there's no honest
+  silent form. `scriptNeedsAudio()` identifies them (a choice with
+  `promptSpeak` and no `promptBig`). Build-time: `listenDrill` returns
+  null when muted (callers already fall through to a visual drill), the
+  Loanword Lab keeps its visual decode pass and drops its listening pass,
+  and `s2g` falls back to the written "sounds like X" prompt — fixing a
+  round-4 regression where audio-first `s2g` was unanswerable when muted.
+  Render-time: `ScriptSession` removes such a drill from the queue if the
+  learner mutes while it's on screen (removed, not skipped, so the
+  progress bar's denominator stays honest).
+- ✅ **Dead speaker buttons hidden** — `SpeakButton` and the story replay
+  buttons don't render while audio is off.
+
+## Round 5 — beating Duolingo on learning science (2026-07-20)
+
+- ✅ **Recall ladder** — the vocab SRS box now drives exercise *format* in
+  /practice, not just scheduling: box 0–1 recognition (choice/listen),
+  box 2–3 production (`assembleEx` builds the word from grapheme tiles via
+  `Intl.Segmenter`), box 4 free recall (`RecallCard.svelte`: see the meaning,
+  produce the Burmese mentally, reveal, self-grade — the self-grade feeds
+  `vocabSrs.grade`).
+- ✅ **Grammar micro-notes at the point of error** — `grammar-tips.ts`: an
+  ordered rule list (negation မ…ဘူး, question လား/လဲ, want-to ချင်, future
+  မယ်, already ပြီ, progressive နေ, statement တယ်, polite ပါ) matched against
+  the missed answer's Burmese; the one most relevant tip renders in
+  `AnswerReveal` across lesson/practice/reader. Only shown on mistakes.
+- ✅ **Decodable stories** — `stories.ts` + `/stories`: tiny dialogues built
+  from taught course vocab (validated by a unit test: every chunk is course
+  vocab, pure digits, or explicitly `isNew`-flagged for the 🆕 dot). Chat-
+  bubble player: lines appear one at a time with audio, every chunk is
+  tap-to-gloss, one comprehension question ends it (first-try = 3 stars,
+  XP via `completeLesson('story-<id>')`). Unlock = the `requires` lessons
+  completed. 3 stories to start (greeting, tea shop, directions).
+
+  Next content passes: more stories per unit, a slow-audio toggle, and the
+  remaining round-5 candidates (record-and-compare tone practice, Myanmar
+  keyboard course, retention analytics, review-first gating).
+
 ## Highest impact next
 
 1. ✅ **Listening-only exercise type** — the audio pipeline exists but is never the

@@ -45,6 +45,11 @@ class Progress {
 	lastStudy = $state('');
 	stars = $state<Record<string, number>>({});
 	sound = $state(true);
+	// Temporary, session-only mute — for "I don't have headphones right now"
+	// without changing the permanent Sound preference below. Deliberately not
+	// persisted: it resets to false on the next app load, same as forgetting
+	// you ever muted it.
+	tempMute = $state(false);
 	// Romanization is a crutch — hidden by default; audio carries pronunciation.
 	showRoman = $state(false);
 	// Immersion mode: UI strings gradually switch to Burmese as script knowledge grows.
@@ -232,6 +237,16 @@ class Progress {
 	toggleSound() {
 		this.sound = !this.sound;
 		this.save();
+	}
+
+	/** Whether audio should actually play right now — permanent setting AND not temporarily muted. */
+	get audioOn(): boolean {
+		return this.sound && !this.tempMute;
+	}
+
+	toggleTempMute() {
+		this.tempMute = !this.tempMute;
+		// Not persisted — no save().
 	}
 
 	toggleRoman() {

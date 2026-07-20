@@ -23,13 +23,14 @@ function introduceLessons(n: number) {
 describe('exerciseFor', () => {
 	const item = [...vocabByMy.values()][0];
 
-	it('rotates listen / my→en / en→my and keeps the correct index valid', () => {
+	it('rotates listen / my→en / en→my at low boxes and keeps the correct index valid', () => {
 		introduceLessons(3); // distractor pool
-		const kinds = [0, 1, 2].map((i) => exerciseFor(item, i));
+		const kinds = [0, 1, 2].map((i) => exerciseFor(item, i, 0));
 		expect(kinds[0].kind).toBe('listen');
 		expect(kinds[1].kind).toBe('choice');
 		expect(kinds[2].kind).toBe('choice');
 		for (const ex of kinds) {
+			if (ex.kind !== 'listen' && ex.kind !== 'choice') throw new Error('unexpected kind');
 			expect(ex.correct).toBeGreaterThanOrEqual(0);
 			expect(ex.correct).toBeLessThan(ex.options.length);
 			const texts = ex.options.map((o) => o.text);
@@ -38,6 +39,29 @@ describe('exerciseFor', () => {
 		if (kinds[0].kind === 'listen') expect(kinds[0].options[kinds[0].correct].text).toBe(item.my);
 		if (kinds[1].kind === 'choice') expect(kinds[1].options[kinds[1].correct].text).toBe(item.en);
 		if (kinds[2].kind === 'choice') expect(kinds[2].options[kinds[2].correct].text).toBe(item.my);
+	});
+
+	it('climbs to production at box 2–3: assemble tiles rebuild the word', () => {
+		introduceLessons(3);
+		const ex = exerciseFor(item, 0, 2);
+		expect(ex.kind).toBe('assemble');
+		if (ex.kind !== 'assemble') return;
+		expect(ex.answer.map((a) => a.t).join('')).toBe(item.my);
+		// Decoy tiles never duplicate answer tiles, so a correct build is unambiguous.
+		const answerTiles = new Set(ex.answer.map((a) => a.t));
+		for (const e of ex.extras) expect(answerTiles.has(e.t)).toBe(false);
+	});
+
+	it('climbs to free recall at box 4, alternating with assemble', () => {
+		introduceLessons(3);
+		const a = exerciseFor(item, 0, 4);
+		const b = exerciseFor(item, 1, 4);
+		expect(a.kind).toBe('recall');
+		expect(b.kind).toBe('assemble');
+		if (a.kind === 'recall') {
+			expect(a.my).toBe(item.my);
+			expect(a.en).toBe(item.en);
+		}
 	});
 });
 

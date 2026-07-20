@@ -17,6 +17,9 @@
 	import AssembleExercise from '$lib/components/AssembleExercise.svelte';
 	import ListenExercise from '$lib/components/ListenExercise.svelte';
 	import AnswerReveal from '$lib/components/AnswerReveal.svelte';
+	import NoAudioPrompt from '$lib/components/NoAudioPrompt.svelte';
+	import { grammarTip } from '$lib/grammar-tips';
+	import { silentSafe } from '$lib/silent-mode';
 
 	const found = findLesson(page.params.id ?? '');
 
@@ -50,7 +53,9 @@
 	let selected = $state<number | null>(null);
 	let sequence = $state<string[]>([]);
 
-	const ex = $derived(queue[idx]);
+	// Listening drills become reading drills while audio is off, so muting
+	// mid-lesson never strands the learner on a question they can't hear.
+	const ex = $derived(silentSafe(queue[idx], progress.audioOn));
 	const total = $derived(queue.length);
 	const pct = $derived(total === 0 ? 0 : (solved / total) * 100);
 
@@ -259,6 +264,8 @@
 			</button>
 		</header>
 
+		<NoAudioPrompt />
+
 		<main>
 			{#key idx}
 				<div class="stage" in:fly={{ x: 60, duration: 300 }}>
@@ -295,7 +302,13 @@
 					<div class="feedback-text">
 						<strong>{ui('not-quite').text}</strong>
 						{#if reveal}
-							<AnswerReveal my={reveal.my} sub={reveal.sub} en={reveal.en} speakText={reveal.speak} />
+							<AnswerReveal
+								my={reveal.my}
+								sub={reveal.sub}
+								en={reveal.en}
+								speakText={reveal.speak}
+								tip={grammarTip(reveal.my)}
+							/>
 						{/if}
 					</div>
 					<button class="btn red" onclick={advance}>{ui('got-it').text}</button>

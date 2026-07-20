@@ -1,17 +1,37 @@
 // Builds exercise queues for course vocabulary practice: recent mistakes
 // first, then due SRS items, topped up with the weakest introduced items so a
-// session is always worthwhile. Each vocab item becomes a listen or choice
-// exercise composed client-side, reusing the lesson player's components.
+// session is always worthwhile. Each vocab item becomes an exercise composed
+// client-side, reusing the lesson player's components.
+//
+// The SRS box drives the *format*, not just the schedule — a recall ladder:
+//   box 0–1  recognition   (multiple choice / listen)
+//   box 2–3  production    (assemble the word from tiles, plus listening)
+//   box 4    free recall   (see the meaning, produce the Burmese, self-grade)
+// Producing an answer beats recognizing one (the testing effect), so items
+// climb from tapping options to building words to recalling them cold.
 import type { Exercise, Option } from '$lib/data/course';
 import { allVocab, vocabByMy, vocabSrs, type VocabItem } from '$lib/vocab-srs.svelte';
 
-/** The exercise kinds a practice session generates. */
-export type PracticeExercise = Extract<Exercise, { kind: 'choice' } | { kind: 'listen' }>;
+/** The course-exercise kinds a practice session generates. */
+export type PracticeExercise = Extract<
+	Exercise,
+	{ kind: 'choice' } | { kind: 'listen' } | { kind: 'assemble' }
+>;
+
+/** Free-recall step (box 4): think of the Burmese, reveal, self-grade. */
+export interface RecallEx {
+	kind: 'recall';
+	my: string;
+	roman: string;
+	en: string;
+}
+
+export type PracticeStep = PracticeExercise | RecallEx;
 
 /** A practice step: the exercise plus the vocab item it grades. */
 export interface VocabEx {
 	my: string;
-	ex: PracticeExercise;
+	ex: PracticeStep;
 }
 
 const MIN_ITEMS = 8;
@@ -83,8 +103,50 @@ function choiceEnMy(item: VocabItem): PracticeExercise {
 	};
 }
 
-/** One exercise for a vocab item, rotating between the three drill forms. */
-export function exerciseFor(item: VocabItem, i: number): PracticeExercise {
+// Burmese tiles: grapheme clusters (a consonant plus its attached marks)
+// are the natural draggable unit — Intl.Segmenter does the splitting.
+const seg = new Intl.Segmenter('my', { granularity: 'grapheme' });
+
+function graphemes(s: string): string[] {
+	return [...seg.segment(s)].map((x) => x.segment);
+}
+
+/** Build the word from tiles: production with a scaffold. */
+function assembleEx(item: VocabItem): PracticeExercise {
+	const answer = graphemes(item.my).map((t) => ({ t }));
+	const answerSet = new Set(answer.map((a) => a.t));
+	// Decoy tiles from other known words — only ones not already in the answer,
+	// so every correct tile in the bank is genuinely correct.
+	const extras: { t: string }[] = [];
+	for (const v of distractors(item, 2, (x) => x.my)) {
+		for (const t of graphemes(v.my)) {
+			if (extras.length >= 3) break;
+			if (!answerSet.has(t) && !extras.some((e) => e.t === t)) extras.push({ t });
+		}
+	}
+	return {
+		kind: 'assemble',
+		question: `Build “${item.en}”`,
+		answer,
+		extras,
+		my: item.my,
+		roman: item.roman
+	};
+}
+
+function recallEx(item: VocabItem): RecallEx {
+	return { kind: 'recall', my: item.my, roman: item.roman, en: item.en };
+}
+
+/** One exercise for a vocab item — format climbs the recall ladder with its box. */
+export function exerciseFor(item: VocabItem, i: number, box = 0): PracticeStep {
+	if (box >= 4) return i % 2 === 0 ? recallEx(item) : assembleEx(item);
+	if (box >= 2) {
+		const kind = i % 3;
+		if (kind === 0) return assembleEx(item);
+		if (kind === 1) return listenEx(item);
+		return choiceEnMy(item);
+	}
 	const kind = i % 3;
 	if (kind === 0) return listenEx(item);
 	if (kind === 1) return choiceMyEn(item);
@@ -114,7 +176,9 @@ export function buildVocabPracticeQueue(): VocabEx[] {
 		}
 	}
 
-	return ids.slice(0, MAX_ITEMS).map((my, i) => ({ my, ex: exerciseFor(vocabByMy.get(my)!, i) }));
+	return ids
+		.slice(0, MAX_ITEMS)
+		.map((my, i) => ({ my, ex: exerciseFor(vocabByMy.get(my)!, i, vocabSrs.box(my)) }));
 }
 
 export function starsFor(mistakes: number): number {

@@ -98,19 +98,20 @@ export function g2s(glyph: Glyph, timed?: number): ScriptEx {
 /**
  * Sound → glyph, confusable distractors. Audio-first: you hear the letter's
  * name and tap the shape — no romanized "sounds like k" crutch. Digits keep a
- * written prompt (numerals aren't romanization).
+ * written prompt (numerals aren't romanization), and so does everything when
+ * audio is off, since an unheard prompt is no prompt at all.
  */
-export function s2g(glyph: Glyph): ScriptEx {
+export function s2g(glyph: Glyph, audioOn = true): ScriptEx {
 	const target: ChoiceOption = { label: glyph.char, my: true };
 	const { options, correct } = withCorrect(
 		distractors(glyph, 2).map((d) => ({ label: d.char, my: true })),
 		target
 	);
-	if (glyph.type === 'digit') {
+	if (glyph.type === 'digit' || !audioOn) {
 		return {
 			kind: 'choice',
 			glyphId: glyph.id,
-			question: `Tap the one that means “${glyph.sound}”`,
+			question: `Tap the one that ${glyph.type === 'digit' ? 'means' : 'sounds like'} “${glyph.sound}”`,
 			options,
 			correct
 		};
@@ -246,8 +247,14 @@ export function toneListen(): ScriptEx | null {
 	};
 }
 
-/** Listening drill for a practiced glyph, if one applies. */
-function listenDrill(glyph: Glyph): ScriptEx | null {
+/**
+ * Listening drill for a practiced glyph, if one applies. Minimal-pair and
+ * tone drills have no silent form — both options are written syllables and
+ * the question is which one you heard — so audio-off yields nothing here and
+ * callers fall through to a visual drill.
+ */
+function listenDrill(glyph: Glyph, audioOn = true): ScriptEx | null {
+	if (!audioOn) return null;
 	if (glyph.id === 'visarga') return toneListen();
 	if (glyph.type === 'consonant') return pairListen(glyph);
 	return null;
@@ -298,7 +305,7 @@ function unlockedSentences(): DecodableSentence[] {
 const TRACING_ENABLED = false;
 
 // ── Intro lesson queue ────────────────────────────────────────────────
-export function buildIntroQueue(unit: ScriptUnit): ScriptEx[] {
+export function buildIntroQueue(unit: ScriptUnit, audioOn = true): ScriptEx[] {
 	const queue: ScriptEx[] = [];
 	const unitGlyphs = unit.glyphIds.map((id) => glyphById.get(id)!);
 	const isDigits = unit.id === 'digits';
@@ -312,7 +319,7 @@ export function buildIntroQueue(unit: ScriptUnit): ScriptEx[] {
 			queue.push({ kind: 'trace', glyph: g });
 		// Quiz the letter right away, and re-quiz an earlier one for contrast.
 		queue.push(g2s(g));
-		if (i >= 1 && i % 2 === 1) queue.push(s2g(unitGlyphs[i - 1]));
+		if (i >= 1 && i % 2 === 1) queue.push(s2g(unitGlyphs[i - 1], audioOn));
 	});
 
 	// A couple of trace exercises for digits (they're quick).
@@ -348,7 +355,7 @@ export function buildIntroQueue(unit: ScriptUnit): ScriptEx[] {
 }
 
 // ── Practice queue (SRS-driven) ───────────────────────────────────────
-export function buildPracticeQueue(): { queue: ScriptEx[]; count: number } {
+export function buildPracticeQueue(audioOn = true): { queue: ScriptEx[]; count: number } {
 	const now = Date.now();
 	let ids = srs.dueIds(now);
 	if (ids.length < 8) {
@@ -369,13 +376,13 @@ export function buildPracticeQueue(): { queue: ScriptEx[]; count: number } {
 		const box = srs.box(id);
 		// Once the shape is known (box ≥ 2), sometimes swap in a minimal-pair
 		// listening drill — hearing the contrast is the hard part.
-		const listen = box >= 2 && Math.random() < 0.5 ? listenDrill(g) : null;
+		const listen = box >= 2 && Math.random() < 0.5 ? listenDrill(g, audioOn) : null;
 		if (box <= 1) {
 			queue.push(g2s(g));
 		} else if (box === 2) {
-			queue.push(listen ?? s2g(g));
+			queue.push(listen ?? s2g(g, audioOn));
 		} else if (box === 3) {
-			queue.push(listen ?? syllableRead(g) ?? s2g(g));
+			queue.push(listen ?? syllableRead(g) ?? s2g(g, audioOn));
 		} else {
 			// Mastered: keep it honest with a speed round — or, for traceable
 			// consonants, sometimes demand the shape from memory.
@@ -402,7 +409,7 @@ export function buildPracticeQueue(): { queue: ScriptEx[]; count: number } {
 // Familiar borrowed words, decoded from script alone. First a decoding pass
 // (see it → sound it out → recognize the word; audio confirms after), then a
 // listening pass (hear it → find it written). No romanization anywhere.
-export function buildLoanwordQueue(): ScriptEx[] {
+export function buildLoanwordQueue(audioOn = true): ScriptEx[] {
 	const words = shuffle(loanWords).slice(0, 8);
 	const queue: ScriptEx[] = [];
 	for (const w of words) {
@@ -423,6 +430,8 @@ export function buildLoanwordQueue(): ScriptEx[] {
 			correct
 		});
 	}
+	// The listening pass has no silent form — its prompt is audio only.
+	if (!audioOn) return queue;
 	for (const w of pick(words, Math.min(4, words.length))) {
 		const { options, correct } = withCorrect(
 			pick(

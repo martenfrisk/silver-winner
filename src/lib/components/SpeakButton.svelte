@@ -2,15 +2,19 @@
 	import { onMount } from 'svelte';
 	import { canSpeak, speak } from '$lib/audio';
 	import { sfx } from '$lib/audio';
+	import { progress } from '$lib/progress.svelte';
 
 	let { text, size = 'md' }: { text: string; size?: 'md' | 'lg' } = $props();
-	let available = $state(false);
+	let hasAudio = $state(false);
+	// Hidden while audio is off — a speaker button that can't make a sound is
+	// worse than no button.
+	const available = $derived(hasAudio && progress.audioOn);
 
 	onMount(() => {
-		available = canSpeak(text);
-		if (available) return;
+		hasAudio = canSpeak(text);
+		if (hasAudio) return;
 		// No audio file for this text — a platform voice may still appear.
-		const update = () => (available = canSpeak(text));
+		const update = () => (hasAudio = canSpeak(text));
 		speechSynthesis?.addEventListener?.('voiceschanged', update);
 		return () => speechSynthesis?.removeEventListener?.('voiceschanged', update);
 	});
