@@ -40,6 +40,24 @@ All six items from the first user-testing round, ✅ implemented:
   labels — the one remaining romanization in the studio. Fully replacing it
   needs tappable audio options; see #18/#24.
 
+## Round 6 — temporary no-audio mode (2026-07-20)
+
+- ✅ **Session-only mute, separate from the permanent Sound setting** —
+  `progress.tempMute` (deliberately *not* persisted — resets on reload,
+  matching "just for right now"). `progress.audioOn` getter
+  (`sound && !tempMute`) is the single gate `audio.ts`'s `play()`/`speak()`
+  now check, instead of `progress.sound` directly.
+- ✅ **Settings toggle** — a "No-audio mode 🎧" checkbox on the account page,
+  next to (but distinct from) the permanent Sound toggle.
+- ✅ **In-session prompt** — `NoAudioPrompt.svelte`, shown once per app load
+  right where audio would actually play (lesson player, /practice,
+  ScriptSession — covers Script Studio practice/learn/Loanword Lab —
+  /reader, /stories): "🎧 No headphones? This plays pronunciation out loud."
+  with **Mute for now** / dismiss ✕. Once muted, the same slot shows a
+  "🔇 Audio muted for this session — Turn back on" chip. Session-scoped
+  "seen" state lives in `no-audio-prompt.svelte.ts`, reset on reload by
+  design so the nudge can resurface next real session.
+
 ## Round 5 — beating Duolingo on learning science (2026-07-20)
 
 - ✅ **Recall ladder** — the vocab SRS box now drives exercise *format* in

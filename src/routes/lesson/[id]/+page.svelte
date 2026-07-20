@@ -17,6 +17,7 @@
 	import AssembleExercise from '$lib/components/AssembleExercise.svelte';
 	import ListenExercise from '$lib/components/ListenExercise.svelte';
 	import AnswerReveal from '$lib/components/AnswerReveal.svelte';
+	import NoAudioPrompt from '$lib/components/NoAudioPrompt.svelte';
 	import { grammarTip } from '$lib/grammar-tips';
 
 	const found = findLesson(page.params.id ?? '');
@@ -259,6 +260,8 @@
 				Aa
 			</button>
 		</header>
+
+		<NoAudioPrompt />
 
 		<main>
 			{#key idx}

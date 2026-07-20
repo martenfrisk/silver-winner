@@ -17,6 +17,7 @@
 	import ScriptNote from './ScriptNote.svelte';
 	import WordRead from './WordRead.svelte';
 	import SentenceRead from './SentenceRead.svelte';
+	import NoAudioPrompt from './NoAudioPrompt.svelte';
 
 	let {
 		initialQueue,
@@ -149,6 +150,8 @@
 				<div class="fill" style="width: {pct}%"></div>
 			</div>
 		</header>
+
+		<NoAudioPrompt />
 
 		<main>
 			{#key idx}

@@ -165,6 +165,21 @@
 		</label>
 		<label class="setting">
 			<span class="setting-text">
+				<span class="setting-title">No-audio mode 🎧</span>
+				<span class="setting-desc">
+					Temporarily mute everything — for when you don't have headphones.
+					Resets next time you open the app; your Sound setting above is unaffected.
+				</span>
+			</span>
+			<input
+				type="checkbox"
+				checked={progress.tempMute}
+				disabled={!progress.sound}
+				onchange={() => progress.toggleTempMute()}
+			/>
+		</label>
+		<label class="setting">
+			<span class="setting-text">
 				<span class="setting-title">Romanization</span>
 				<span class="setting-desc">Show pronunciation in Latin letters. Off by default — trust your ears.</span>
 			</span>

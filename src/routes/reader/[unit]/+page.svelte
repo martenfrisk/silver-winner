@@ -21,6 +21,7 @@
 	import ChoiceExercise from '$lib/components/ChoiceExercise.svelte';
 	import ListenExercise from '$lib/components/ListenExercise.svelte';
 	import AnswerReveal from '$lib/components/AnswerReveal.svelte';
+	import NoAudioPrompt from '$lib/components/NoAudioPrompt.svelte';
 	import { grammarTip } from '$lib/grammar-tips';
 
 	const unit = course.find((u) => u.id === page.params.unit);
@@ -161,6 +162,8 @@
 				က
 			</button>
 		</header>
+
+		<NoAudioPrompt />
 
 		<main>
 			{#key idx}

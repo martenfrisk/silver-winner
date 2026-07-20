@@ -24,7 +24,7 @@ interface Note {
 }
 
 function play(notes: Note[]) {
-	if (!progress.sound) return;
+	if (!progress.audioOn) return;
 	const c = ac();
 	if (!c) return;
 	const now = c.currentTime;
@@ -109,7 +109,7 @@ let current: HTMLAudioElement | null = null;
  * otherwise via platform speech synthesis. Returns whether it spoke.
  */
 export function speak(text: string): boolean {
-	if (!progress.sound || typeof window === 'undefined') return false;
+	if (!progress.audioOn || typeof window === 'undefined') return false;
 
 	const file = pronunciations[text];
 	if (file) {

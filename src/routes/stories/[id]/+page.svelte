@@ -11,6 +11,7 @@
 	import { sfx, speak } from '$lib/audio';
 	import Mascot from '$lib/components/Mascot.svelte';
 	import Confetti from '$lib/components/Confetti.svelte';
+	import NoAudioPrompt from '$lib/components/NoAudioPrompt.svelte';
 
 	const story = storyById.get(page.params.id ?? '');
 
@@ -99,6 +100,8 @@
 			<span class="story-name">{story.emoji} {story.title}</span>
 			<span class="counter">{Math.min(shown, story.lines.length)}/{story.lines.length}</span>
 		</header>
+
+		<NoAudioPrompt />
 
 		<main>
 			<div class="lines">

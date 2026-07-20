@@ -15,6 +15,7 @@
 	import AssembleExercise from '$lib/components/AssembleExercise.svelte';
 	import RecallCard from '$lib/components/RecallCard.svelte';
 	import AnswerReveal from '$lib/components/AnswerReveal.svelte';
+	import NoAudioPrompt from '$lib/components/NoAudioPrompt.svelte';
 	import { grammarTip } from '$lib/grammar-tips';
 
 	// The queue is built once at mount; requeues append copies.
@@ -219,6 +220,8 @@
 				Aa
 			</button>
 		</header>
+
+		<NoAudioPrompt />
 
 		<main>
 			{#key idx}
