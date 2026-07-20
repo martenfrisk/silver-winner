@@ -12,7 +12,10 @@
 	import Confetti from '$lib/components/Confetti.svelte';
 	import ChoiceExercise from '$lib/components/ChoiceExercise.svelte';
 	import ListenExercise from '$lib/components/ListenExercise.svelte';
+	import AssembleExercise from '$lib/components/AssembleExercise.svelte';
+	import RecallCard from '$lib/components/RecallCard.svelte';
 	import AnswerReveal from '$lib/components/AnswerReveal.svelte';
+	import { grammarTip } from '$lib/grammar-tips';
 
 	// The queue is built once at mount; requeues append copies.
 	let queue = $state<VocabEx[]>(buildVocabPracticeQueue());
@@ -24,6 +27,7 @@
 	let xpEarned = $state(0);
 	let stars = $state(0);
 	let selected = $state<number | null>(null);
+	let sequence = $state<string[]>([]);
 	let combo = $state(0);
 	let maxCombo = $state(0);
 
@@ -31,12 +35,18 @@
 	const ex = $derived(item?.ex);
 	const total = $derived(queue.length);
 	const pct = $derived(total === 0 ? 0 : (solved / total) * 100);
+	// Only assemble still needs a Check step; choice/listen check on tap and
+	// recall grades itself.
+	const canCheck = $derived(ex?.kind === 'assemble' && sequence.length > 0);
 
 	const HAS_MY = /[က-႟]/;
 
 	/** The prominent correct-answer reveal shown after a wrong answer. */
 	const reveal = $derived.by(() => {
 		if (!ex) return null;
+		if (ex.kind === 'recall') return null; // the card does its own reveal
+		if (ex.kind === 'assemble')
+			return { my: ex.my, sub: progress.showRoman ? ex.roman : undefined, speak: ex.my };
 		if (ex.kind === 'choice') {
 			const o = ex.options[ex.correct];
 			if (HAS_MY.test(o.text))
@@ -54,9 +64,8 @@
 		return { my: ex.my, sub: progress.showRoman ? ex.roman : undefined, en: ex.en, speak: ex.my };
 	});
 
-	function check() {
-		if (!ex || !item || status !== 'answer') return;
-		const ok = selected === ex.correct;
+	function applyResult(ok: boolean, { autoSpeak = true } = {}) {
+		if (!item) return;
 		vocabSrs.grade(item.my, ok);
 		if (ok) {
 			status = 'correct';
@@ -64,8 +73,6 @@
 			maxCombo = Math.max(maxCombo, combo);
 			sfx.correct();
 			if (combo > 0 && combo % 5 === 0) sfx.match(); // combo milestone
-			// Reinforce the word's sound on my→en drills, where it wasn't the prompt.
-			if (ex.kind === 'choice' && ex.promptMy) speak(ex.promptMy);
 		} else {
 			status = 'wrong';
 			mistakes++;
@@ -74,8 +81,28 @@
 			queue = [...queue, item]; // practice it again at the end
 			// Hear the right answer while the reveal shows it.
 			const answerAudio = reveal?.speak;
-			if (answerAudio) setTimeout(() => speak(answerAudio), 600);
+			if (autoSpeak && answerAudio) setTimeout(() => speak(answerAudio), 600);
 		}
+	}
+
+	function check() {
+		if (!ex || !item || status !== 'answer') return;
+		let ok = false;
+		if (ex.kind === 'choice' || ex.kind === 'listen') ok = selected === ex.correct;
+		else if (ex.kind === 'assemble') ok = sequence.join('') === ex.answer.map((a) => a.t).join('');
+		else return; // recall grades itself via onresult
+		applyResult(ok);
+		if (ok) {
+			// Reinforce the word's sound where audio wasn't the prompt.
+			if (ex.kind === 'assemble') speak(ex.my);
+			else if (ex.kind === 'choice' && ex.promptMy) speak(ex.promptMy);
+		}
+	}
+
+	function recallResult(ok: boolean) {
+		if (status !== 'answer') return;
+		// The card already revealed and spoke the answer — no double audio.
+		applyResult(ok, { autoSpeak: false });
 	}
 
 	function advance() {
@@ -84,6 +111,7 @@
 		idx++;
 		status = 'answer';
 		selected = null;
+		sequence = [];
 		if (idx >= queue.length) finish();
 	}
 
@@ -109,11 +137,21 @@
 		if (e.key === 'Enter') {
 			e.preventDefault();
 			if (status !== 'answer') advance();
+			else if (canCheck) check();
 			return;
 		}
 		if (status !== 'answer') return;
+		if (e.key === 'Backspace' && ex.kind === 'assemble') {
+			e.preventDefault();
+			const placed = document.querySelectorAll<HTMLButtonElement>('.slots .placed-tile');
+			placed[placed.length - 1]?.click();
+			return;
+		}
 		const d = digitOf(e);
-		if (d !== null) clickNth('.options .answer-card', (d === 0 ? 10 : d) - 1);
+		if (d === null) return;
+		const n = (d === 0 ? 10 : d) - 1;
+		if (ex.kind === 'assemble') clickNth('.bank .tile', n);
+		else clickNth('.options .answer-card', n);
 	}
 </script>
 
@@ -189,6 +227,10 @@
 						<ChoiceExercise {ex} bind:selected {status} onpick={check} />
 					{:else if ex.kind === 'listen'}
 						<ListenExercise {ex} bind:selected {status} onpick={check} />
+					{:else if ex.kind === 'assemble'}
+						<AssembleExercise {ex} bind:sequence {status} />
+					{:else if ex.kind === 'recall'}
+						<RecallCard {ex} onresult={recallResult} />
 					{/if}
 				</div>
 			{/key}
@@ -212,10 +254,26 @@
 					<div class="feedback-text">
 						<strong>{ui('not-quite').text}</strong>
 						{#if reveal}
-							<AnswerReveal my={reveal.my} sub={reveal.sub} en={reveal.en} speakText={reveal.speak} />
+							<AnswerReveal
+								my={reveal.my}
+								sub={reveal.sub}
+								en={reveal.en}
+								speakText={reveal.speak}
+								tip={grammarTip(reveal.my)}
+							/>
 						{/if}
 					</div>
 					<button class="btn red" onclick={advance}>{ui('got-it').text}</button>
+				</div>
+			{:else if ex.kind === 'assemble'}
+				<div class="actions">
+					<button class="btn green" onclick={check} disabled={!canCheck} title={ui('check').hint}>
+						{ui('check').text}
+					</button>
+				</div>
+			{:else if ex.kind === 'recall'}
+				<div class="actions">
+					<span class="tap-hint">Grade yourself honestly — it drives the schedule</span>
 				</div>
 			{:else}
 				<div class="actions">

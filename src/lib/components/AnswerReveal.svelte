@@ -8,7 +8,8 @@
 		my,
 		sub,
 		en,
-		speakText
+		speakText,
+		tip = null
 	}: {
 		/** The correct answer, front and center (usually Burmese). */
 		my: string;
@@ -18,6 +19,8 @@
 		en?: string;
 		/** Burmese text to (re)play; omit to hide the speaker button. */
 		speakText?: string;
+		/** One-line grammar tip for the pattern the learner just missed. */
+		tip?: string | null;
 	} = $props();
 </script>
 
@@ -29,6 +32,7 @@
 			{#if sub}<span class="reveal-sub">{sub}</span>{/if}
 			{#if en}<span class="reveal-en">{en}</span>{/if}
 		</span>
+		{#if tip}<span class="reveal-tip">💡 {tip}</span>{/if}
 	</div>
 </div>
 
@@ -69,5 +73,14 @@
 	}
 	.reveal-en {
 		color: var(--ink-soft);
+	}
+	.reveal-tip {
+		margin-top: 4px;
+		font-family: var(--font-ui);
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--teal-ink);
+		max-width: 340px;
+		line-height: 1.4;
 	}
 </style>

@@ -21,6 +21,7 @@
 	import ChoiceExercise from '$lib/components/ChoiceExercise.svelte';
 	import ListenExercise from '$lib/components/ListenExercise.svelte';
 	import AnswerReveal from '$lib/components/AnswerReveal.svelte';
+	import { grammarTip } from '$lib/grammar-tips';
 
 	const unit = course.find((u) => u.id === page.params.unit);
 
@@ -188,7 +189,7 @@
 					<div class="feedback-text">
 						<strong>{ui('not-quite').text}</strong>
 						{#if reveal}
-							<AnswerReveal my={reveal.my} en={reveal.en} speakText={reveal.speak} />
+							<AnswerReveal my={reveal.my} en={reveal.en} speakText={reveal.speak} tip={grammarTip(reveal.my)} />
 						{/if}
 					</div>
 					<button class="btn red" onclick={advance}>{ui('got-it').text}</button>

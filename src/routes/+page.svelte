@@ -6,6 +6,7 @@
 	import { totalGlyphs } from '$lib/data/script';
 	import { ui } from '$lib/i18n.svelte';
 	import Mascot from '$lib/components/Mascot.svelte';
+	import { stories } from '$lib/data/stories';
 	import { scriptSheet } from '$lib/script-sheet.svelte';
 	import { sfx } from '$lib/audio';
 	import { goto } from '$app/navigation';
@@ -15,6 +16,9 @@
 	const goalRemaining = $derived(Math.max(0, progress.dailyGoal - progress.xpToday));
 
 	const allLessons = course.flatMap((u) => u.lessons);
+	const unlockedStories = $derived(
+		stories.filter((s) => s.requires.every((id) => progress.isCompleted(id))).length
+	);
 
 	/** The single best "do this next" action, for the daily-goal nudge. */
 	const suggestion = $derived.by(() => {
@@ -189,6 +193,19 @@
 			<span class="script-arrow">→</span>
 		{/if}
 	</a>
+
+	{#if unlockedStories > 0}
+		<a class="script-card stories-card" href="/stories">
+			<span class="script-glyph stories-glyph">📚</span>
+			<span class="script-text">
+				<span class="script-title stories-title">Stories</span>
+				<span class="script-sub">
+					{unlockedStories} tiny conversation{unlockedStories > 1 ? 's' : ''} you can already understand
+				</span>
+			</span>
+			<span class="script-arrow stories-arrow">→</span>
+		</a>
+	{/if}
 
 	<a class="script-card reader-card" href="/reader">
 		<span class="script-glyph reader-glyph">📖</span>
@@ -535,6 +552,21 @@
 		font-size: 1.2rem;
 		font-weight: 900;
 		color: var(--plum-ink);
+	}
+
+	.stories-card {
+		box-shadow: 0 4px 0 var(--coral-dark), inset 0 0 0 2px var(--coral);
+	}
+	.stories-card:active {
+		translate: 0 4px;
+		box-shadow: 0 0 0 var(--coral-dark), inset 0 0 0 2px var(--coral);
+	}
+	.stories-glyph {
+		background: var(--coral-soft, var(--line));
+	}
+	.stories-title,
+	.stories-arrow {
+		color: var(--coral-ink);
 	}
 
 	.reader-card {
