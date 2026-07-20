@@ -7,6 +7,7 @@
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { ui } from '$lib/i18n.svelte';
 	import { sfx, speak } from '$lib/audio';
+	import { scriptSheet } from '$lib/script-sheet.svelte';
 	import { clickNth, digitOf, isShortcutIgnored } from '$lib/keyboard';
 	import Mascot from '$lib/components/Mascot.svelte';
 	import Confetti from '$lib/components/Confetti.svelte';
@@ -15,6 +16,7 @@
 	import MatchExercise from '$lib/components/MatchExercise.svelte';
 	import AssembleExercise from '$lib/components/AssembleExercise.svelte';
 	import ListenExercise from '$lib/components/ListenExercise.svelte';
+	import AnswerReveal from '$lib/components/AnswerReveal.svelte';
 
 	const found = findLesson(page.params.id ?? '');
 
@@ -52,25 +54,33 @@
 	const total = $derived(queue.length);
 	const pct = $derived(total === 0 ? 0 : (solved / total) * 100);
 
-	const canCheck = $derived.by(() => {
-		if (!ex) return false;
-		if (ex.kind === 'choice' || ex.kind === 'listen') return selected !== null;
-		if (ex.kind === 'assemble') return sequence.length > 0;
-		return false;
-	});
+	// Choice/listen answers check on tap; only assemble still needs Check.
+	const canCheck = $derived(ex?.kind === 'assemble' && sequence.length > 0);
 
-	const correctAnswerText = $derived.by(() => {
-		if (!ex) return '';
+	const HAS_MY = /[က-႟]/;
+
+	/** The prominent correct-answer reveal shown after a wrong answer. */
+	const reveal = $derived.by(() => {
+		if (!ex) return null;
 		if (ex.kind === 'choice') {
 			const o = ex.options[ex.correct];
-			return o.sub && progress.showRoman ? `${o.text} (${o.sub})` : o.text;
+			if (HAS_MY.test(o.text))
+				return { my: o.text, sub: progress.showRoman ? o.sub : undefined, speak: o.text };
+			// English options: anchor (and speak) the Burmese prompt instead.
+			if (ex.promptMy)
+				return {
+					my: ex.promptMy,
+					sub: progress.showRoman ? ex.promptRoman : undefined,
+					en: o.text,
+					speak: ex.promptMy
+				};
+			return { my: o.text };
 		}
-		if (ex.kind === 'assemble') return progress.showRoman ? `${ex.my} — ${ex.roman}` : ex.my;
-		if (ex.kind === 'listen') {
-			const base = progress.showRoman ? `${ex.my} (${ex.roman})` : ex.my;
-			return `${base} — ${ex.en}`;
-		}
-		return '';
+		if (ex.kind === 'assemble')
+			return { my: ex.my, sub: progress.showRoman ? ex.roman : undefined, speak: ex.my };
+		if (ex.kind === 'listen')
+			return { my: ex.my, sub: progress.showRoman ? ex.roman : undefined, en: ex.en, speak: ex.my };
+		return null;
 	});
 
 	function check() {
@@ -98,6 +108,9 @@
 			else if (ex.kind === 'choice')
 				vocabSrs.recordMistake(ex.promptMy ?? ex.options[ex.correct].text);
 			queue = [...queue, ex];
+			// Hear the right answer while the reveal shows it.
+			const answerAudio = reveal?.speak;
+			if (answerAudio) setTimeout(() => speak(answerAudio), 600);
 		}
 	}
 
@@ -134,7 +147,7 @@
 	}
 
 	function onkeydown(e: KeyboardEvent) {
-		if (isShortcutIgnored(e)) return;
+		if (isShortcutIgnored(e) || scriptSheet.open) return;
 		if (done) {
 			if (e.key === 'Enter') quit();
 			return;
@@ -228,6 +241,14 @@
 				<div class="fill" style="width: {pct}%"></div>
 			</div>
 			<button
+				class="roman-toggle my"
+				onclick={() => scriptSheet.show()}
+				title="Script table"
+				aria-label="Open the script reference table"
+			>
+				က
+			</button>
+			<button
 				class="roman-toggle"
 				class:off={!progress.showRoman}
 				onclick={() => progress.toggleRoman()}
@@ -244,9 +265,9 @@
 					{#if ex.kind === 'learn'}
 						<LearnCard my={ex.my} roman={ex.roman} en={ex.en} emoji={ex.emoji} note={ex.note} />
 					{:else if ex.kind === 'choice'}
-						<ChoiceExercise {ex} bind:selected {status} />
+						<ChoiceExercise {ex} bind:selected {status} onpick={check} />
 					{:else if ex.kind === 'listen'}
-						<ListenExercise {ex} bind:selected {status} />
+						<ListenExercise {ex} bind:selected {status} onpick={check} />
 					{:else if ex.kind === 'assemble'}
 						<AssembleExercise {ex} bind:sequence {status} />
 					{:else if ex.kind === 'match'}
@@ -273,7 +294,9 @@
 					<Mascot mood="sad" size={64} />
 					<div class="feedback-text">
 						<strong>{ui('not-quite').text}</strong>
-						{#if correctAnswerText}<span class="answer my">{ui('answer').text}: {correctAnswerText}</span>{/if}
+						{#if reveal}
+							<AnswerReveal my={reveal.my} sub={reveal.sub} en={reveal.en} speakText={reveal.speak} />
+						{/if}
 					</div>
 					<button class="btn red" onclick={advance}>{ui('got-it').text}</button>
 				</div>
@@ -290,9 +313,13 @@
 			{:else}
 				<div class="actions">
 					<button class="btn ghost" onclick={advance} title={ui('skip').hint}>{ui('skip').text}</button>
-					<button class="btn green" onclick={check} disabled={!canCheck} title={ui('check').hint}>
-						{ui('check').text}
-					</button>
+					{#if ex.kind === 'assemble'}
+						<button class="btn green" onclick={check} disabled={!canCheck} title={ui('check').hint}>
+							{ui('check').text}
+						</button>
+					{:else}
+						<span class="tap-hint">{ui('tap-answer').text}</span>
+					{/if}
 				</div>
 			{/if}
 		</footer>
@@ -418,9 +445,11 @@
 		color: var(--red-ink);
 		font-size: 1.15rem;
 	}
-	.answer {
-		color: var(--red-ink);
-		font-size: 0.95rem;
+	.tap-hint {
+		align-self: center;
+		color: var(--ink-soft);
+		font-size: 0.9rem;
+		font-weight: 700;
 	}
 	.hard-badge {
 		font-size: 1.15rem;

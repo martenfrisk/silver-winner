@@ -9,6 +9,7 @@ import {
 	decodableWords,
 	glyphById,
 	glyphs,
+	loanWords,
 	unitNotes,
 	type DecodableSentence,
 	type DecodableWord,
@@ -37,6 +38,8 @@ export type ScriptEx =
 			questionKey?: 'what-sound' | 'what-say' | 'which-hear';
 			promptBig?: string;
 			promptSpeak?: string;
+			/** Hold `promptSpeak` until after answering (decode-it-yourself drills). */
+			speakAfter?: boolean;
 			options: ChoiceOption[];
 			correct: number;
 			/** Seconds allowed (speed round); omit for untimed. */
@@ -92,17 +95,32 @@ export function g2s(glyph: Glyph, timed?: number): ScriptEx {
 	};
 }
 
-/** Sound → glyph, confusable distractors. */
+/**
+ * Sound → glyph, confusable distractors. Audio-first: you hear the letter's
+ * name and tap the shape — no romanized "sounds like k" crutch. Digits keep a
+ * written prompt (numerals aren't romanization).
+ */
 export function s2g(glyph: Glyph): ScriptEx {
 	const target: ChoiceOption = { label: glyph.char, my: true };
 	const { options, correct } = withCorrect(
 		distractors(glyph, 2).map((d) => ({ label: d.char, my: true })),
 		target
 	);
+	if (glyph.type === 'digit') {
+		return {
+			kind: 'choice',
+			glyphId: glyph.id,
+			question: `Tap the one that means “${glyph.sound}”`,
+			options,
+			correct
+		};
+	}
 	return {
 		kind: 'choice',
 		glyphId: glyph.id,
-		question: `Tap the one that ${glyph.type === 'digit' ? 'means' : 'sounds like'} “${glyph.sound}”`,
+		question: 'Which one did you hear?',
+		questionKey: 'which-hear',
+		promptSpeak: glyph.speak,
 		options,
 		correct
 	};
@@ -378,6 +396,51 @@ export function buildPracticeQueue(): { queue: ScriptEx[]; count: number } {
 	}
 
 	return { queue: shuffle(queue), count: ids.length };
+}
+
+// ── Loanword Lab ──────────────────────────────────────────────────────
+// Familiar borrowed words, decoded from script alone. First a decoding pass
+// (see it → sound it out → recognize the word; audio confirms after), then a
+// listening pass (hear it → find it written). No romanization anywhere.
+export function buildLoanwordQueue(): ScriptEx[] {
+	const words = shuffle(loanWords).slice(0, 8);
+	const queue: ScriptEx[] = [];
+	for (const w of words) {
+		const { options, correct } = withCorrect(
+			pick(
+				loanWords.filter((x) => x.my !== w.my),
+				2
+			).map((x) => ({ label: `${x.emoji} ${x.en}` })),
+			{ label: `${w.emoji} ${w.en}` }
+		);
+		queue.push({
+			kind: 'choice',
+			question: 'Sound it out — what is it?',
+			promptBig: w.my,
+			promptSpeak: w.my,
+			speakAfter: true,
+			options,
+			correct
+		});
+	}
+	for (const w of pick(words, Math.min(4, words.length))) {
+		const { options, correct } = withCorrect(
+			pick(
+				loanWords.filter((x) => x.my !== w.my),
+				2
+			).map((x) => ({ label: x.my, my: true })),
+			{ label: w.my, my: true }
+		);
+		queue.push({
+			kind: 'choice',
+			question: 'Which one did you hear?',
+			questionKey: 'which-hear',
+			promptSpeak: w.my,
+			options,
+			correct
+		});
+	}
+	return queue;
 }
 
 export function starsFor(mistakes: number): number {

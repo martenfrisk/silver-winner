@@ -10,6 +10,7 @@
 		questionKey,
 		promptBig,
 		promptSpeak,
+		speakAfter = false,
 		options,
 		correct,
 		timed,
@@ -19,6 +20,8 @@
 		questionKey?: 'what-sound' | 'what-say' | 'which-hear';
 		promptBig?: string;
 		promptSpeak?: string;
+		/** Hold the audio until after answering (decode-it-yourself drills). */
+		speakAfter?: boolean;
 		options: ChoiceOption[];
 		correct: number;
 		timed?: number;
@@ -32,7 +35,7 @@
 	const shownQuestion = $derived(questionKey ? ui(questionKey).text : question);
 
 	onMount(() => {
-		if (promptSpeak && !timed) {
+		if (promptSpeak && !timed && !speakAfter) {
 			const t = setTimeout(() => speak(promptSpeak!), 350);
 			return () => clearTimeout(t);
 		}
@@ -55,8 +58,15 @@
 		running = false;
 		answered = i;
 		const ok = i === correct;
-		if (ok) sfx.correct();
-		else sfx.wrong();
+		if (ok) {
+			sfx.correct();
+			// Decode drills held the audio back — reveal it now.
+			if (speakAfter && promptSpeak) setTimeout(() => speak(promptSpeak!), 250);
+		} else {
+			sfx.wrong();
+			// Hear what was asked while the correct option is highlighted.
+			if (promptSpeak) setTimeout(() => speak(promptSpeak!), 500);
+		}
 		onanswer(ok);
 	}
 
@@ -76,7 +86,7 @@
 	<h2 class="question">{#if timed}⚡ {/if}{shownQuestion}</h2>
 	{#if promptBig}
 		<div class="prompt">
-			<span class="my big">{promptBig}</span>
+			<span class="my big" class:word={promptBig.length > 2}>{promptBig}</span>
 			{#if promptSpeak && answered !== null}
 				<SpeakButton text={promptSpeak} />
 			{/if}
@@ -141,6 +151,11 @@
 	.big {
 		font-size: 4.2rem;
 		line-height: 1.4;
+	}
+	.big.word {
+		font-size: 2.4rem;
+		line-height: 1.6;
+		word-break: keep-all;
 	}
 	.prompt.listen {
 		padding: 18px 0;

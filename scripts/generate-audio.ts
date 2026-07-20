@@ -7,7 +7,7 @@
 //
 // Output: static/audio/<hash>.mp3 + src/lib/audio-manifest.json
 import { course } from '../src/lib/data/course';
-import { allAudioSyllables, decodableSentences, decodableWords, glyphs } from '../src/lib/data/script';
+import { allAudioSyllables, decodableSentences, decodableWords, glyphs, loanWords } from '../src/lib/data/script';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -41,6 +41,7 @@ for (const g of glyphs) texts.add(g.speak);
 for (const s of allAudioSyllables()) texts.add(s.text);
 for (const words of Object.values(decodableWords)) for (const w of words) texts.add(w.my);
 for (const sentences of Object.values(decodableSentences)) for (const s of sentences) texts.add(s.my);
+for (const w of loanWords) texts.add(w.my);
 
 mkdirSync(outDir, { recursive: true });
 

@@ -3,6 +3,7 @@ import { glyphById, scriptUnits } from '$lib/data/script';
 import { srs } from './srs.svelte';
 import {
 	buildIntroQueue,
+	buildLoanwordQueue,
 	buildPracticeQueue,
 	g2s,
 	pairListen,
@@ -59,6 +60,19 @@ describe('drill generators', () => {
 		expectValidChoice(ex);
 		if (ex.kind !== 'choice') return;
 		expect(ex.options[ex.correct].label).toBe(ka.char);
+	});
+
+	it('s2g is audio-first for letters, written for digits', () => {
+		const ex = s2g(ka);
+		if (ex.kind !== 'choice') return;
+		// The prompt is the spoken letter name — no romanized "sounds like k".
+		expect(ex.promptSpeak).toBe(ka.speak);
+		expect(ex.questionKey).toBe('which-hear');
+		const d5 = glyphById.get('d5')!;
+		const dEx = s2g(d5);
+		if (dEx.kind !== 'choice') return;
+		expect(dEx.promptSpeak).toBeUndefined();
+		expect(dEx.question).toContain('5');
 	});
 
 	it('syllableRead needs learned material and marks the built syllable', () => {
@@ -167,6 +181,26 @@ describe('buildPracticeQueue', () => {
 		expect(queue.some((ex) => ex.kind === 'trace')).toBe(false);
 		const drill = queue.find((ex) => ex.kind === 'choice' && ex.glyphId === 'ma');
 		expect(drill).toBeDefined();
+	});
+});
+
+describe('buildLoanwordQueue', () => {
+	it('runs a decode pass (audio held back) then a listening pass', () => {
+		const queue = buildLoanwordQueue();
+		const decodes = queue.filter((ex) => ex.kind === 'choice' && ex.speakAfter);
+		const listens = queue.filter((ex) => ex.kind === 'choice' && !ex.speakAfter);
+		expect(decodes.length).toBe(8);
+		expect(listens.length).toBe(4);
+		for (const ex of queue) {
+			if (ex.kind !== 'choice') continue;
+			expect(ex.correct).toBeGreaterThanOrEqual(0);
+			expect(ex.correct).toBeLessThan(ex.options.length);
+			expect(ex.promptSpeak).toBeDefined();
+			// No romanization: option labels are either script or plain English.
+			const labels = ex.options.map((o) => o.label);
+			expect(new Set(labels).size).toBe(labels.length);
+			if (ex.speakAfter) expect(ex.promptBig).toBeDefined();
+		}
 	});
 });
 

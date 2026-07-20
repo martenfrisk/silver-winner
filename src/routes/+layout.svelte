@@ -3,6 +3,7 @@
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import AchievementToast from '$lib/components/AchievementToast.svelte';
+	import ScriptSheet from '$lib/components/ScriptSheet.svelte';
 
 	let { children } = $props();
 
@@ -19,3 +20,4 @@
 
 {@render children()}
 <AchievementToast />
+<ScriptSheet />

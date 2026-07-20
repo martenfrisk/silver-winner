@@ -24,6 +24,7 @@ import {
 	decodableWords,
 	glyphById,
 	glyphs,
+	loanWords,
 	scriptUnits,
 	unitNotes,
 	TALL_AA
@@ -260,6 +261,7 @@ const warn = (category: string, msg: string) => add(warnings, category, msg);
 	for (const s of allAudioSyllables()) texts.add(s.text);
 	for (const words of Object.values(decodableWords)) for (const w of words) texts.add(w.my);
 	for (const sentences of Object.values(decodableSentences)) for (const s of sentences) texts.add(s.my);
+	for (const w of loanWords) texts.add(w.my);
 
 	const missing: string[] = [];
 	for (const text of texts) {

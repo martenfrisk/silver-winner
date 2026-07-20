@@ -1,8 +1,16 @@
 <script lang="ts">
+	// Reader-track session: one course unit's vocabulary, script-only.
+	// Romanization is never shown here — that's the whole point of the track.
+	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { fly, scale } from 'svelte/transition';
-	import { buildVocabPracticeQueue, starsFor, type VocabEx } from '$lib/practice-session';
-	import { vocabSrs } from '$lib/vocab-srs.svelte';
+	import { course } from '$lib/data/course';
+	import {
+		buildReaderQueue,
+		readerStarsKey,
+		starsFor,
+		type ReaderExercise
+	} from '$lib/reader-session';
 	import { progress } from '$lib/progress.svelte';
 	import { ui } from '$lib/i18n.svelte';
 	import { sfx, speak } from '$lib/audio';
@@ -14,8 +22,10 @@
 	import ListenExercise from '$lib/components/ListenExercise.svelte';
 	import AnswerReveal from '$lib/components/AnswerReveal.svelte';
 
+	const unit = course.find((u) => u.id === page.params.unit);
+
 	// The queue is built once at mount; requeues append copies.
-	let queue = $state<VocabEx[]>(buildVocabPracticeQueue());
+	let queue = $state<ReaderExercise[]>(unit ? buildReaderQueue(unit) : []);
 	let idx = $state(0);
 	let status = $state<'answer' | 'correct' | 'wrong'>('answer');
 	let done = $state(false);
@@ -24,55 +34,35 @@
 	let xpEarned = $state(0);
 	let stars = $state(0);
 	let selected = $state<number | null>(null);
-	let combo = $state(0);
-	let maxCombo = $state(0);
 
-	const item = $derived(queue[idx]);
-	const ex = $derived(item?.ex);
+	const ex = $derived(queue[idx]);
 	const total = $derived(queue.length);
 	const pct = $derived(total === 0 ? 0 : (solved / total) * 100);
 
-	const HAS_MY = /[က-႟]/;
-
-	/** The prominent correct-answer reveal shown after a wrong answer. */
+	/** The prominent correct-answer reveal — script + meaning, no romanization. */
 	const reveal = $derived.by(() => {
 		if (!ex) return null;
 		if (ex.kind === 'choice') {
 			const o = ex.options[ex.correct];
-			if (HAS_MY.test(o.text))
-				return { my: o.text, sub: progress.showRoman ? o.sub : undefined, speak: o.text };
-			// English options: anchor (and speak) the Burmese prompt instead.
-			if (ex.promptMy)
-				return {
-					my: ex.promptMy,
-					sub: progress.showRoman ? ex.promptRoman : undefined,
-					en: o.text,
-					speak: ex.promptMy
-				};
-			return { my: o.text };
+			if (ex.promptMy) return { my: ex.promptMy, en: o.text, speak: ex.promptMy };
+			return { my: o.text, speak: o.text };
 		}
-		return { my: ex.my, sub: progress.showRoman ? ex.roman : undefined, en: ex.en, speak: ex.my };
+		return { my: ex.my, en: ex.en, speak: ex.my };
 	});
 
 	function check() {
-		if (!ex || !item || status !== 'answer') return;
+		if (!ex || status !== 'answer') return;
 		const ok = selected === ex.correct;
-		vocabSrs.grade(item.my, ok);
 		if (ok) {
 			status = 'correct';
-			combo++;
-			maxCombo = Math.max(maxCombo, combo);
 			sfx.correct();
-			if (combo > 0 && combo % 5 === 0) sfx.match(); // combo milestone
-			// Reinforce the word's sound on my→en drills, where it wasn't the prompt.
-			if (ex.kind === 'choice' && ex.promptMy) speak(ex.promptMy);
+			// Reinforce the sound on reading drills, where audio wasn't the prompt.
+			if (ex.kind === 'choice') speak(ex.promptMy ?? ex.options[ex.correct].text);
 		} else {
 			status = 'wrong';
 			mistakes++;
-			combo = 0;
 			sfx.wrong();
-			queue = [...queue, item]; // practice it again at the end
-			// Hear the right answer while the reveal shows it.
+			queue = [...queue, ex]; // read it again at the end
 			const answerAudio = reveal?.speak;
 			if (answerAudio) setTimeout(() => speak(answerAudio), 600);
 		}
@@ -89,14 +79,13 @@
 
 	function finish() {
 		stars = starsFor(mistakes);
-		xpEarned = 10 + (stars === 3 ? 5 : 0) + (maxCombo >= 5 ? 5 : 0);
-		progress.addXp(xpEarned);
+		xpEarned = progress.completeLesson(readerStarsKey(unit!.id), stars);
 		done = true;
 		sfx.fanfare();
 	}
 
 	function quit() {
-		goto('/');
+		goto('/reader');
 	}
 
 	function onkeydown(e: KeyboardEvent) {
@@ -120,21 +109,20 @@
 <svelte:window {onkeydown} />
 
 <svelte:head>
-	<title>{ui('practice').text} · MyanLingo</title>
+	<title>{unit ? `Reading: ${unit.title}` : 'Reader track'} · MyanLingo</title>
 </svelte:head>
 
-{#if queue.length === 0}
-	<div class="empty">
-		<Mascot mood="idle" size={120} />
-		<h1>Nothing to practice yet</h1>
-		<p>Complete a lesson first — its words come back here for review.</p>
-		<a class="btn" href="/">Back home</a>
+{#if !unit}
+	<div class="missing">
+		<Mascot mood="sad" />
+		<p>Hmm, that unit doesn’t exist.</p>
+		<a class="btn" href="/reader">Back to the Reader track</a>
 	</div>
 {:else if done}
 	<Confetti />
 	<div class="complete" in:scale={{ duration: 450, start: 0.7 }}>
 		<Mascot mood="celebrate" size={150} />
-		<h1>{ui('practice-complete').text}</h1>
+		<h1>{ui('lesson-complete').text}</h1>
 		<div class="stars" aria-label="{stars} of 3 stars">
 			{#each [1, 2, 3] as s (s)}
 				<span class="star {s <= stars ? 'lit' : ''}" style="animation-delay: {s * 0.18}s">★</span>
@@ -156,29 +144,20 @@
 		</div>
 		<button class="btn green big" onclick={quit}>{ui('continue').text}</button>
 	</div>
-{:else}
-	<div class="practice">
+{:else if ex}
+	<div class="reader">
 		<header>
-			<button class="quit" onclick={quit} aria-label="Quit practice">✕</button>
+			<button class="quit" onclick={quit} aria-label="Quit session">✕</button>
 			<div class="bar" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
 				<div class="fill" style="width: {pct}%"></div>
 			</div>
 			<button
-				class="roman-toggle my"
+				class="table-btn my"
 				onclick={() => scriptSheet.show()}
 				title="Script table"
 				aria-label="Open the script reference table"
 			>
 				က
-			</button>
-			<button
-				class="roman-toggle"
-				class:off={!progress.showRoman}
-				onclick={() => progress.toggleRoman()}
-				title={progress.showRoman ? 'Hide romanization' : 'Show romanization'}
-				aria-pressed={progress.showRoman}
-			>
-				Aa
 			</button>
 		</header>
 
@@ -187,7 +166,7 @@
 				<div class="stage" in:fly={{ x: 60, duration: 300 }}>
 					{#if ex.kind === 'choice'}
 						<ChoiceExercise {ex} bind:selected {status} onpick={check} />
-					{:else if ex.kind === 'listen'}
+					{:else}
 						<ListenExercise {ex} bind:selected {status} onpick={check} />
 					{/if}
 				</div>
@@ -199,11 +178,8 @@
 				<div class="feedback" in:fly={{ y: 24, duration: 250 }}>
 					<Mascot mood="happy" size={64} />
 					<div class="feedback-text">
-						<strong>{['ကောင်းတယ်! Nice!', 'Great job!', 'ဟုတ်ပြီ! Correct!'][solved % 3]}</strong>
+						<strong>{['ကောင်းတယ်!', 'Nice reading!', 'ဟုတ်ပြီ!'][solved % 3]}</strong>
 					</div>
-					{#if combo >= 2}
-						<span class="combo-chip" class:hot={combo >= 5}>🔥×{combo}</span>
-					{/if}
 					<button class="btn green" onclick={advance}>{ui('continue').text}</button>
 				</div>
 			{:else if status === 'wrong'}
@@ -212,7 +188,7 @@
 					<div class="feedback-text">
 						<strong>{ui('not-quite').text}</strong>
 						{#if reveal}
-							<AnswerReveal my={reveal.my} sub={reveal.sub} en={reveal.en} speakText={reveal.speak} />
+							<AnswerReveal my={reveal.my} en={reveal.en} speakText={reveal.speak} />
 						{/if}
 					</div>
 					<button class="btn red" onclick={advance}>{ui('got-it').text}</button>
@@ -227,7 +203,7 @@
 {/if}
 
 <style>
-	.practice {
+	.reader {
 		display: flex;
 		flex-direction: column;
 		min-height: 100dvh;
@@ -252,20 +228,14 @@
 	.quit:hover {
 		background: var(--line);
 	}
-	.roman-toggle {
-		font-size: 0.9rem;
+	.table-btn {
+		font-size: 0.95rem;
 		font-weight: 900;
 		color: var(--teal-ink);
 		padding: 6px 10px;
 		border-radius: 10px;
 		box-shadow: inset 0 0 0 2px var(--line);
 		background: var(--card);
-		transition: opacity 0.15s ease;
-	}
-	.roman-toggle.off {
-		color: var(--ink-soft);
-		text-decoration: line-through;
-		opacity: 0.6;
 	}
 	.bar {
 		flex: 1;
@@ -307,10 +277,14 @@
 	}
 	.actions {
 		display: flex;
-		justify-content: flex-end;
-		gap: 12px;
+		justify-content: center;
 		max-width: 680px;
 		margin: 0 auto;
+	}
+	.tap-hint {
+		color: var(--ink-soft);
+		font-size: 0.9rem;
+		font-weight: 700;
 	}
 	.feedback {
 		display: flex;
@@ -333,28 +307,8 @@
 		color: var(--red-ink);
 		font-size: 1.15rem;
 	}
-	.tap-hint {
-		color: var(--ink-soft);
-		font-size: 0.9rem;
-		font-weight: 700;
-	}
-	.combo-chip {
-		font-weight: 900;
-		font-size: 0.95rem;
-		color: var(--gold-ink);
-		background: var(--gold-soft);
-		border-radius: 99px;
-		padding: 6px 12px;
-		white-space: nowrap;
-		animation: pulse-pop 0.4s ease-in-out;
-	}
-	.combo-chip.hot {
-		color: #fff;
-		background: var(--coral);
-		box-shadow: 0 2px 0 var(--coral-dark);
-	}
 
-	.empty,
+	.missing,
 	.complete {
 		min-height: 100dvh;
 		display: flex;
@@ -365,16 +319,7 @@
 		text-align: center;
 		padding: 24px;
 	}
-	.empty h1 {
-		font-size: 1.5rem;
-		font-weight: 900;
-	}
-	.empty p {
-		color: var(--ink-soft);
-		font-weight: 700;
-		max-width: 380px;
-	}
-	.empty .btn {
+	.missing .btn {
 		text-decoration: none;
 	}
 	.complete h1 {

@@ -5,6 +5,41 @@ each group. Everything fits the localStorage-only, no-backend setup.
 
 Legend: ✅ = implemented · 💤 = backlog
 
+## Round 4 — user-testing fixes (2026-07-20)
+
+All six items from the first user-testing round, ✅ implemented:
+
+- ✅ **One-tap multiple choice** — choice/listen answers check on tap; the
+  Check button remains only for assemble (which needs it). Skip stays.
+- ✅ **Prominent wrong-answer reveal + audio** — `AnswerReveal.svelte` card
+  (green-bordered, script + meaning + replay button) in the wrong footer of
+  the lesson player, /practice and /reader; the correct answer's audio
+  auto-plays ~0.6s after the buzz. Script Studio drills re-speak the prompt
+  on a miss; word/sentence reads speak the answer after misses too.
+- ✅ **Daily progress nudge** — home banner with a goal ring: "Start today's
+  20 XP" / "N XP to today's goal" / "Daily goal reached! 🎉", plus a single
+  suggested action (due words > due glyphs > next lesson > crown run).
+- ✅ **Quick-access script table** — `ScriptSheet.svelte` overlay (global,
+  in the root layout, opened via `scriptSheet.show()` from the က button on
+  home / lesson / practice / reader headers). Chart sections + sounds +
+  SRS heat; tap a glyph to hear its name.
+- ✅ **Reader track** — third track at `/reader` for script-readers who
+  don't know the language: per-unit sessions from course vocab, script-only
+  (options never carry roman subs), forms rotate audio→script,
+  script→meaning, meaning→script. Stars stored as `reader-<unitId>` in the
+  existing stars map; XP via `completeLesson`.
+- ✅ **Audio-first Script Studio** — (a) `s2g` drills now play the letter's
+  spoken name ("which one did you hear?") instead of romanized "sounds like
+  k" (digits keep written prompts); (b) **Loanword Lab** (`/script/loanwords`,
+  card on the studio hub): decode familiar borrowed words (ကော်ဖီ, ဟိုတယ်,
+  ကွန်ပျူတာ…) — first a decode pass where the audio is *held back* until you
+  answer (`speakAfter`), then a hear→find-it-written pass. Zero romanization.
+  Data in `loanWords` (script.ts), wired into audio generation + lint.
+
+  Note: `g2s` ("what sound does this make?") still uses romanized sound
+  labels — the one remaining romanization in the studio. Fully replacing it
+  needs tappable audio options; see #18/#24.
+
 ## Highest impact next
 
 1. ✅ **Listening-only exercise type** — the audio pipeline exists but is never the
