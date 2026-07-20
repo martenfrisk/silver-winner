@@ -19,6 +19,7 @@
 	import AnswerReveal from '$lib/components/AnswerReveal.svelte';
 	import NoAudioPrompt from '$lib/components/NoAudioPrompt.svelte';
 	import { grammarTip } from '$lib/grammar-tips';
+	import { silentSafe } from '$lib/silent-mode';
 
 	const found = findLesson(page.params.id ?? '');
 
@@ -52,7 +53,9 @@
 	let selected = $state<number | null>(null);
 	let sequence = $state<string[]>([]);
 
-	const ex = $derived(queue[idx]);
+	// Listening drills become reading drills while audio is off, so muting
+	// mid-lesson never strands the learner on a question they can't hear.
+	const ex = $derived(silentSafe(queue[idx], progress.audioOn));
 	const total = $derived(queue.length);
 	const pct = $derived(total === 0 ? 0 : (solved / total) * 100);
 

@@ -9,7 +9,7 @@
 
 	const unit = scriptUnitById.get(page.params.unit ?? '');
 	// svelte-ignore state_referenced_locally
-	const queue = unit ? buildIntroQueue(unit) : [];
+	const queue = unit ? buildIntroQueue(unit, progress.audioOn) : [];
 
 	function onfinish({ stars }: { stars: number }) {
 		const firstTime = !srs.isUnitDone(unit!.id);

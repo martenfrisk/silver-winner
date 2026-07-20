@@ -23,6 +23,7 @@
 	import AnswerReveal from '$lib/components/AnswerReveal.svelte';
 	import NoAudioPrompt from '$lib/components/NoAudioPrompt.svelte';
 	import { grammarTip } from '$lib/grammar-tips';
+	import { silentSafe } from '$lib/silent-mode';
 
 	const unit = course.find((u) => u.id === page.params.unit);
 
@@ -37,7 +38,8 @@
 	let stars = $state(0);
 	let selected = $state<number | null>(null);
 
-	const ex = $derived(queue[idx]);
+	// Listening drills become reading drills while audio is off.
+	const ex = $derived(silentSafe(queue[idx], progress.audioOn));
 	const total = $derived(queue.length);
 	const pct = $derived(total === 0 ? 0 : (solved / total) * 100);
 

@@ -58,6 +58,34 @@ All six items from the first user-testing round, ✅ implemented:
   "seen" state lives in `no-audio-prompt.svelte.ts`, reset on reload by
   design so the nudge can resurface next real session.
 
+## Round 6b — no unanswerable exercises while muted (2026-07-20)
+
+Muting has to change *what gets asked*, not just silence the speaker — a
+"Tap what you hear" card with no sound is unanswerable. `silent-mode.ts`
+handles two shapes differently:
+
+- ✅ **Course `listen` drills convert** — options are written Burmese, so
+  only the question is lost. `silentSafe()` swaps it for "Which one says
+  *X*?" over the *same options and correct index*, so grading, mistake
+  recording and the reveal all keep working. Applied at **render time**
+  (`$derived`) in the lesson player, /practice and /reader, so muting
+  mid-session converts the drills still ahead rather than stranding the
+  learner on one.
+- ✅ **Script Studio drills that can't convert get dropped** — minimal-pair
+  and tone drills show two written syllables and ask which you *heard*;
+  with no audio both options are equally valid, so there's no honest
+  silent form. `scriptNeedsAudio()` identifies them (a choice with
+  `promptSpeak` and no `promptBig`). Build-time: `listenDrill` returns
+  null when muted (callers already fall through to a visual drill), the
+  Loanword Lab keeps its visual decode pass and drops its listening pass,
+  and `s2g` falls back to the written "sounds like X" prompt — fixing a
+  round-4 regression where audio-first `s2g` was unanswerable when muted.
+  Render-time: `ScriptSession` removes such a drill from the queue if the
+  learner mutes while it's on screen (removed, not skipped, so the
+  progress bar's denominator stays honest).
+- ✅ **Dead speaker buttons hidden** — `SpeakButton` and the story replay
+  buttons don't render while audio is off.
+
 ## Round 5 — beating Duolingo on learning science (2026-07-20)
 
 - ✅ **Recall ladder** — the vocab SRS box now drives exercise *format* in

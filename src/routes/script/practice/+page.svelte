@@ -6,7 +6,7 @@
 	import Mascot from '$lib/components/Mascot.svelte';
 
 	// svelte-ignore state_referenced_locally
-	const { queue } = buildPracticeQueue();
+	const { queue } = buildPracticeQueue(progress.audioOn);
 
 	function onfinish({ stars }: { stars: number }) {
 		const xp = 10 + (stars === 3 ? 5 : 0);

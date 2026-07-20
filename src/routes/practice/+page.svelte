@@ -17,6 +17,7 @@
 	import AnswerReveal from '$lib/components/AnswerReveal.svelte';
 	import NoAudioPrompt from '$lib/components/NoAudioPrompt.svelte';
 	import { grammarTip } from '$lib/grammar-tips';
+	import { silentSafe } from '$lib/silent-mode';
 
 	// The queue is built once at mount; requeues append copies.
 	let queue = $state<VocabEx[]>(buildVocabPracticeQueue());
@@ -33,7 +34,8 @@
 	let maxCombo = $state(0);
 
 	const item = $derived(queue[idx]);
-	const ex = $derived(item?.ex);
+	// Listening drills become reading drills while audio is off.
+	const ex = $derived(item && silentSafe(item.ex, progress.audioOn));
 	const total = $derived(queue.length);
 	const pct = $derived(total === 0 ? 0 : (solved / total) * 100);
 	// Only assemble still needs a Check step; choice/listen check on tap and

@@ -120,7 +120,9 @@
 										{chunk.my}{#if chunk.isNew}<span class="new-dot" title="New word">•</span>{/if}
 									</button>
 								{/each}
-								<button class="replay" onclick={() => replayLine(li)} aria-label="Replay line">🔊</button>
+								{#if progress.audioOn}
+									<button class="replay" onclick={() => replayLine(li)} aria-label="Replay line">🔊</button>
+								{/if}
 							</div>
 							{#if openGloss?.startsWith(`${li}:`)}
 								{@const chunk = line.chunks[Number(openGloss.split(':')[1])]}
