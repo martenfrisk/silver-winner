@@ -93,13 +93,16 @@
 	<meta name="description" content="A playful way to learn the Burmese language." />
 </svelte:head>
 
-<div class="home">
+<div class="home" class:onboarding={progress.profile === null}>
 	<header class="topbar">
 		<div class="brand">
 			<span class="brand-mark">မ</span>
 			<span class="brand-name">MyanLingo</span>
 		</div>
 		<div class="pills">
+			<!-- A 0% ring, a 0-day streak and "0 XP" say nothing on day one.
+			     They appear as soon as there's anything to report. -->
+			{#if progress.xp > 0}
 			<span
 				class="pill goal-pill"
 				class:reached={goalPct >= 1}
@@ -122,6 +125,7 @@
 				{/if}
 			</span>
 			<span class="pill" title="Total XP">⚡ {progress.xp} XP</span>
+			{/if}
 			<button
 				class="pill toggle"
 				class:off={!progress.showRoman}
@@ -152,179 +156,188 @@
 	</header>
 
 	{#if progress.profile === null}
+		<!-- First run: nothing but the question. The path, the tracks and the
+		     daily-goal chrome all arrive once we know who's learning. -->
 		<StartChooser />
 	{:else}
-		<section class="hero">
-			<Mascot mood={progress.completedCount === totalLessons ? 'celebrate' : 'idle'} size={130} />
-			<div class="hero-text">
-				<h1>
-					{#if progress.completedCount === 0}
-						မင်္ဂလာပါ! <span class="hero-sub">{heroSub ?? 'I’m Shwe. Let’s learn Burmese!'}</span>
-					{:else if progress.completedCount === totalLessons}
-						You finished the course! <span class="hero-sub">ဂုဏ်ယူပါတယ် — congratulations!</span>
-					{:else}
-						{ui('welcome-back').text} <span class="hero-sub">{progress.completedCount}/{totalLessons} lessons done. Keep going!</span>
-					{/if}
-				</h1>
-			</div>
-		</section>
-	{/if}
-
-	<a class="nudge" class:reached={goalRemaining === 0} href={suggestion.href}>
-		<span class="nudge-ring" aria-hidden="true">
-			<svg viewBox="0 0 34 34">
-				<circle class="nudge-ring-bg" cx="17" cy="17" r="13.5" />
-				<circle class="nudge-ring-fill" cx="17" cy="17" r="13.5" stroke-dasharray="{goalPct * 84.8} 84.8" />
-			</svg>
-			<span class="nudge-ring-label">{goalRemaining === 0 ? '✓' : Math.round(goalPct * 100) + '%'}</span>
-		</span>
-		<span class="nudge-text">
-			{#if goalRemaining === 0}
-				<strong>Daily goal reached! 🎉</strong>
-				<span class="nudge-sub">On a roll — how about {suggestion.label}?</span>
-			{:else if progress.xpToday === 0}
-				<strong>Start today's {progress.dailyGoal} XP</strong>
-				<span class="nudge-sub">Keep the 🔥 streak alive — try {suggestion.label}</span>
-			{:else}
-				<strong>{goalRemaining} XP to today's goal</strong>
-				<span class="nudge-sub">Almost there — try {suggestion.label}</span>
-			{/if}
-		</span>
-		<span class="nudge-arrow" aria-hidden="true">→</span>
-	</a>
-
-	<a class="primary-card" href={primaryCard.href}>
-		<span class="primary-emoji" class:my={primary === 'script'}>
-			{primary === 'course' ? '🐱' : primary === 'reader' ? '📖' : 'အ'}
-		</span>
-		<span class="primary-text">
-			<span class="primary-title">{primaryCard.title}</span>
-			<span class="primary-sub">{primaryCard.sub}</span>
-		</span>
-		<span class="primary-arrow">→</span>
-	</a>
-
-	{#if vocabSrs.introducedCount > 0}
-		<a class="script-card practice-card" href="/practice">
-			<span class="script-glyph practice-glyph">💪</span>
-			<span class="script-text">
-				<span class="script-title practice-title">{ui('practice').text}</span>
-				<span class="script-sub">
-					{#if vocabSrs.dueCount > 0}
-						{vocabSrs.dueCount} {ui('to-review').text}
-					{:else}
-						Keep your {vocabSrs.introducedCount} words fresh
-					{/if}
-				</span>
-			</span>
-			{#if vocabSrs.dueCount > 0}
-				<span class="script-due">{vocabSrs.dueCount}</span>
-			{:else}
-				<span class="script-arrow practice-arrow">→</span>
-			{/if}
-		</a>
-	{/if}
-
-	{#if unlockedStories > 0}
-		<a class="script-card stories-card" href="/stories">
-			<span class="script-glyph stories-glyph">📚</span>
-			<span class="script-text">
-				<span class="script-title stories-title">Stories</span>
-				<span class="script-sub">
-					{unlockedStories} tiny conversation{unlockedStories > 1 ? 's' : ''} you can already understand
-				</span>
-			</span>
-			<span class="script-arrow stories-arrow">→</span>
-		</a>
-	{/if}
-
-	<section class="more">
-		<h2 class="more-title">More ways to learn</h2>
-		{#each tracks.filter((t) => t.id !== primary) as t (t.id)}
-			<a class="more-card" href={trackHref(t.id)}>
-				<span class="more-emoji" class:my={t.id === 'script'}>{t.emoji}</span>
-				<span class="more-text">
-					<span class="more-name">{t.title}</span>
-					<span class="more-audience">{t.audience}</span>
-				</span>
-				{#if t.id === 'script' && srs.dueCount > 0}
-					<span class="script-due">{srs.dueCount}</span>
-				{:else}
-					<span class="more-arrow">→</span>
-				{/if}
-			</a>
-		{/each}
-	</section>
-
-	<div class="path">
-		{#each course as unit (unit.id)}
-			<section class="unit">
-				<div class="unit-header" style="--unit-color: {unit.color}">
-					<div>
-						<h2>{unit.title}</h2>
-						<p class="my unit-my">{unit.my}</p>
-					</div>
-				</div>
-				<div class="nodes">
-					{#each unit.lessons as lesson, i (lesson.id)}
-						{@const unlocked = progress.isUnlocked(lesson.id)}
-						{@const stars = progress.stars[lesson.id] ?? 0}
-						{@const isCurrent = progress.currentLesson === lesson.id}
-						<div class="node-row" style="--offset: {[0, 1, -1][i % 3]}">
-							<div class="node-wrap">
-								<button
-									class="node {unlocked ? '' : 'locked'} {stars > 0 ? 'completed' : ''} {isCurrent ? 'current' : ''}"
-									style="--unit-color: {unit.color}"
-									onclick={() => openLesson(lesson.id, unlocked)}
-									disabled={!unlocked}
-									aria-label="{lesson.title}{unlocked ? '' : ' (locked)'}"
-								>
-									{#if isCurrent}
-										<span class="start-bubble" class:my={ui('start').my}>{ui('start').text}</span>
-									{/if}
-									<span class="node-emoji">{unlocked ? lesson.emoji : '🔒'}</span>
-									{#if stars > 0}
-										<span class="node-stars">
-											{'★'.repeat(stars)}<span class="dim">{'★'.repeat(3 - stars)}</span>
-										</span>
-									{/if}
-								</button>
-								{#if !unlocked && progress.profile === 'speaker'}
-									<a
-										class="testout-chip"
-										href="/lesson/{lesson.id}?mode=hard"
-										title="Test out: a perfect drills-only run completes this lesson"
-										aria-label="Test out of {lesson.title}"
-									>
-										⚡
-									</a>
-								{/if}
-								{#if stars > 0}
-									<a
-										class="crown-chip"
-										class:crowned={progress.isCrowned(lesson.id)}
-										href="/lesson/{lesson.id}?mode=hard"
-										title={progress.isCrowned(lesson.id)
-											? 'Crowned! Replay hard mode anytime'
-											: 'Hard mode: a perfect drills-only run earns the crown'}
-										aria-label="Hard mode for {lesson.title}"
-									>
-										👑
-									</a>
-								{/if}
-							</div>
-							<span class="node-title {unlocked ? '' : 'muted'}">{lesson.title}</span>
-						</div>
-					{/each}
+		<aside class="rail">
+			<section class="hero">
+				<Mascot mood={progress.completedCount === totalLessons ? 'celebrate' : 'idle'} size={130} />
+				<div class="hero-text">
+					<h1>
+						{#if progress.completedCount === 0}
+							မင်္ဂလာပါ! <span class="hero-sub">{heroSub ?? 'I’m Shwe. Let’s learn Burmese!'}</span>
+						{:else if progress.completedCount === totalLessons}
+							You finished the course! <span class="hero-sub">ဂုဏ်ယူပါတယ် — congratulations!</span>
+						{:else}
+							{ui('welcome-back').text} <span class="hero-sub">{progress.completedCount}/{totalLessons} lessons done. Keep going!</span>
+						{/if}
+					</h1>
 				</div>
 			</section>
-		{/each}
-	</div>
 
-	<footer class="page-footer">
-		<p>Progress is saved in your browser.</p>
-		<button class="reset" onclick={confirmReset}>Reset progress</button>
-	</footer>
+			<a class="primary-card" href={primaryCard.href}>
+				<span class="primary-emoji" class:my={primary === 'script'}>
+					{primary === 'course' ? '🐱' : primary === 'reader' ? '📖' : 'အ'}
+				</span>
+				<span class="primary-text">
+					<span class="primary-title">{primaryCard.title}</span>
+					<span class="primary-sub">{primaryCard.sub}</span>
+				</span>
+				<span class="primary-arrow">→</span>
+			</a>
+
+			<!-- Before the first lesson this would only repeat the card above it and
+			     the START bubble on the path — three ways to say "begin lesson one".
+			     It earns its place once there's a streak worth keeping. -->
+			{#if progress.completedCount > 0}
+				<a class="nudge" class:reached={goalRemaining === 0} href={suggestion.href}>
+					<span class="nudge-ring" aria-hidden="true">
+						<svg viewBox="0 0 34 34">
+							<circle class="nudge-ring-bg" cx="17" cy="17" r="13.5" />
+							<circle class="nudge-ring-fill" cx="17" cy="17" r="13.5" stroke-dasharray="{goalPct * 84.8} 84.8" />
+						</svg>
+						<span class="nudge-ring-label">{goalRemaining === 0 ? '✓' : Math.round(goalPct * 100) + '%'}</span>
+					</span>
+					<span class="nudge-text">
+						{#if goalRemaining === 0}
+							<strong>Daily goal reached! 🎉</strong>
+							<span class="nudge-sub">On a roll — how about {suggestion.label}?</span>
+						{:else if progress.xpToday === 0}
+							<strong>Start today's {progress.dailyGoal} XP</strong>
+							<span class="nudge-sub">Keep the 🔥 streak alive — try {suggestion.label}</span>
+						{:else}
+							<strong>{goalRemaining} XP to today's goal</strong>
+							<span class="nudge-sub">Almost there — try {suggestion.label}</span>
+						{/if}
+					</span>
+					<span class="nudge-arrow" aria-hidden="true">→</span>
+				</a>
+			{/if}
+
+			{#if vocabSrs.introducedCount > 0}
+				<a class="script-card practice-card" href="/practice">
+					<span class="script-glyph practice-glyph">💪</span>
+					<span class="script-text">
+						<span class="script-title practice-title">{ui('practice').text}</span>
+						<span class="script-sub">
+							{#if vocabSrs.dueCount > 0}
+								{vocabSrs.dueCount} {ui('to-review').text}
+							{:else}
+								Keep your {vocabSrs.introducedCount} words fresh
+							{/if}
+						</span>
+					</span>
+					{#if vocabSrs.dueCount > 0}
+						<span class="script-due">{vocabSrs.dueCount}</span>
+					{:else}
+						<span class="script-arrow practice-arrow">→</span>
+					{/if}
+				</a>
+			{/if}
+
+			{#if unlockedStories > 0}
+				<a class="script-card stories-card" href="/stories">
+					<span class="script-glyph stories-glyph">📚</span>
+					<span class="script-text">
+						<span class="script-title stories-title">Stories</span>
+						<span class="script-sub">
+							{unlockedStories} tiny conversation{unlockedStories > 1 ? 's' : ''} you can already understand
+						</span>
+					</span>
+					<span class="script-arrow stories-arrow">→</span>
+				</a>
+			{/if}
+
+			<section class="more">
+				<h2 class="more-title">More ways to learn</h2>
+				{#each tracks.filter((t) => t.id !== primary) as t (t.id)}
+					<a class="more-card" href={trackHref(t.id)}>
+						<span class="more-emoji" class:my={t.id === 'script'}>{t.emoji}</span>
+						<span class="more-text">
+							<span class="more-name">{t.title}</span>
+							<span class="more-audience">{t.audience}</span>
+						</span>
+						{#if t.id === 'script' && srs.dueCount > 0}
+							<span class="script-due">{srs.dueCount}</span>
+						{:else}
+							<span class="more-arrow">→</span>
+						{/if}
+					</a>
+				{/each}
+			</section>
+		</aside>
+
+		<div class="path">
+			{#each course as unit (unit.id)}
+				<section class="unit">
+					<div class="unit-header" style="--unit-color: {unit.color}">
+						<div>
+							<h2>{unit.title}</h2>
+							<p class="my unit-my">{unit.my}</p>
+						</div>
+					</div>
+					<div class="nodes">
+						{#each unit.lessons as lesson, i (lesson.id)}
+							{@const unlocked = progress.isUnlocked(lesson.id)}
+							{@const stars = progress.stars[lesson.id] ?? 0}
+							{@const isCurrent = progress.currentLesson === lesson.id}
+							<div class="node-row" style="--offset: {[0, 1, -1][i % 3]}">
+								<div class="node-wrap">
+									<button
+										class="node {unlocked ? '' : 'locked'} {stars > 0 ? 'completed' : ''} {isCurrent ? 'current' : ''}"
+										style="--unit-color: {unit.color}"
+										onclick={() => openLesson(lesson.id, unlocked)}
+										disabled={!unlocked}
+										aria-label="{lesson.title}{unlocked ? '' : ' (locked)'}"
+									>
+										{#if isCurrent}
+											<span class="start-bubble" class:my={ui('start').my}>{ui('start').text}</span>
+										{/if}
+										<span class="node-emoji">{unlocked ? lesson.emoji : '🔒'}</span>
+										{#if stars > 0}
+											<span class="node-stars">
+												{'★'.repeat(stars)}<span class="dim">{'★'.repeat(3 - stars)}</span>
+											</span>
+										{/if}
+									</button>
+									{#if !unlocked && progress.profile === 'speaker'}
+										<a
+											class="testout-chip"
+											href="/lesson/{lesson.id}?mode=hard"
+											title="Test out: a perfect drills-only run completes this lesson"
+											aria-label="Test out of {lesson.title}"
+										>
+											⚡
+										</a>
+									{/if}
+									{#if stars > 0}
+										<a
+											class="crown-chip"
+											class:crowned={progress.isCrowned(lesson.id)}
+											href="/lesson/{lesson.id}?mode=hard"
+											title={progress.isCrowned(lesson.id)
+												? 'Crowned! Replay hard mode anytime'
+												: 'Hard mode: a perfect drills-only run earns the crown'}
+											aria-label="Hard mode for {lesson.title}"
+										>
+											👑
+										</a>
+									{/if}
+								</div>
+								<span class="node-title {unlocked ? '' : 'muted'}">{lesson.title}</span>
+							</div>
+						{/each}
+					</div>
+				</section>
+			{/each}
+		</div>
+
+		<footer class="page-footer">
+			<p>Progress is saved in your browser.</p>
+			<button class="reset" onclick={confirmReset}>Reset progress</button>
+		</footer>
+	{/if}
 </div>
 
 <style>
@@ -332,6 +345,58 @@
 		max-width: 560px;
 		margin: 0 auto;
 		padding: 0 20px 60px;
+	}
+
+	/* The cards stack in one rail; on desktop that rail becomes a sidebar
+	   next to the path (see the wide layout below). A single flex gap here
+	   replaces the per-card margins so both layouts space identically. */
+	.rail {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	/* Wide screens: the path gets the room it wants and the cards move into a
+	   sticky sidebar, instead of everything queueing in one narrow column. */
+	@media (min-width: 900px) {
+		.home {
+			max-width: 1080px;
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) 340px;
+			column-gap: 40px;
+			align-items: start;
+		}
+		.topbar {
+			grid-column: 1 / -1;
+		}
+		.path {
+			grid-column: 1;
+			grid-row: 2;
+			padding-top: 6px;
+		}
+		.rail {
+			grid-column: 2;
+			grid-row: 2;
+			position: sticky;
+			top: 78px;
+		}
+		.page-footer {
+			grid-column: 1 / -1;
+		}
+		/* More width means a wider zigzag. */
+		.node-row {
+			translate: calc(var(--offset) * 104px) 0;
+		}
+		/* The mascot doesn't need to dominate a 340px rail. */
+		.hero :global(.shwe) {
+			width: 96px;
+			height: 96px;
+		}
+		/* Onboarding has no path and no sidebar — just the question, centred. */
+		.home.onboarding {
+			display: block;
+			max-width: 640px;
+		}
 	}
 	.topbar {
 		position: sticky;
@@ -430,7 +495,7 @@
 		display: flex;
 		align-items: center;
 		gap: 18px;
-		padding: 18px 0 8px;
+		padding: 12px 0 0;
 	}
 	.hero h1 {
 		font-size: 1.5rem;
@@ -449,7 +514,6 @@
 		display: flex;
 		align-items: center;
 		gap: 14px;
-		margin-top: 6px;
 		padding: 12px 16px;
 		border-radius: var(--radius);
 		background: var(--gold-soft);
@@ -536,7 +600,6 @@
 		display: flex;
 		align-items: center;
 		gap: 14px;
-		margin-top: 14px;
 		padding: 14px 18px;
 		border-radius: var(--radius);
 		background: var(--card);
@@ -597,7 +660,6 @@
 		display: flex;
 		align-items: center;
 		gap: 16px;
-		margin-top: 14px;
 		padding: 18px 20px;
 		border-radius: var(--radius);
 		background: var(--gold);
@@ -644,7 +706,7 @@
 	}
 
 	.more {
-		margin-top: 22px;
+		margin-top: 10px;
 	}
 	.more-title {
 		font-size: 0.78rem;

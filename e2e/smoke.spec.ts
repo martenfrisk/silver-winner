@@ -162,10 +162,15 @@ test('completes lesson 1, persists progress and unlocks lesson 2', async ({ page
 });
 
 test('earns a crown with a perfect hard-mode run', async ({ page }) => {
-	// Seed lesson 1 as already completed so hard mode is meaningful.
+	// Seed lesson 1 as already completed so hard mode is meaningful. The
+	// profile matters too: without one the home screen shows the start
+	// chooser instead of the path.
 	await page.addInitScript(
 		([key, lessonId]) => {
-			localStorage.setItem(key, JSON.stringify({ sound: false, stars: { [lessonId]: 3 } }));
+			localStorage.setItem(
+				key,
+				JSON.stringify({ sound: false, profile: 'beginner', stars: { [lessonId]: 3 } })
+			);
 		},
 		[STORAGE_KEY, lesson1.id] as const
 	);
