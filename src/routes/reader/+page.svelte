@@ -20,7 +20,7 @@
 		<Mascot mood="idle" size={84} />
 		<p>
 			Already know the script but not the words? Read the whole course in
-			<strong>Burmese script only</strong> — no romanization, ever. Audio and
+			<strong>Burmese script only</strong>, no romanization, ever. Audio and
 			meaning carry you.
 		</p>
 	</div>

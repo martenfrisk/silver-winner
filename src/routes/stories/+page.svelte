@@ -30,7 +30,7 @@
 		<Mascot mood="idle" size={84} />
 		<p>
 			Tiny real conversations made of <strong>words you've already learned</strong>.
-			Listen line by line — tap any word you've forgotten.
+			Listen line by line, tap any word you've forgotten.
 		</p>
 	</div>
 

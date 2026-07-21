@@ -47,16 +47,16 @@
 		if (primary === 'reader') {
 			return readerNext
 				? { href: `/reader/${readerNext.id}`, title: 'Continue reading', sub: `Next: ${readerNext.title}` }
-				: { href: '/reader', title: 'Reader track', sub: 'All units read — keep them fresh' };
+				: { href: '/reader', title: 'Reader track', sub: 'All units read. Keep them fresh' };
 		}
 		if (primary === 'script') {
 			return scriptNext
 				? { href: '/script', title: 'Continue the script', sub: `Next: ${scriptNext.title} · ${srs.introducedCount}/${totalGlyphs} glyphs` }
-				: { href: '/script', title: 'Script Studio', sub: 'All letters learned — keep them sharp' };
+				: { href: '/script', title: 'Script Studio', sub: 'All letters learned. Keep them sharp' };
 		}
 		return courseNext
 			? { href: `/lesson/${courseNext.id}`, title: 'Continue the course', sub: `Next: ${courseNext.title}` }
-			: { href: uncrowned ? `/lesson/${uncrowned.id}?mode=hard` : '/practice', title: 'Course complete!', sub: uncrowned ? `Go for 👑 crowns — next: ${uncrowned.title}` : 'Keep everything fresh in Practice' };
+			: { href: uncrowned ? `/lesson/${uncrowned.id}?mode=hard` : '/practice', title: 'Course complete!', sub: uncrowned ? `Go for 👑 crowns, next: ${uncrowned.title}` : 'Keep everything fresh in Practice' };
 	});
 
 	/** href for a track's compact card in "More ways to learn". */
@@ -67,7 +67,7 @@
 
 	const heroSub = $derived.by(() => {
 		if (progress.completedCount > 0) return null; // progress messaging takes over
-		if (progress.profile === 'script-reader') return 'You already read the script — let’s fill in the words.';
+		if (progress.profile === 'script-reader') return 'You already read the script. Let’s fill in the words.';
 		if (progress.profile === 'speaker') return 'Let’s get you reading what you already speak.';
 		return null;
 	});
@@ -89,7 +89,7 @@
 </script>
 
 <svelte:head>
-	<title>MyanLingo — Learn Burmese</title>
+	<title>MyanLingo: Learn Burmese</title>
 	<meta name="description" content="A playful way to learn the Burmese language." />
 </svelte:head>
 
@@ -168,7 +168,7 @@
 						{#if progress.completedCount === 0}
 							မင်္ဂလာပါ! <span class="hero-sub">{heroSub ?? 'I’m Shwe. Let’s learn Burmese!'}</span>
 						{:else if progress.completedCount === totalLessons}
-							You finished the course! <span class="hero-sub">ဂုဏ်ယူပါတယ် — congratulations!</span>
+							You finished the course! <span class="hero-sub">ဂုဏ်ယူပါတယ်, congratulations!</span>
 						{:else}
 							{ui('welcome-back').text} <span class="hero-sub">{progress.completedCount}/{totalLessons} lessons done. Keep going!</span>
 						{/if}
@@ -202,13 +202,13 @@
 					<span class="nudge-text">
 						{#if goalRemaining === 0}
 							<strong>Daily goal reached! 🎉</strong>
-							<span class="nudge-sub">On a roll — how about {suggestion.label}?</span>
+							<span class="nudge-sub">On a roll, how about {suggestion.label}?</span>
 						{:else if progress.xpToday === 0}
 							<strong>Start today's {progress.dailyGoal} XP</strong>
-							<span class="nudge-sub">Keep the 🔥 streak alive — try {suggestion.label}</span>
+							<span class="nudge-sub">Keep the 🔥 streak alive, try {suggestion.label}</span>
 						{:else}
 							<strong>{goalRemaining} XP to today's goal</strong>
-							<span class="nudge-sub">Almost there — try {suggestion.label}</span>
+							<span class="nudge-sub">Almost there, try {suggestion.label}</span>
 						{/if}
 					</span>
 					<span class="nudge-arrow" aria-hidden="true">→</span>

@@ -212,20 +212,20 @@
 	<div class="complete" in:scale={{ duration: 450, start: 0.7 }}>
 		<Mascot mood="celebrate" size={150} />
 		<h1>{ui('lesson-complete').text}</h1>
-		<p class="my complete-my">အရမ်းကောင်းတယ်! <span class="complete-roman">(a-yan kaung-deh — awesome!)</span></p>
+		<p class="my complete-my">အရမ်းကောင်းတယ်! <span class="complete-roman">(a-yan kaung-deh, awesome!)</span></p>
 		{#if hard}
 			<p class="crown-result" class:won={crowned}>
 				{#if testedOut}
-					⚡👑 Tested out — lesson complete, crown earned!
+					⚡👑 Tested out. Lesson complete, crown earned!
 				{:else if crowned}
-					👑 Crown earned — a perfect run!
+					👑 Crown earned. A perfect run!
 				{:else}
-					👑 No crown this time — a crown needs a mistake-free run.
+					👑 No crown this time. A crown needs a mistake-free run.
 				{/if}
 			</p>
 		{/if}
 		{#if maxCombo >= 5}
-			<p class="combo-bonus">🔥 Best combo ×{maxCombo} — +5 XP</p>
+			<p class="combo-bonus">🔥 Best combo ×{maxCombo}, +5 XP</p>
 		{/if}
 		<div class="stars" aria-label="{stars} of 3 stars">
 			{#each [1, 2, 3] as s (s)}
@@ -253,7 +253,7 @@
 		<header>
 			<button class="quit" onclick={quit} aria-label="Quit lesson">✕</button>
 			{#if hard}
-				<span class="hard-badge" title="Hard mode — perfect run earns the crown">👑</span>
+				<span class="hard-badge" title="Hard mode: perfect run earns the crown">👑</span>
 			{/if}
 			<div class="bar" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
 				<div class="fill" style="width: {pct}%"></div>

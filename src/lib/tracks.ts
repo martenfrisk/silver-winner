@@ -22,7 +22,7 @@ export const tracks: Track[] = [
 		title: 'Course',
 		emoji: '🐱',
 		href: '/',
-		audience: 'Learn to speak and understand — start here if Burmese is new to you'
+		audience: 'Learn to speak and understand. Start here if Burmese is new to you'
 	},
 	{
 		id: 'reader',
@@ -36,7 +36,7 @@ export const tracks: Track[] = [
 		title: 'Script Studio',
 		emoji: 'အ',
 		href: '/script',
-		audience: 'Learn to read and write the letters — ideal if you already speak some Burmese'
+		audience: 'Learn to read and write the letters. Ideal if you already speak some Burmese'
 	}
 ];
 

@@ -30,11 +30,11 @@ const RULES: TipRule[] = [
 	},
 	{
 		test: (my) => my.endsWith('မယ်'),
-		tip: 'Ending မယ် marks the future or an intention — "will / going to".'
+		tip: 'Ending မယ် marks the future or an intention: "will / going to".'
 	},
 	{
 		test: (my) => my.endsWith('ပြီ'),
-		tip: 'Ending ပြီ signals "already / by now" — something has changed state.'
+		tip: 'Ending ပြီ signals "already / by now": something has changed state.'
 	},
 	{
 		test: (my) => my.includes('နေတယ်') || my.includes('နေပါတယ်'),
@@ -46,7 +46,7 @@ const RULES: TipRule[] = [
 	},
 	{
 		test: (my) => my.endsWith('ပါ'),
-		tip: 'ပါ softens the sentence — it makes requests and answers polite.'
+		tip: 'ပါ softens the sentence. It makes requests and answers polite.'
 	}
 ];
 

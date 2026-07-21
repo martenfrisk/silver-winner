@@ -422,7 +422,7 @@ export function buildLoanwordQueue(audioOn = true): ScriptEx[] {
 		);
 		queue.push({
 			kind: 'choice',
-			question: 'Sound it out — what is it?',
+			question: 'Sound it out: what is it?',
 			promptBig: w.my,
 			promptSpeak: w.my,
 			speakAfter: true,

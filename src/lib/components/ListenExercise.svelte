@@ -100,7 +100,7 @@
 		{/each}
 	</div>
 	{#if forceRoman}
-		<p class="roman-note">Romanization shown until you’ve learned some letters — see the Script Studio.</p>
+		<p class="roman-note">Romanization shown until you’ve learned some letters. See the Script Studio.</p>
 	{/if}
 	{#if status !== 'answer'}
 		<p class="reveal" in:fly={{ y: 10, duration: 250 }}>

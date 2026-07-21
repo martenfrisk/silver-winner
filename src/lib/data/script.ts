@@ -38,13 +38,13 @@ const c = (
 
 export const glyphs: Glyph[] = [
 	// ── Consonants (traditional rows) ──────────────────────────────────
-	c('ka', 'က', 'ka-gyi', 'big ka', 'k', 'Two circles side by side — a gate you walk through.', ['ha', 'ta'], 'ကကြီး'),
-	c('kha', 'ခ', 'kha-gway', 'curved kha', 'kh', 'A circle with an open top — steam escaping: kh!', ['ga', 'nga'], 'ခခွေး'),
+	c('ka', 'က', 'ka-gyi', 'big ka', 'k', 'Two circles side by side: a gate you walk through.', ['ha', 'ta'], 'ကကြီး'),
+	c('kha', 'ခ', 'kha-gway', 'curved kha', 'kh', 'A circle with an open top, steam escaping: kh!', ['ga', 'nga'], 'ခခွေး'),
 	c('ga', 'ဂ', 'ga-nge', 'little ga', 'g', 'An open mouth saying gaa. Add a tail and it becomes ရ.', ['kha', 'nga', 'ra'], 'ဂငယ်'),
-	c('gha', 'ဃ', 'ga-gyi', 'big ga', 'g', 'Rare — the fancy twin of ဂ with a wavy roof.', ['ya', 'hta'], 'ဃကြီး'),
-	c('nga', 'င', 'nga', 'nga', 'ng', 'A fishhook — remember ငါး means fish!', ['ga', 'kha', 'ra'], 'င'),
+	c('gha', 'ဃ', 'ga-gyi', 'big ga', 'g', 'Rare: the fancy twin of ဂ with a wavy roof.', ['ya', 'hta'], 'ဃကြီး'),
+	c('nga', 'င', 'nga', 'nga', 'ng', 'A fishhook. Remember, ငါး means fish!', ['ga', 'kha', 'ra'], 'င'),
 	c('sa', 'စ', 'sa-lone', 'round sa', 's', 'A single tight coil.', ['hsa', 'za', 'nya'], 'စလုံး'),
-	c('hsa', 'ဆ', 'sa-lein', 'twisted sa', 'hs', 'စ with a twist flying off — the aspirated twin.', ['sa', 'za'], 'ဆလိမ်'),
+	c('hsa', 'ဆ', 'sa-lein', 'twisted sa', 'hs', 'စ with a twist flying off, the aspirated twin.', ['sa', 'za'], 'ဆလိမ်'),
 	c('za', 'ဇ', 'za-gweh', 'split za', 'z', 'စ with a split tail: zzz.', ['sa', 'hsa'], 'ဇကွဲ'),
 	c('nya', 'ည', 'nya-gyi', 'big nya', 'ny', 'On its own it also means “night”.', ['sa', 'za', 'nga'], 'ညကြီး'),
 	c('ta', 'တ', 'ta-wun-bu', 'pot-bellied ta', 't', 'A round pot with an open lid.', ['ha', 'bha'], 'တဝမ်းပူ'),
@@ -55,14 +55,14 @@ export const glyphs: Glyph[] = [
 	c('pa', 'ပ', 'pa-zauk', 'steep pa', 'p', 'An open-topped cup: p!', ['hpa', 'ba', 'wa'], 'ပစောက်'),
 	c('hpa', 'ဖ', 'hpa-oo-htoke', 'hat-wearing hpa', 'hp', 'ပ wearing a little hat.', ['pa', 'ba'], 'ဖဦးထုပ်'),
 	c('ba', 'ဗ', 'ba-htet-chaik', 'top-dented ba', 'b', 'ပ with a curl on top.', ['pa', 'hpa'], 'ဗထက်ခြိုက်'),
-	c('bha', 'ဘ', 'ba-gone', 'humpbacked ba', 'b', 'Two cups joined — a double ပ.', ['ta', 'ha', 'da'], 'ဘကုန်း'),
+	c('bha', 'ဘ', 'ba-gone', 'humpbacked ba', 'b', 'Two cups joined: a double ပ.', ['ta', 'ha', 'da'], 'ဘကုန်း'),
 	c('ma', 'မ', 'ma', 'ma', 'm', 'You already know it from မင်္ဂလာပါ!', ['ba', 'wa'], 'မ'),
 	c('ya', 'ယ', 'ya-pet-let', 'supine ya', 'y', 'Lying on its back with arms up.', ['hta', 'gha'], 'ယပက်လက်'),
 	c('ra', 'ရ', 'ya-gauk', 'curved ra', 'y', 'ဂ with a long tail. Once “r”, today it sounds like “y”.', ['ga', 'nga'], 'ရကောက်'),
-	c('la', 'လ', 'la', 'la', 'l', 'A circle with a loop on top — also “moon”.', ['na', 'wa'], 'လ'),
+	c('la', 'လ', 'la', 'la', 'l', 'A circle with a loop on top, also “moon”.', ['na', 'wa'], 'လ'),
 	c('wa', 'ဝ', 'wa', 'wa', 'w', 'A perfect closed circle. Careful: the digit zero ၀ looks the same!', ['da', 'pa', 'la'], 'ဝ'),
 	c('tha', 'သ', 'tha', 'tha', 'th', 'Two circles fused at the hip.', ['wa', 'ma'], 'သ'),
-	c('ha', 'ဟ', 'ha', 'ha', 'h', 'A pot with a chimney — hot air: h!', ['ta', 'bha'], 'ဟ'),
+	c('ha', 'ဟ', 'ha', 'ha', 'h', 'A pot with a chimney, hot air: h!', ['ta', 'bha'], 'ဟ'),
 	c('a', 'အ', 'a', 'a', '(glottal) a', 'The vowel-carrier: the sound အ itself.', ['ma', 'tha'], 'အ'),
 
 	// ── Vowel signs (attach around a consonant) ────────────────────────
@@ -74,20 +74,20 @@ export const glyphs: Glyph[] = [
 	{ id: 'ay', char: 'ေ', type: 'vowel', name: 'tha-way-htoe', nameMeaning: 'forward jab', sound: 'ay-', mnemonic: 'Written BEFORE the letter but spoken AFTER it: ay!', confusables: ['eh'], speak: 'သဝေထိုး', traceable: false },
 	{ id: 'eh', char: 'ဲ', type: 'vowel', name: 'nauk-pyit', nameMeaning: 'backward flick', sound: '-eh', mnemonic: 'A flick thrown back over the shoulder.', confusables: ['ay'], speak: 'နောက်ပစ်', traceable: false },
 	{ id: 'io', char: 'ို', type: 'vowel', name: 'lone-gyi-tin + ta-chaung-ngin', nameMeaning: 'roof circle + hook', sound: '-o', mnemonic: 'ိ and ု team up to say “o”.', confusables: ['i', 'u'], speak: 'အို', traceable: false },
-	{ id: 'asat', char: '်', type: 'vowel', name: 'a-that', nameMeaning: 'the killer', sound: '(kills the vowel)', mnemonic: 'The killer stroke — silences the inherent “a” so the letter closes the syllable: က → -k.', confusables: ['eh'], speak: 'အသတ်', traceable: false },
+	{ id: 'asat', char: '်', type: 'vowel', name: 'a-that', nameMeaning: 'the killer', sound: '(kills the vowel)', mnemonic: 'The killer stroke: it silences the inherent “a” so the letter closes the syllable, က → -k.', confusables: ['eh'], speak: 'အသတ်', traceable: false },
 
 	// ── Tone marks ─────────────────────────────────────────────────────
-	{ id: 'visarga', char: 'း', type: 'tone', name: 'shay-ga-pauk', nameMeaning: 'two dots', sound: 'high tone', mnemonic: 'Two dots after the syllable — say it long and high.', confusables: ['dot'], speak: 'ဝစ္စပေါက်', traceable: false },
-	{ id: 'dot', char: '့', type: 'tone', name: 'auk-myit', nameMeaning: 'dot below', sound: 'creaky tone', mnemonic: 'A dot tucked below — short and tight.', confusables: ['visarga'], speak: 'အောက်မြစ်', traceable: false },
+	{ id: 'visarga', char: 'း', type: 'tone', name: 'shay-ga-pauk', nameMeaning: 'two dots', sound: 'high tone', mnemonic: 'Two dots after the syllable. Say it long and high.', confusables: ['dot'], speak: 'ဝစ္စပေါက်', traceable: false },
+	{ id: 'dot', char: '့', type: 'tone', name: 'auk-myit', nameMeaning: 'dot below', sound: 'creaky tone', mnemonic: 'A dot tucked below, short and tight.', confusables: ['visarga'], speak: 'အောက်မြစ်', traceable: false },
 
 	// ── Medials (blend into the consonant) ─────────────────────────────
 	{ id: 'yapin', char: 'ျ', type: 'medial', name: 'ya-pin', nameMeaning: 'attached ya', sound: '+y', mnemonic: 'A slim ယ squeezed in: k → ky.', confusables: ['hahto'], speak: 'ယပင့်', traceable: false },
-	{ id: 'yayit', char: 'ြ', type: 'medial', name: 'ya-yit', nameMeaning: 'wrapped ya', sound: '+y', mnemonic: 'Wraps the whole letter in a hug — same sound as ျ.', confusables: ['yapin'], speak: 'ရရစ်', traceable: false },
+	{ id: 'yayit', char: 'ြ', type: 'medial', name: 'ya-yit', nameMeaning: 'wrapped ya', sound: '+y', mnemonic: 'Wraps the whole letter in a hug, same sound as ျ.', confusables: ['yapin'], speak: 'ရရစ်', traceable: false },
 	{ id: 'wahswe', char: 'ွ', type: 'medial', name: 'wa-hswe', nameMeaning: 'hanging wa', sound: '+w', mnemonic: 'A little ဝ hanging below: k → kw.', confusables: ['u'], speak: 'ဝဆွဲ', traceable: false },
 	{ id: 'hahto', char: 'ှ', type: 'medial', name: 'ha-hto', nameMeaning: 'jabbing ha', sound: '+h (breathy)', mnemonic: 'A hook that adds a whisper: m → hm.', confusables: ['yapin'], speak: 'ဟထိုး', traceable: false },
 
 	// ── Digits ─────────────────────────────────────────────────────────
-	{ id: 'd0', char: '၀', type: 'digit', name: 'thone-nya', nameMeaning: 'zero', sound: '0', mnemonic: 'A circle — just like ဝ (wa). Context tells them apart.', confusables: ['d1'], speak: 'သုည', traceable: true },
+	{ id: 'd0', char: '၀', type: 'digit', name: 'thone-nya', nameMeaning: 'zero', sound: '0', mnemonic: 'A circle, just like ဝ (wa). Context tells them apart.', confusables: ['d1'], speak: 'သုည', traceable: true },
 	{ id: 'd1', char: '၁', type: 'digit', name: 'tit', nameMeaning: 'one', sound: '1', mnemonic: 'One curl.', confusables: ['d2'], speak: 'တစ်', traceable: true },
 	{ id: 'd2', char: '၂', type: 'digit', name: 'hnit', nameMeaning: 'two', sound: '2', mnemonic: 'Like ၁ with a longer tail.', confusables: ['d1', 'd6'], speak: 'နှစ်', traceable: true },
 	{ id: 'd3', char: '၃', type: 'digit', name: 'thoun', nameMeaning: 'three', sound: '3', mnemonic: 'A rounded 3, easy!', confusables: ['d4'], speak: 'သုံး', traceable: true },
@@ -361,8 +361,8 @@ export interface UnitNote {
 export const unitNotes: Record<string, UnitNote[]> = {
 	stacked: [
 		{
-			title: 'Stacked letters — ပါဌ်ဆင့်',
-			body: 'In words borrowed from Pali, one consonant is written directly UNDER another to save space. You already know both letters — the bottom one is just drawn small.',
+			title: 'Stacked letters: ပါဌ်ဆင့်',
+			body: 'In words borrowed from Pali, one consonant is written directly UNDER another to save space. You already know both letters; the bottom one is just drawn small.',
 			examples: [
 				{ my: 'က္က', sub: 'က + က' },
 				{ my: 'န္တ', sub: 'န + တ' },
@@ -371,12 +371,12 @@ export const unitNotes: Record<string, UnitNote[]> = {
 		},
 		{
 			title: 'How to read a stack',
-			body: 'The TOP letter closes the syllable before it — as if it wore an invisible asat (်). The BOTTOM letter starts the next syllable.',
+			body: 'The TOP letter closes the syllable before it, as if it wore an invisible asat (်). The BOTTOM letter starts the next syllable.',
 			examples: [{ my: 'ကမ္ဘာ', sub: 'က + မ် ‧ ဘာ → ka-ba “world”' }]
 		},
 		{
 			title: 'Where you’ll meet them',
-			body: 'Mostly in Pali loanwords: religion, scholarship, place names. မန္တလေး (Mandalay) and ကမ္ဘာ (world) are everyday sightings — once you spot stacks, they’re everywhere.'
+			body: 'Mostly in Pali loanwords: religion, scholarship, place names. မန္တလေး (Mandalay) and ကမ္ဘာ (world) are everyday sightings. Once you spot stacks, they’re everywhere.'
 		}
 	]
 };
@@ -413,7 +413,7 @@ export const scriptUnits: ScriptUnit[] = [
 	{
 		id: 'open-circles',
 		title: 'Open circles',
-		blurb: 'The tricky open-circle family — and the vowel that jumps the queue.',
+		blurb: 'The tricky open-circle family, and the vowel that jumps the queue.',
 		glyphIds: ['kha', 'ga', 'da', 'wa', 'ay']
 	},
 	{
@@ -431,7 +431,7 @@ export const scriptUnits: ScriptUnit[] = [
 	{
 		id: 'killer-stroke',
 		title: 'The killer stroke',
-		blurb: 'Asat kills the vowel and closes syllables — reading levels up.',
+		blurb: 'Asat kills the vowel and closes syllables. Reading levels up.',
 		glyphIds: ['gha', 'dha', 'asat']
 	},
 	{

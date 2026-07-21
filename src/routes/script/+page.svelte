@@ -64,7 +64,7 @@
 				{:else if srs.dueCount > 0}
 					<span class="due-badge">{srs.dueCount}</span> {ui('to-review').text}
 				{:else}
-					All caught up — keep it sharp
+					All caught up, keep it sharp
 				{/if}
 			</span>
 		</button>
@@ -166,7 +166,7 @@
 	{#if !anyIntroduced}
 		<div class="nudge">
 			<Mascot mood="idle" size={80} />
-			<p>New here? Start with <strong>First letters</strong> — you’ll read real words in 5 minutes.</p>
+			<p>New here? Start with <strong>First letters</strong>. You’ll read real words in 5 minutes.</p>
 		</div>
 	{/if}
 </div>

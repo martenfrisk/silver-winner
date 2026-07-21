@@ -55,7 +55,7 @@
 									class="cell"
 									style={box === null ? '' : `background: var(--heat-${box})`}
 									onclick={() => speak(g.speak)}
-									title="{g.name} — {g.sound}"
+									title="{g.name}: {g.sound}"
 								>
 									<span class="my char">{g.char}</span>
 									<span class="sound">{g.sound}</span>

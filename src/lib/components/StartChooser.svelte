@@ -24,7 +24,7 @@
 			profile: 'speaker',
 			emoji: '💬',
 			label: 'I speak it, but can’t read it',
-			sub: 'Crack the script — the words will follow'
+			sub: 'Crack the script and the words will follow'
 		}
 	];
 
@@ -39,7 +39,7 @@
 		<Mascot mood="idle" size={96} />
 		<div class="ask-text">
 			<h1>မင်္ဂလာပါ! What’s your Burmese like today?</h1>
-			<p>I’ll put the right starting point up front — everything stays open, and you can change this anytime in settings.</p>
+			<p>I’ll put the right starting point up front. Everything stays open, and you can change this anytime in settings.</p>
 		</div>
 	</div>
 	<div class="choices">
@@ -53,7 +53,7 @@
 			</button>
 		{/each}
 	</div>
-	<button class="skip" onclick={() => choose('explorer')}>Just exploring — show me everything</button>
+	<button class="skip" onclick={() => choose('explorer')}>Just exploring, show me everything</button>
 </section>
 
 <style>

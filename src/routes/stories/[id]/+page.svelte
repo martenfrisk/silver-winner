@@ -159,7 +159,7 @@
 		{#if phase === 'read'}
 			<footer>
 				<button class="btn green wide" onclick={next}>
-					{shown < story.lines.length ? ui('continue').text : 'Got it — quick question!'}
+					{shown < story.lines.length ? ui('continue').text : 'Got it, quick question!'}
 				</button>
 			</footer>
 		{/if}

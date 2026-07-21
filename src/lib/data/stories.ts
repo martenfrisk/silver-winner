@@ -99,7 +99,7 @@ export const stories: Story[] = [
 					{ my: 'ပေးပါ', en: 'please give (me)' }
 				],
 				roman: 'min-ga-la-ba, la-hpet-yei pei-ba',
-				en: 'Hello — tea, please.'
+				en: 'Hello, tea please.'
 			},
 			{
 				speaker: 'a',

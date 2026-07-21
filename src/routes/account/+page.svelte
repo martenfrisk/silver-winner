@@ -129,7 +129,7 @@
 			<span class="setting-text">
 				<span class="setting-title">Starting point</span>
 				<span class="setting-desc">
-					Which track home leads with — everything stays open either way.
+					Which track home leads with. Everything stays open either way.
 					Speakers also get ⚡ test-out on locked lessons; beginners get romanization
 					on listening drills until they've learned some letters.
 				</span>
@@ -150,7 +150,7 @@
 		<div class="setting">
 			<span class="setting-text">
 				<span class="setting-title">Daily goal</span>
-				<span class="setting-desc">XP to earn each day — today: {progress.xpToday}/{progress.dailyGoal}.</span>
+				<span class="setting-desc">XP to earn each day. Today: {progress.xpToday}/{progress.dailyGoal}.</span>
 			</span>
 			<div class="theme-picker" role="radiogroup" aria-label="Daily XP goal">
 				{#each goalOptions as g (g)}
@@ -196,7 +196,7 @@
 			<span class="setting-text">
 				<span class="setting-title">No-audio mode 🎧</span>
 				<span class="setting-desc">
-					Temporarily mute everything — for when you don't have headphones.
+					Temporarily mute everything, for when you don't have headphones.
 					Resets next time you open the app; your Sound setting above is unaffected.
 				</span>
 			</span>
@@ -210,7 +210,7 @@
 		<label class="setting">
 			<span class="setting-text">
 				<span class="setting-title">Romanization</span>
-				<span class="setting-desc">Show pronunciation in Latin letters. Off by default — trust your ears.</span>
+				<span class="setting-desc">Show pronunciation in Latin letters. Off by default: trust your ears.</span>
 			</span>
 			<input
 				type="checkbox"
@@ -240,7 +240,7 @@
 			<span class="setting-text">
 				<span class="setting-title">Immersion mode</span>
 				<span class="setting-desc">
-					The app's buttons and labels gradually switch to Burmese as you learn more script —
+					The app's buttons and labels gradually switch to Burmese as you learn more script,
 					like setting your phone to Burmese, but step by step.
 					{#if progress.immersion}
 						<strong>Current level: {immersionTier()}/3</strong>
@@ -265,7 +265,7 @@
 			<button class="danger-btn" onclick={resetScript}>Reset script</button>
 			<button class="danger-btn worst" onclick={resetAll}>Reset everything</button>
 		</div>
-		<p class="note">Everything lives in this browser's localStorage — no account, no cloud.</p>
+		<p class="note">Everything lives in this browser's localStorage. No account, no cloud.</p>
 	</section>
 </div>
 

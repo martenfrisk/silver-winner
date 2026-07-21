@@ -168,7 +168,7 @@
 	<div class="empty">
 		<Mascot mood="idle" size={120} />
 		<h1>Nothing to practice yet</h1>
-		<p>Complete a lesson first — its words come back here for review.</p>
+		<p>Complete a lesson first. Its words come back here for review.</p>
 		<a class="btn" href="/">Back home</a>
 	</div>
 {:else if done}
@@ -278,7 +278,7 @@
 				</div>
 			{:else if ex.kind === 'recall'}
 				<div class="actions">
-					<span class="tap-hint">Grade yourself honestly — it drives the schedule</span>
+					<span class="tap-hint">Grade yourself honestly, it drives the schedule</span>
 				</div>
 			{:else}
 				<div class="actions">
