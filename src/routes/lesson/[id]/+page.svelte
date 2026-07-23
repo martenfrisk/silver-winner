@@ -6,7 +6,7 @@
 	import { progress } from '$lib/progress.svelte';
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { ui } from '$lib/i18n.svelte';
-	import { sfx, speak } from '$lib/audio';
+	import { prefetch, sfx, speak, speakablesOf } from '$lib/audio';
 	import { scriptSheet } from '$lib/script-sheet.svelte';
 	import { clickNth, digitOf, isShortcutIgnored } from '$lib/keyboard';
 	import Mascot from '$lib/components/Mascot.svelte';
@@ -18,6 +18,7 @@
 	import ListenExercise from '$lib/components/ListenExercise.svelte';
 	import AnswerReveal from '$lib/components/AnswerReveal.svelte';
 	import NoAudioPrompt from '$lib/components/NoAudioPrompt.svelte';
+	import VerdictAnnouncer from '$lib/components/VerdictAnnouncer.svelte';
 	import HeaderMute from '$lib/components/HeaderMute.svelte';
 	import { grammarTip } from '$lib/grammar-tips';
 	import { silentSafe } from '$lib/silent-mode';
@@ -69,6 +70,21 @@
 	// mid-lesson never strands the learner on a question they can't hear.
 	const ex = $derived(silentSafe(queue[idx], progress.audioOn));
 	const total = $derived(queue.length);
+
+	// Warm the next card's clips while this one is on screen, so its auto-play
+	// doesn't wait on the network.
+	$effect(() => {
+		prefetch(speakablesOf(queue[idx + 1]));
+	});
+
+	// The stage is torn down and rebuilt per exercise ({#key idx}), which drops
+	// focus to <body> — a keyboard or screen-reader user would re-tab from the
+	// page top on every single question. Move focus onto the new card instead.
+	let stage = $state<HTMLElement>();
+	$effect(() => {
+		idx; // re-run per exercise
+		stage?.focus({ preventScroll: true });
+	});
 	const pct = $derived(total === 0 ? 0 : (solved / total) * 100);
 
 	// Choice/listen answers check on tap; only assemble still needs Check.
@@ -312,10 +328,20 @@
 		</header>
 
 		<NoAudioPrompt />
+		<VerdictAnnouncer {status} answer={reveal?.my} meaning={reveal?.en} />
 
 		<main>
 			{#key idx}
-				<div class="stage" in:fly={{ x: 60, duration: 300 }}>
+				<!-- tabindex -1: a focus target for the new question, not a control.
+				     aria-live is on the announcer below, not here — the stage
+				     rebuilding wholesale would otherwise read the entire card. -->
+				<div
+					class="stage"
+					data-stage
+					tabindex="-1"
+					bind:this={stage}
+					in:fly={{ x: 60, duration: 300 }}
+				>
 					{#if ex.kind === 'learn'}
 						<LearnCard my={ex.my} roman={ex.roman} en={ex.en} emoji={ex.emoji} note={ex.note} />
 					{:else if ex.kind === 'choice'}
