@@ -6,6 +6,7 @@
 	import { progress } from '$lib/progress.svelte';
 	import { srs } from '$lib/srs.svelte';
 	import { ui } from '$lib/i18n.svelte';
+	import { shuffle } from '$lib/shuffle';
 
 	type ListenEx = Extract<Exercise, { kind: 'listen' }>;
 
@@ -25,7 +26,7 @@
 	// Options are shown in a shuffled order so the answer isn't always first.
 	// The parent remounts this component per exercise, so reading `ex` once is intended.
 	// svelte-ignore state_referenced_locally
-	const order = ex.options.map((_, i) => i).sort(() => Math.random() - 0.5);
+	const order = shuffle(ex.options.map((_, i) => i));
 
 	let playing = $state(false);
 

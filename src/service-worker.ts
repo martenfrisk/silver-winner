@@ -4,13 +4,13 @@
 /// <reference lib="webworker" />
 
 // Offline support: precache the app shell (build assets + small static
-// files), runtime-cache audio and fonts as they're used, and serve
-// navigations network-first with a cache fallback so the app opens
-// offline after the first visit. SvelteKit registers this only in
-// production builds.
+// files), runtime-cache audio clips as they're played, and serve navigations
+// network-first with a cache fallback so the app opens offline after the
+// first visit. SvelteKit registers this only in production builds.
 const sw = self as unknown as ServiceWorkerGlobalScope;
 
 import { build, files, prerendered, version } from '$service-worker';
+import { shellPages } from '$lib/shell-pages';
 
 const CACHE = `myanlingo-${version}`;
 
@@ -21,12 +21,6 @@ const precache = [
 	...prerendered,
 	...files.filter((f) => !f.startsWith('/audio/'))
 ];
-
-// The page that installs the SW loads before the SW controls it, so it never
-// passes through the fetch handler — cache the top-level routes explicitly or
-// an offline reload of the very first page 404s. Lesson/practice pages visited
-// online are cached by the navigation handler as you go.
-const shellPages = ['/', '/script', '/practice', '/account', '/script/builder', '/script/practice'];
 
 sw.addEventListener('install', (event) => {
 	event.waitUntil(
@@ -45,8 +39,6 @@ sw.addEventListener('activate', (event) => {
 			.then(() => sw.clients.claim())
 	);
 });
-
-const FONT_HOSTS = new Set(['fonts.googleapis.com', 'fonts.gstatic.com']);
 
 sw.addEventListener('fetch', (event) => {
 	const { request } = event;
@@ -67,12 +59,11 @@ sw.addEventListener('fetch', (event) => {
 		return;
 	}
 
-	// Audio, app assets and fonts: cache first (all immutable in practice).
-	const cacheFirst =
-		url.origin === sw.location.origin
-			? url.pathname.startsWith('/audio/') || precache.includes(url.pathname)
-			: FONT_HOSTS.has(url.hostname);
-	if (!cacheFirst) return;
+	// Audio and app assets: cache first (all immutable in practice). Fonts are
+	// self-hosted now, so they arrive as hashed build assets and are already
+	// covered by `precache` — no cross-origin case left to handle.
+	if (url.origin !== sw.location.origin) return;
+	if (!url.pathname.startsWith('/audio/') && !precache.includes(url.pathname)) return;
 
 	event.respondWith(
 		caches.match(request).then(

@@ -13,6 +13,7 @@ import type { Exercise, Option } from '$lib/data/course';
 import type { Profile } from '$lib/progress.svelte';
 import { syllables } from '$lib/burmese';
 import { quoted } from '$lib/gloss';
+import { shuffle } from '$lib/shuffle';
 import { allVocab, vocabByMy, vocabSrs, type VocabItem } from '$lib/vocab-srs.svelte';
 
 /** The course-exercise kinds a practice session generates. */
@@ -39,10 +40,6 @@ export interface VocabEx {
 
 const MIN_ITEMS = 8;
 const MAX_ITEMS = 12;
-
-function shuffle<T>(a: T[]): T[] {
-	return [...a].sort(() => Math.random() - 0.5);
-}
 
 /**
  * Distractor vocab for a target: introduced items first (they're fair game),

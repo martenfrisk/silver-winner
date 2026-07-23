@@ -23,6 +23,7 @@
 	import SentenceRead from './SentenceRead.svelte';
 	import ScriptRecall from './ScriptRecall.svelte';
 	import NoAudioPrompt from './NoAudioPrompt.svelte';
+	import VerdictAnnouncer from './VerdictAnnouncer.svelte';
 	import HeaderMute from './HeaderMute.svelte';
 
 	let {
@@ -59,10 +60,30 @@
 	const attempts = new AttemptTracker();
 	let retired = $state(false);
 
+	// {#key idx} rebuilds the stage per drill, dropping focus to <body>.
+	let stage = $state<HTMLElement>();
+	$effect(() => {
+		idx;
+		stage?.focus({ preventScroll: true });
+	});
+
 	// Correct answers move on by themselves after a beat.
 	const auto = new AutoAdvance();
 
 	const ex = $derived(queue[idx]);
+
+	/** What the correct answer reads as, for the screen-reader announcement. */
+	const answerLabel = $derived.by(() => {
+		if (!ex) return undefined;
+		// Word/sentence reads carry plain-string options; choice drills carry
+		// ChoiceOption objects.
+		if (ex.kind === 'choice' || ex.kind === 'word' || ex.kind === 'sentence') {
+			const opt = ex.options[ex.correct];
+			return typeof opt === 'string' ? opt : opt?.label;
+		}
+		if (ex.kind === 'recall') return ex.my;
+		return undefined;
+	});
 	const pct = $derived(queue.length === 0 ? 0 : (solved / queue.length) * 100);
 
 	// Muting mid-session (the in-session prompt sits right above this) can
@@ -204,10 +225,21 @@
 		</header>
 
 		<NoAudioPrompt />
+		<VerdictAnnouncer
+			status={answered === null ? 'answer' : answered ? 'correct' : 'wrong'}
+			answer={answerLabel}
+		/>
 
 		<main>
 			{#key idx}
-				<div class="stage" in:fly={{ x: 60, duration: 300 }}>
+				<!-- tabindex -1: a focus target for the new drill, not a control. -->
+				<div
+					class="stage"
+					data-stage
+					tabindex="-1"
+					bind:this={stage}
+					in:fly={{ x: 60, duration: 300 }}
+				>
 					{#if ex.kind === 'intro'}
 						<GlyphIntro glyph={ex.glyph} />
 					{:else if ex.kind === 'trace'}

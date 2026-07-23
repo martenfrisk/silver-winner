@@ -1,8 +1,7 @@
 // Achievement definitions. Conditions are computed live from the stores;
 // earning is one-way — progress.award() persists the id so a badge never
 // un-earns when the underlying stat drops (e.g. after a streak lapse).
-import { lessonOrder } from '$lib/data/course';
-import { scriptUnits } from '$lib/data/script';
+import { lessonOrder } from '$lib/data/lesson-order';
 import { progress } from '$lib/progress.svelte';
 import { srs } from '$lib/srs.svelte';
 
@@ -55,7 +54,10 @@ export const achievements: AchievementDef[] = [
 		emoji: '✍️',
 		name: 'Script scholar',
 		desc: 'Finish a Script Studio unit',
-		earned: () => scriptUnits.some((u) => srs.isUnitDone(u.id))
+		// `srs.unitsDone` only ever gets ids from script.ts, so asking it directly
+		// says the same thing as cross-checking scriptUnits — and keeps the whole
+		// glyph dataset off the root layout, which imports this module.
+		earned: () => srs.unitsDone.length > 0
 	},
 	{
 		id: 'glyphs-25',

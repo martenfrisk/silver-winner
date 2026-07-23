@@ -1,7 +1,7 @@
 // The store runs headless here: `browser` is false under vitest's node
 // environment, so the constructor skips localStorage and save() no-ops.
 import { afterEach, describe, expect, it } from 'vitest';
-import { lessonOrder } from './data/course';
+import { lessonOrder } from './data/lesson-order';
 import { progress } from './progress.svelte';
 
 afterEach(() => {

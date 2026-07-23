@@ -2,20 +2,13 @@
 	// Quick-access script table: a read-only reference overlay, openable from
 	// any header via `scriptSheet.show()`. Tap a glyph to hear its name.
 	import { fade, fly } from 'svelte/transition';
-	import { chartSections, glyphById } from '$lib/data/script';
 	import { scriptSheet } from '$lib/script-sheet.svelte';
-	import { srs } from '$lib/srs.svelte';
-	import { speak } from '$lib/audio';
 
 	function onkeydown(e: KeyboardEvent) {
 		if (scriptSheet.open && e.key === 'Escape') {
 			e.stopPropagation();
 			scriptSheet.hide();
 		}
-	}
-
-	function heat(id: string): number | null {
-		return srs.isIntroduced(id) ? srs.box(id) : null;
 	}
 </script>
 
@@ -43,28 +36,13 @@
 				<!-- svelte-ignore a11y_autofocus -->
 				<button class="close" onclick={() => scriptSheet.hide()} aria-label="Close" autofocus>✕</button>
 			</header>
-			<div class="sections">
-				{#each chartSections as section (section.title)}
-					<section>
-						<h3>{section.title}</h3>
-						<div class="cells">
-							{#each section.ids as id (id)}
-								{@const g = glyphById.get(id)!}
-								{@const box = heat(id)}
-								<button
-									class="cell"
-									style={box === null ? '' : `background: var(--heat-${box})`}
-									onclick={() => speak(g.speak)}
-									title="{g.name}: {g.sound}"
-								>
-									<span class="my char">{g.char}</span>
-									<span class="sound">{g.sound}</span>
-								</button>
-							{/each}
-						</div>
-					</section>
-				{/each}
-			</div>
+			<!-- Loaded on first open, so the glyph dataset stays off every other
+			     page. The module cache makes reopening instant. -->
+			{#await import('./ScriptSheetTable.svelte')}
+				<p class="loading">Loading the table…</p>
+			{:then { default: Table }}
+				<Table />
+			{/await}
 			<footer>
 				<a href="/script" onclick={() => scriptSheet.hide()}>Open Script Studio →</a>
 			</footer>
@@ -123,52 +101,12 @@
 	.close:hover {
 		background: var(--line);
 	}
-	.sections {
-		overflow-y: auto;
-		padding: 12px 20px;
-		display: flex;
-		flex-direction: column;
-		gap: 14px;
-	}
-	section h3 {
-		font-size: 0.72rem;
-		font-weight: 900;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
+	.loading {
+		padding: 28px 20px;
+		text-align: center;
+		font-weight: 700;
+		font-size: 0.9rem;
 		color: var(--ink-soft);
-		margin-bottom: 6px;
-	}
-	.cells {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
-		gap: 6px;
-	}
-	.cell {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0;
-		padding: 6px 2px;
-		border-radius: 12px;
-		background: var(--card);
-		box-shadow: inset 0 0 0 1.5px var(--line);
-		transition: scale 0.12s var(--pop);
-	}
-	.cell:active {
-		scale: 0.93;
-	}
-	.char {
-		font-size: 1.5rem;
-		line-height: 1.4;
-	}
-	.sound {
-		font-size: 0.68rem;
-		font-weight: 800;
-		color: var(--ink-soft);
-		max-width: 100%;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 	footer {
 		padding: 10px 20px calc(12px + env(safe-area-inset-bottom));

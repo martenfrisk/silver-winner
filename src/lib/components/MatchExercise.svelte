@@ -3,6 +3,7 @@
 	import { sfx, speak } from '$lib/audio';
 	import { progress } from '$lib/progress.svelte';
 	import { ui } from '$lib/i18n.svelte';
+	import { shuffle } from '$lib/shuffle';
 
 	type MatchEx = Extract<Exercise, { kind: 'match' }>;
 
@@ -15,10 +16,6 @@
 		oncomplete: () => void;
 		onmiss: () => void;
 	} = $props();
-
-	function shuffle<T>(a: T[]): T[] {
-		return [...a].sort(() => Math.random() - 0.5);
-	}
 
 	// The parent remounts this component per exercise, so reading `ex` once is intended.
 	// svelte-ignore state_referenced_locally

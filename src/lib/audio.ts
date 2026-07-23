@@ -3,6 +3,8 @@
 // platform speech synthesis as a fallback.
 import { progress } from '$lib/progress.svelte';
 import manifest from '$lib/audio-manifest.json';
+// Type-only, so this costs nothing at runtime — no course data is pulled in.
+import type { Exercise } from '$lib/data/course';
 
 const pronunciations: Record<string, string> = manifest;
 
@@ -104,6 +106,56 @@ export function canSpeak(text?: string): boolean {
 const audioCache = new Map<string, HTMLAudioElement>();
 let current: HTMLAudioElement | null = null;
 
+/** Element for `text`, created (and so started downloading) on first ask. */
+function element(text: string): HTMLAudioElement | null {
+	const file = pronunciations[text];
+	if (!file) return null;
+	let a = audioCache.get(file);
+	if (!a) {
+		a = new Audio(`/${file}`);
+		a.preload = 'auto';
+		audioCache.set(file, a);
+	}
+	return a;
+}
+
+/**
+ * Warms the clips an exercise is about to need.
+ *
+ * Clips are fetched on first play, and drills auto-speak ~350ms after the card
+ * mounts — so without this the learner waits out a network round trip at the
+ * exact moment the sound matters. Fetching during the *previous* exercise
+ * hides that latency, and populates the service worker's audio cache as a
+ * side effect. Unknown strings (no pre-generated file) are ignored.
+ */
+export function prefetch(texts: (string | undefined | null)[]): void {
+	if (typeof window === 'undefined' || !progress.audioOn) return;
+	for (const t of texts) if (t) element(t);
+}
+
+/**
+ * The strings an exercise actually plays: its prompt, plus the correct answer
+ * (spoken on both the win chime and the wrong-answer reveal). Distractor
+ * options are only ever shown, never spoken, so fetching them would be waste.
+ *
+ * Getting this wrong costs a cold cache, never correctness — unlike the
+ * collection loops in lint-content.ts and generate-audio.ts, which must agree.
+ */
+export function speakablesOf(ex: Exercise | undefined): string[] {
+	if (!ex) return [];
+	switch (ex.kind) {
+		case 'learn':
+		case 'assemble':
+		case 'listen':
+			return [ex.my];
+		case 'choice':
+			return [ex.promptMy, ex.options[ex.correct]?.text].filter((t): t is string => !!t);
+		case 'match':
+			// Each left-hand pair is spoken as it's matched.
+			return ex.pairs.map((p) => p.l);
+	}
+}
+
 /**
  * Speaks Burmese text — from a pre-generated audio file when available,
  * otherwise via platform speech synthesis. Returns whether it spoke.
@@ -111,13 +163,8 @@ let current: HTMLAudioElement | null = null;
 export function speak(text: string): boolean {
 	if (!progress.audioOn || typeof window === 'undefined') return false;
 
-	const file = pronunciations[text];
-	if (file) {
-		let a = audioCache.get(file);
-		if (!a) {
-			a = new Audio(`/${file}`);
-			audioCache.set(file, a);
-		}
+	const a = element(text);
+	if (a) {
 		current?.pause();
 		current = a;
 		a.currentTime = 0;

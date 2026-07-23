@@ -4,6 +4,7 @@
 	import SpeakButton from './SpeakButton.svelte';
 	import { sfx, speak } from '$lib/audio';
 	import { progress } from '$lib/progress.svelte';
+	import { shuffle } from '$lib/shuffle';
 
 	type ChoiceEx = Extract<Exercise, { kind: 'choice' }>;
 
@@ -23,7 +24,7 @@
 	// Options are shown in a shuffled order so the answer isn't always first.
 	// The parent remounts this component per exercise, so reading `ex` once is intended.
 	// svelte-ignore state_referenced_locally
-	const order = ex.options.map((_, i) => i).sort(() => Math.random() - 0.5);
+	const order = shuffle(ex.options.map((_, i) => i));
 
 	onMount(() => {
 		if (!ex.promptMy) return;

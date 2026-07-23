@@ -5,7 +5,7 @@
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { progress } from '$lib/progress.svelte';
 	import { ui } from '$lib/i18n.svelte';
-	import { sfx, speak } from '$lib/audio';
+	import { prefetch, sfx, speak } from '$lib/audio';
 	import { scriptSheet } from '$lib/script-sheet.svelte';
 	import { clickNth, digitOf, isShortcutIgnored } from '$lib/keyboard';
 	import Mascot from '$lib/components/Mascot.svelte';
@@ -16,6 +16,7 @@
 	import RecallCard from '$lib/components/RecallCard.svelte';
 	import AnswerReveal from '$lib/components/AnswerReveal.svelte';
 	import NoAudioPrompt from '$lib/components/NoAudioPrompt.svelte';
+	import VerdictAnnouncer from '$lib/components/VerdictAnnouncer.svelte';
 	import HeaderMute from '$lib/components/HeaderMute.svelte';
 	import { grammarTip } from '$lib/grammar-tips';
 	import { silentSafe } from '$lib/silent-mode';
@@ -45,6 +46,20 @@
 	const auto = new AutoAdvance();
 
 	const item = $derived(queue[idx]);
+
+	// Warm the next step's clip while this one is on screen. Every step type,
+	// recall cards included, speaks the vocab word itself.
+	$effect(() => {
+		prefetch([queue[idx + 1]?.my]);
+	});
+
+	// {#key idx} rebuilds the stage per question, dropping focus to <body>.
+	// Put it on the new card so keyboard users don't re-tab from the top.
+	let stage = $state<HTMLElement>();
+	$effect(() => {
+		idx;
+		stage?.focus({ preventScroll: true });
+	});
 	// Listening drills become reading drills while audio is off.
 	const ex = $derived(item && silentSafe(item.ex, progress.audioOn));
 	const total = $derived(queue.length);
@@ -257,10 +272,18 @@
 		</header>
 
 		<NoAudioPrompt />
+		<VerdictAnnouncer {status} answer={reveal?.my} meaning={reveal?.en} />
 
 		<main>
 			{#key idx}
-				<div class="stage" in:fly={{ x: 60, duration: 300 }}>
+				<!-- tabindex -1: a focus target for the new question, not a control. -->
+				<div
+					class="stage"
+					data-stage
+					tabindex="-1"
+					bind:this={stage}
+					in:fly={{ x: 60, duration: 300 }}
+				>
 					{#if ex.kind === 'choice'}
 						<ChoiceExercise {ex} bind:selected {status} onpick={check} />
 					{:else if ex.kind === 'listen'}
