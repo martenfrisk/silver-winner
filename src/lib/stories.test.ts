@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { lineMy, stories, storyStarsKey } from '$lib/data/stories';
-import { lessonOrder } from '$lib/data/course';
+import { lessonOrder } from '$lib/data/lesson-order';
 import { vocabByMy } from './vocab-srs.svelte';
 
 describe('stories data', () => {

@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import { lessonOrder } from '$lib/data/course';
+import { lessonOrder } from '$lib/data/lesson-order';
 
 const STORAGE_KEY = 'myanlingo-progress-v1';
 

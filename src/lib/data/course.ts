@@ -2043,6 +2043,3 @@ export const allLessons = course.flatMap((u) =>
 export function findLesson(id: string) {
   return allLessons.find((x) => x.lesson.id === id);
 }
-
-/** Flat ordered list of lesson ids, used for unlock order. */
-export const lessonOrder = allLessons.map((x) => x.lesson.id);
