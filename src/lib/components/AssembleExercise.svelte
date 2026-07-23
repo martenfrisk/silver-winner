@@ -4,6 +4,7 @@
 	import { progress } from '$lib/progress.svelte';
 	import { flip } from 'svelte/animate';
 	import { scale } from 'svelte/transition';
+	import { shuffle } from '$lib/shuffle';
 
 	type AssembleEx = Extract<Exercise, { kind: 'assemble' }>;
 
@@ -25,9 +26,7 @@
 
 	// The parent remounts this component per exercise, so reading `ex` once is intended.
 	// svelte-ignore state_referenced_locally
-	const bank: Tile[] = [...ex.answer, ...ex.extras]
-		.map((x, id) => ({ id, ...x }))
-		.sort(() => Math.random() - 0.5);
+	const bank: Tile[] = shuffle([...ex.answer, ...ex.extras].map((x, id) => ({ id, ...x })));
 
 	let placed = $state<Tile[]>([]);
 

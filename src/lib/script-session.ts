@@ -18,6 +18,7 @@ import {
 	type UnitNote
 } from '$lib/data/script';
 import { srs, MAX_BOX } from '$lib/srs.svelte';
+import { sample, shuffle } from '$lib/shuffle';
 
 export interface ChoiceOption {
 	label: string;
@@ -68,12 +69,8 @@ export type ScriptEx =
 			hint?: string;
 	  };
 
-function shuffle<T>(a: T[]): T[] {
-	return [...a].sort(() => Math.random() - 0.5);
-}
-
 function pick<T>(a: T[], n: number): T[] {
-	return shuffle(a).slice(0, n);
+	return sample(a, n);
 }
 
 /** Distractor glyphs for a target: confusables first, then same-type fill. */

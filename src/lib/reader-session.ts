@@ -4,6 +4,7 @@
 // `sub` fields — so the script itself does all the work.
 import { course, type Exercise, type Option, type Unit } from '$lib/data/course';
 import { quoted } from '$lib/gloss';
+import { shuffle } from '$lib/shuffle';
 
 /** The exercise kinds a reader session generates. */
 export type ReaderExercise = Extract<Exercise, { kind: 'choice' } | { kind: 'listen' }>;
@@ -15,10 +16,6 @@ export interface ReaderVocab {
 }
 
 const MAX_ITEMS = 12;
-
-function shuffle<T>(a: T[]): T[] {
-	return [...a].sort(() => Math.random() - 0.5);
-}
 
 /** A unit's vocabulary is its lessons' `learn` exercises, deduped on Burmese text. */
 export function unitVocab(unit: Unit): ReaderVocab[] {
