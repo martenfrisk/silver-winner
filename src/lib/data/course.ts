@@ -7,7 +7,22 @@ export interface Option {
   sub?: string;
 }
 
-export type Exercise =
+/**
+ * How deep into a lesson an exercise sits.
+ *
+ * Step 1 is the lesson proper — it alone gates the next lesson, so the path
+ * never forces anyone through the extra material. Steps 2 and 3 add more
+ * words on the same topic for learners who want them, and are entered from
+ * the path node after step 1 is done.
+ *
+ * A flat tag rather than nested `steps[]` arrays on purpose: everything
+ * downstream reads `lesson.exercises` flat (the linter, the audio generator,
+ * the vocab index, the e2e tests), and a tag leaves every one of them working
+ * untouched. Only the lesson player filters.
+ */
+export type LessonStep = 1 | 2 | 3;
+
+export type ExerciseBody =
   | {
       kind: "learn";
       my: string;
@@ -63,11 +78,37 @@ export type Exercise =
       roman: string;
     };
 
+/** An exercise, plus which step of its lesson it belongs to (default 1). */
+export type Exercise = ExerciseBody & { step?: LessonStep };
+
 export interface Lesson {
   id: string;
   title: string;
   emoji: string;
   exercises: Exercise[];
+}
+
+/** Steps a lesson actually has content for, ascending. Always includes 1. */
+export function lessonSteps(lesson: Lesson): LessonStep[] {
+  const present = new Set<LessonStep>([1]);
+  for (const ex of lesson.exercises) if (ex.step) present.add(ex.step);
+  return [...present].sort();
+}
+
+/** A lesson's exercises for one step. Untagged exercises are step 1. */
+export function stepExercises(lesson: Lesson, step: LessonStep): Exercise[] {
+  return lesson.exercises.filter((ex) => (ex.step ?? 1) === step);
+}
+
+/**
+ * Where a step's stars live in `progress.stars`.
+ *
+ * Step 1 keeps the bare lesson id, so unlock order, crowns and every existing
+ * saved profile keep working untouched. Deeper steps get a suffix the way the
+ * reader track uses `reader-<unitId>`.
+ */
+export function stepStarsKey(lessonId: string, step: LessonStep): string {
+  return step === 1 ? lessonId : `${lessonId}#${step}`;
 }
 
 export interface Unit {
@@ -174,6 +215,187 @@ export const course: Unit[] = [
               },
               { l: "ဟုတ်ကဲ့", lSub: "hote-kéh", r: "Yes" },
               { l: "မဟုတ်ဘူး", lSub: "ma-hote-bu", r: "No" },
+            ],
+          },
+
+          // ── Step 2: everyday replies ──────────────────────────────────
+          {
+            kind: "learn",
+            step: 2,
+            my: "ကျေးဇူးပဲ",
+            roman: "kyei-zu-bèh",
+            en: "Thanks",
+            emoji: "🙏",
+            note: "The short, casual cousin of ကျေးဇူးတင်ပါတယ် — friends, not strangers.",
+          },
+          {
+            kind: "choice",
+            step: 2,
+            question: "Which one is the casual “Thanks”?",
+            options: [
+              { text: "ကျေးဇူးပဲ", sub: "kyei-zu-bèh" },
+              { text: "ကျေးဇူးတင်ပါတယ်", sub: "kyei-zu tin-ba-deh" },
+              { text: "မင်္ဂလာပါ", sub: "min-ga-la-ba" },
+            ],
+            correct: 0,
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "မသိဘူး",
+            roman: "ma-thi-bu",
+            en: "I don’t know",
+            emoji: "🤷",
+            note: "The same မ…ဘူး wrapper as မဟုတ်ဘူး, this time around သိ (thi, “know”).",
+          },
+          {
+            kind: "listen",
+            step: 2,
+            my: "မသိဘူး",
+            roman: "ma-thi-bu",
+            en: "I don’t know",
+            options: [
+              { text: "မသိဘူး", sub: "ma-thi-bu" },
+              { text: "မဟုတ်ဘူး", sub: "ma-hote-bu" },
+              { text: "ဟုတ်ကဲ့", sub: "hote-kéh" },
+            ],
+            correct: 0,
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "ဒါဘာလဲ",
+            roman: "da ba-lèh",
+            en: "What is this?",
+            emoji: "❓",
+            note: "ဒါ (da) “this” + ဘာ (ba) “what” + လဲ, the question particle for open questions.",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "ဟုတ်လား",
+            roman: "hote-lá",
+            en: "Really?",
+            emoji: "😮",
+            note: "ဟုတ် “be so” + လား, the particle that makes a yes/no question.",
+          },
+          {
+            kind: "choice",
+            step: 2,
+            question: "What does this mean?",
+            promptMy: "ဟုတ်လား",
+            promptRoman: "hote-lá",
+            options: [
+              { text: "Really?" },
+              { text: "What is this?" },
+              { text: "I don’t know" },
+            ],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 2,
+            my: "ဒါဘာလဲ",
+            roman: "da ba-lèh",
+            en: "What is this?",
+            options: [
+              { text: "ဒါဘာလဲ", sub: "da ba-lèh" },
+              { text: "ဟုတ်လား", sub: "hote-lá" },
+              { text: "ကျေးဇူးပဲ", sub: "kyei-zu-bèh" },
+            ],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 2,
+            pairs: [
+              { l: "ကျေးဇူးပဲ", lSub: "kyei-zu-bèh", r: "Thanks" },
+              { l: "မသိဘူး", lSub: "ma-thi-bu", r: "I don’t know" },
+              { l: "ဒါဘာလဲ", lSub: "da ba-lèh", r: "What is this?" },
+              { l: "ဟုတ်လား", lSub: "hote-lá", r: "Really?" },
+            ],
+          },
+
+          // ── Step 3: saying it politely ────────────────────────────────
+          {
+            kind: "learn",
+            step: 3,
+            my: "ခင်ဗျာ",
+            roman: "khin-bya",
+            en: "(polite particle, male speaker)",
+            emoji: "🎩",
+            note: "Tacked onto the end of what you say. A man says ခင်ဗျာ; a woman says ရှင်.",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ရှင်",
+            roman: "shin",
+            en: "(polite particle, female speaker)",
+            emoji: "🌸",
+            note: "The counterpart to ခင်ဗျာ. Which one you use depends on who is speaking, not who you’re speaking to.",
+          },
+          {
+            kind: "choice",
+            step: 3,
+            question: "A woman is speaking politely. Which ending does she use?",
+            options: [
+              { text: "ရှင်", sub: "shin" },
+              { text: "ခင်ဗျာ", sub: "khin-bya" },
+              { text: "ဘာလဲ", sub: "ba-lèh" },
+            ],
+            correct: 0,
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "မင်္ဂလာပါ ခင်ဗျာ",
+            roman: "min-ga-la-ba khin-bya",
+            en: "Hello (said by a man)",
+            emoji: "👋",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ဘယ်သူလဲ",
+            roman: "bèh-thu-lèh",
+            en: "Who is it?",
+            emoji: "🕵️",
+            note: "Same လဲ ending as ဒါဘာလဲ — open questions all take it.",
+          },
+          {
+            kind: "listen",
+            step: 3,
+            my: "ဘယ်သူလဲ",
+            roman: "bèh-thu-lèh",
+            en: "Who is it?",
+            options: [
+              { text: "ဘယ်သူလဲ", sub: "bèh-thu-lèh" },
+              { text: "ဒါဘာလဲ", sub: "da ba-lèh" },
+              { text: "မသိဘူး", sub: "ma-thi-bu" },
+            ],
+            correct: 0,
+          },
+          {
+            kind: "assemble",
+            step: 3,
+            question: "Build “Hello (said by a man)”",
+            // Chunked by word, not syllable: the whole point of this drill is
+            // attaching the politeness particle to a greeting the learner
+            // already knows, not respelling မင်္ဂလာပါ.
+            answer: [{ t: "မင်္ဂလာပါ" }, { t: "ခင်ဗျာ" }],
+            extras: [{ t: "ရှင်" }, { t: "ဘယ်သူလဲ" }],
+            my: "မင်္ဂလာပါ ခင်ဗျာ",
+            roman: "min-ga-la-ba khin-bya",
+          },
+          {
+            kind: "match",
+            step: 3,
+            pairs: [
+              { l: "ခင်ဗျာ", lSub: "khin-bya", r: "polite (man speaking)" },
+              { l: "ရှင်", lSub: "shin", r: "polite (woman speaking)" },
+              { l: "ဘယ်သူလဲ", lSub: "bèh-thu-lèh", r: "Who is it?" },
+              { l: "ဒါဘာလဲ", lSub: "da ba-lèh", r: "What is this?" },
             ],
           },
         ],

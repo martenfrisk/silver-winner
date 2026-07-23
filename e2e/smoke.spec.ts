@@ -1,10 +1,13 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
-import { allLessons, type Exercise } from '../src/lib/data/course';
+import { allLessons, stepExercises, type Exercise } from '../src/lib/data/course';
 import { chartSections } from '../src/lib/data/script';
 
 const STORAGE_KEY = 'myanlingo-progress-v1';
 
 const lesson1 = allLessons[0].lesson;
+// Step 1 only: steps 2 and 3 are optional depth the player doesn't show here,
+// and the suite answers questions by reading the course data.
+const lesson1Step1 = stepExercises(lesson1, 1);
 const lesson2 = allLessons[1]?.lesson;
 
 test.beforeEach(async ({ page }) => {
@@ -127,7 +130,7 @@ test('completes lesson 1, persists progress and unlocks lesson 2', async ({ page
 	// Answer every exercise correctly, straight from the course data. Since no
 	// answer is ever wrong, nothing gets re-queued and the lesson ends after
 	// the authored exercise list.
-	for (const ex of lesson1.exercises) {
+	for (const ex of lesson1Step1) {
 		await solveExercise(page, ex);
 	}
 
@@ -184,7 +187,7 @@ test('earns a crown with a perfect hard-mode run', async ({ page }) => {
 
 	// Hard mode is drills only — solve exactly the non-learn exercises.
 	await expect(page.locator('.hard-badge')).toBeVisible();
-	for (const ex of lesson1.exercises.filter((e) => e.kind !== 'learn')) {
+	for (const ex of lesson1Step1.filter((e) => e.kind !== 'learn')) {
 		await solveExercise(page, ex);
 	}
 

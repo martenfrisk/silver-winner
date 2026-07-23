@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { course } from '$lib/data/course';
+	import { course, lessonSteps, stepStarsKey } from '$lib/data/course';
 	import { progress } from '$lib/progress.svelte';
 	import { srs } from '$lib/srs.svelte';
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
@@ -359,6 +359,25 @@
 									{/if}
 								</div>
 								<span class="node-title {unlocked ? '' : 'muted'}">{lesson.title}</span>
+								{#if stars > 0 && lessonSteps(lesson).length > 1}
+									<!-- Optional depth: more words on the same topic. Only step 1
+									     gates the next lesson, so these never block the path. -->
+									<div class="steps" aria-label="Extra steps for {lesson.title}">
+										{#each lessonSteps(lesson).slice(1) as s (s)}
+											{@const doneStep = (progress.stars[stepStarsKey(lesson.id, s)] ?? 0) > 0}
+											<a
+												class="step-chip"
+												class:done={doneStep}
+												href="/lesson/{lesson.id}?step={s}"
+												title={doneStep
+													? `Step ${s} done — replay anytime`
+													: `Step ${s}: more ${lesson.title.toLowerCase()} words`}
+											>
+												{doneStep ? '✓' : '+'} {s}
+											</a>
+										{/each}
+									</div>
+								{/if}
 							</div>
 						{/each}
 					</div>
@@ -1025,6 +1044,29 @@
 	.node-title.muted {
 		color: var(--ink-soft);
 		opacity: 0.7;
+	}
+	.steps {
+		display: flex;
+		gap: 5px;
+		margin-top: 5px;
+	}
+	.step-chip {
+		font-size: 0.68rem;
+		font-weight: 900;
+		text-decoration: none;
+		color: var(--plum-ink);
+		background: var(--plum-soft);
+		border-radius: 999px;
+		padding: 2px 9px;
+		line-height: 1.6;
+		transition: scale 0.12s var(--pop);
+	}
+	.step-chip.done {
+		color: var(--green-ink);
+		background: var(--green-soft);
+	}
+	.step-chip:active {
+		scale: 0.92;
 	}
 
 	.page-footer {

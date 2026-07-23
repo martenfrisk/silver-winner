@@ -6,7 +6,7 @@
 // The store also tracks the learner's recent in-lesson mistakes (capped,
 // deduped, most recent first) so the /practice session can target them first.
 import { browser } from '$app/environment';
-import { course } from '$lib/data/course';
+import { course, stepExercises, type LessonStep } from '$lib/data/course';
 import { progress } from '$lib/progress.svelte';
 
 const STORAGE_KEY = 'myanlingo-vocab-v1';
@@ -45,19 +45,28 @@ interface Saved {
 }
 
 // ── Vocabulary index, derived once from the course data ───────────────
-// A lesson's vocabulary is its `learn` exercises.
+// A lesson's vocabulary is its `learn` exercises, bucketed by step so each
+// step's words are introduced only when that step is finished.
 const byLesson = new Map<string, VocabItem[]>();
 const byMy = new Map<string, VocabItem>();
+
+/** Index key for one lesson step — internal, not the stars key. */
+function stepKey(lessonId: string, step: LessonStep): string {
+	return `${lessonId}:${step}`;
+}
+
 for (const unit of course) {
 	for (const lesson of unit.lessons) {
-		const items: VocabItem[] = [];
-		for (const ex of lesson.exercises) {
-			if (ex.kind !== 'learn') continue;
-			const item: VocabItem = { my: ex.my, roman: ex.roman, en: ex.en, lessonId: lesson.id };
-			items.push(item);
-			if (!byMy.has(ex.my)) byMy.set(ex.my, item);
+		for (const step of [1, 2, 3] as LessonStep[]) {
+			const items: VocabItem[] = [];
+			for (const ex of stepExercises(lesson, step)) {
+				if (ex.kind !== 'learn') continue;
+				const item: VocabItem = { my: ex.my, roman: ex.roman, en: ex.en, lessonId: lesson.id };
+				items.push(item);
+				if (!byMy.has(ex.my)) byMy.set(ex.my, item);
+			}
+			byLesson.set(stepKey(lesson.id, step), items);
 		}
-		byLesson.set(lesson.id, items);
 	}
 }
 
@@ -116,9 +125,15 @@ class VocabSrs {
 		return this.entries[my]?.box ?? -1; // -1 = not introduced
 	}
 
-	/** Called when a course lesson completes: seed its vocab at box 1. */
-	introduceLesson(lessonId: string) {
-		const items = byLesson.get(lessonId);
+	/**
+	 * Called when a lesson step completes: seed that step's vocab at box 1.
+	 *
+	 * Per step, not per lesson — steps 2 and 3 are optional depth, so their
+	 * words must not turn up in the review queue before the learner has met
+	 * them.
+	 */
+	introduceLesson(lessonId: string, step: LessonStep = 1) {
+		const items = byLesson.get(stepKey(lessonId, step));
 		if (items && items.length > 0) this.introduce(items.map((v) => v.my));
 	}
 

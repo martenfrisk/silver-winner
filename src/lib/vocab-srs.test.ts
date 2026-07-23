@@ -1,10 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { allLessons } from '$lib/data/course';
+import { allLessons, stepExercises, type LessonStep } from '$lib/data/course';
 import { vocabSrs, vocabByMy, VOCAB_MAX_BOX } from './vocab-srs.svelte';
 
 const T0 = new Date('2026-01-01T12:00:00Z').getTime();
 const firstLesson = allLessons[0].lesson;
 const firstVocab = [...vocabByMy.values()].filter((v) => v.lessonId === firstLesson.id);
+
+/** The learn words of one step of a lesson, in course order. */
+function stepVocab(lesson: typeof firstLesson, step: LessonStep): string[] {
+	return stepExercises(lesson, step)
+		.filter((ex) => ex.kind === 'learn')
+		.map((ex) => (ex as Extract<typeof ex, { kind: 'learn' }>).my);
+}
 
 beforeEach(() => {
 	vocabSrs.reset();
@@ -18,11 +25,37 @@ afterEach(() => {
 });
 
 describe('introduceLesson', () => {
-	it('seeds every learn word of the lesson at box 1', () => {
-		expect(firstVocab.length).toBeGreaterThan(0);
+	it('seeds every learn word of step 1 at box 1', () => {
+		const step1 = stepVocab(firstLesson, 1);
+		expect(step1.length).toBeGreaterThan(0);
 		vocabSrs.introduceLesson(firstLesson.id);
-		for (const v of firstVocab) expect(vocabSrs.box(v.my)).toBe(1);
-		expect(vocabSrs.introducedCount).toBe(firstVocab.length);
+		for (const my of step1) expect(vocabSrs.box(my)).toBe(1);
+		expect(vocabSrs.introducedCount).toBe(step1.length);
+	});
+
+	// Steps 2 and 3 are optional depth. Their words must not appear in the
+	// review queue before the learner has actually met them.
+	it('leaves deeper steps alone until that step is finished', () => {
+		const step2 = stepVocab(firstLesson, 2);
+		expect(step2.length).toBeGreaterThan(0); // guards the fixture, not the code
+
+		vocabSrs.introduceLesson(firstLesson.id, 1);
+		for (const my of step2) expect(vocabSrs.box(my)).toBe(-1);
+
+		vocabSrs.introduceLesson(firstLesson.id, 2);
+		for (const my of step2) expect(vocabSrs.box(my)).toBe(1);
+	});
+
+	it('never files the same word under two steps', () => {
+		const seen = new Set<string>();
+		for (const { lesson } of allLessons) {
+			for (const step of [1, 2, 3] as LessonStep[]) {
+				for (const my of stepVocab(lesson, step)) {
+					expect(seen.has(`${lesson.id}:${my}`)).toBe(false);
+					seen.add(`${lesson.id}:${my}`);
+				}
+			}
+		}
 	});
 
 	it('is a no-op for unknown lessons', () => {
