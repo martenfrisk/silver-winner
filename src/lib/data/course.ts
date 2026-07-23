@@ -569,7 +569,7 @@ export const course: Unit[] = [
             kind: "learn",
             my: "၁ ၂ ၃",
             roman: "tit, hnit, thoun",
-            en: "Myanmar has its own digits!",
+            en: "1 2 3",
             emoji: "✍️",
             note: "You’ll see them on price tags, buses and license plates.",
           },
