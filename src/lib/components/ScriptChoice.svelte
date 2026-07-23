@@ -60,8 +60,10 @@
 		const ok = i === correct;
 		if (ok) {
 			sfx.correct();
-			// Decode drills held the audio back — reveal it now.
-			if (speakAfter && promptSpeak) setTimeout(() => speak(promptSpeak!), 250);
+			// Always hear the answer, not just on the decode drills that held
+			// the audio back: a right answer is the best moment to attach the
+			// sound to the shape.
+			if (promptSpeak) setTimeout(() => speak(promptSpeak!), 250);
 		} else {
 			sfx.wrong();
 			// Hear what was asked while the correct option is highlighted.

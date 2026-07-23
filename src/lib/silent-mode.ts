@@ -47,5 +47,8 @@ export function silentSafe<T extends { kind: string }>(ex: T, audioOn: boolean):
  * audio only (no glyph or syllable shown), so silence leaves nothing to go on.
  */
 export function scriptNeedsAudio(ex: ScriptEx): boolean {
+	// Read-aloud drills show the written form, so the prompt survives silence —
+	// but the audio *is* the answer key, so there's nothing to check against.
+	if (ex.kind === 'recall') return true;
 	return ex.kind === 'choice' && !!ex.promptSpeak && !ex.promptBig;
 }

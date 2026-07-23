@@ -20,6 +20,7 @@
 	import ScriptNote from './ScriptNote.svelte';
 	import WordRead from './WordRead.svelte';
 	import SentenceRead from './SentenceRead.svelte';
+	import ScriptRecall from './ScriptRecall.svelte';
 	import NoAudioPrompt from './NoAudioPrompt.svelte';
 	import HeaderMute from './HeaderMute.svelte';
 
@@ -76,6 +77,7 @@
 		if (e.kind === 'word') return `word:${e.word.my}`;
 		if (e.kind === 'sentence') return `sentence:${e.sentence.my}`;
 		if (e.kind === 'choice') return `choice:${e.glyphId}:${e.questionKey ?? e.question}`;
+		if (e.kind === 'recall') return `recall:${e.my}`;
 		return `${e.kind}:${'glyph' in e ? e.glyph.id : ''}`;
 	}
 
@@ -83,7 +85,12 @@
 		answered = ok;
 		noAudioPromptState.noteAnswer();
 		const g = ex && 'glyph' in ex ? ex.glyph.id : ex?.kind === 'choice' ? ex.glyphId : undefined;
-		if (ex?.kind === 'choice' || ex?.kind === 'word' || ex?.kind === 'sentence') {
+		if (
+			ex?.kind === 'choice' ||
+			ex?.kind === 'word' ||
+			ex?.kind === 'sentence' ||
+			ex?.kind === 'recall'
+		) {
 			if (g) ongrade?.(g, ok);
 			if (!ok) {
 				mistakes++;
@@ -222,6 +229,8 @@
 						<WordRead word={ex.word} options={ex.options} correct={ex.correct} onanswer={grade} />
 					{:else if ex.kind === 'sentence'}
 						<SentenceRead sentence={ex.sentence} options={ex.options} correct={ex.correct} onanswer={grade} />
+					{:else if ex.kind === 'recall'}
+						<ScriptRecall my={ex.my} hint={ex.hint} speakText={ex.speak} onanswer={grade} />
 					{:else if ex.kind === 'note'}
 						<ScriptNote note={ex.note} />
 					{/if}

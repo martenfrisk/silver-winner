@@ -213,8 +213,7 @@ export const course: Unit[] = [
             kind: "assemble",
             question: "Build the sentence: “I’m fine”",
             answer: [
-              { t: "နေ", sub: "nei" },
-              { t: "ကောင်း", sub: "kaung" },
+              { t: "နေကောင်း", sub: "nei-kaung" },
               { t: "ပါ", sub: "ba" },
               { t: "တယ်", sub: "deh" },
             ],
@@ -348,8 +347,7 @@ export const course: Unit[] = [
             kind: "assemble",
             question: "Build the phrase: “Thank you”",
             answer: [
-              { t: "ကျေးဇူး", sub: "kyei-zu" },
-              { t: "တင်", sub: "tin" },
+              { t: "ကျေးဇူးတင်", sub: "kyei-zu tin" },
               { t: "ပါ", sub: "ba" },
               { t: "တယ်", sub: "deh" },
             ],

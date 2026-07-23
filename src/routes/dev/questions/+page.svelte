@@ -20,6 +20,7 @@
 	import AssembleExercise from '$lib/components/AssembleExercise.svelte';
 	import MatchExercise from '$lib/components/MatchExercise.svelte';
 	import RecallCard from '$lib/components/RecallCard.svelte';
+	import ScriptRecall from '$lib/components/ScriptRecall.svelte';
 	import AnswerReveal from '$lib/components/AnswerReveal.svelte';
 	import Mascot from '$lib/components/Mascot.svelte';
 
@@ -261,6 +262,14 @@
 				<span class="tag-note">Grades itself; state toggle does not apply</span>
 				{#key drillKey}
 					<MatchExercise ex={match} oncomplete={() => {}} onmiss={() => {}} />
+				{/key}
+			</div>
+
+			<div class="card">
+				<span class="tag">Script Studio · read aloud</span>
+				<span class="tag-note">Replaces the romanized “What sound does this make?”</span>
+				{#key drillKey}
+					<ScriptRecall my="က" hint="k" speakText="က" onanswer={() => {}} />
 				{/key}
 			</div>
 
