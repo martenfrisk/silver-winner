@@ -38,6 +38,9 @@ const strictAudio = process.argv.includes('--strict-audio');
 /** Signs that can never begin a syllable — see src/lib/burmese.ts. */
 const DEPENDENT_START = /^[\u102B-\u103E\u105E-\u1060\u1062-\u1064\u1067-\u106D\u1071-\u1074\u1082-\u108D\u108F\u109A-\u109D]/;
 
+/** Any Burmese codepoint \u2014 used to keep script out of comprehension options. */
+const MY_SCRIPT = /[\u1000-\u109F]/;
+
 /** Most tiles an assemble exercise may ask a learner to order. */
 const MAX_BUILD_TILES = 4;
 
@@ -95,8 +98,22 @@ const warn = (category: string, msg: string) => add(warnings, category, msg);
 					if (ex.options.length < 2) err(cat, `${at}: fewer than 2 options`);
 					if (!Number.isInteger(ex.correct) || ex.correct < 0 || ex.correct >= ex.options.length)
 						err(cat, `${at}: correct index ${ex.correct} out of range (${ex.options.length} options)`);
-					else if (ex.options[ex.correct].text !== ex.my)
-						err(cat, `${at}: correct option "${ex.options[ex.correct].text}" is not the played text "${ex.my}"`);
+					else {
+						// Two directions: the default asks which script was played, the
+						// comprehension form ("What did you hear?") asks what it meant.
+						// Checking the wrong one against the wrong field is how a drill
+						// ends up ungradeable.
+						const expected = ex.optionLang === 'en' ? ex.en : ex.my;
+						const field = ex.optionLang === 'en' ? 'meaning' : 'played text';
+						if (ex.options[ex.correct].text !== expected)
+							err(cat, `${at}: correct option "${ex.options[ex.correct].text}" is not the ${field} "${expected}"`);
+						// A comprehension drill with script in its options hands a reader
+						// the answer without listening.
+						if (ex.optionLang === 'en')
+							for (const o of ex.options)
+								if (MY_SCRIPT.test(o.text))
+									err(cat, `${at}: comprehension drill has Burmese in option "${o.text}" — options must be meanings`);
+					}
 					const seen = new Set<string>();
 					for (const o of ex.options) {
 						if (!o.text) err(cat, `${at}: option with empty text`);
@@ -299,6 +316,28 @@ const warn = (category: string, msg: string) => add(warnings, category, msg);
 
 	for (const text of Object.keys(manifest))
 		if (!texts.has(text)) warn(cat, `stale manifest entry "${text}" (no longer speakable)`);
+}
+
+// ── One word, one meaning ─────────────────────────────────────────────
+// The vocab SRS keys entries by Burmese text, so a word taught twice with
+// different glosses gets one entry and the first gloss silently wins — the
+// learner is then reviewed on a meaning the other lesson never gave. A
+// warning rather than an error: ည is deliberately taught twice (as a letter
+// in the script unit, as "night" in the time unit), and both notes say so.
+{
+	const cat = 'Vocabulary (duplicate words)';
+	const seen = new Map<string, string>();
+	for (const unit of course) {
+		for (const lesson of unit.lessons) {
+			for (const ex of lesson.exercises) {
+				if (ex.kind !== 'learn') continue;
+				const where = `${lesson.id} ("${ex.en}")`;
+				const prior = seen.get(ex.my);
+				if (prior && prior !== where) warn(cat, `"${ex.my}" is taught in two places: ${prior} and ${where}`);
+				else seen.set(ex.my, where);
+			}
+		}
+	}
 }
 
 // ── Generate the unlock order ─────────────────────────────────────────

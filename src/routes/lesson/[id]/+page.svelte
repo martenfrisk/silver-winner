@@ -2,7 +2,14 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { fly, scale } from 'svelte/transition';
-	import { findLesson, type Exercise } from '$lib/data/course';
+	import {
+		findLesson,
+		lessonSteps,
+		stepExercises,
+		stepStarsKey,
+		type Exercise,
+		type LessonStep
+	} from '$lib/data/course';
 	import { progress } from '$lib/progress.svelte';
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { ui } from '$lib/i18n.svelte';
@@ -32,12 +39,26 @@
 	// run earns the lesson's crown. Entered from the 👑 chip on completed nodes.
 	const hard = page.url.searchParams.get('mode') === 'hard';
 
+	// Which step of the lesson this run covers. Step 1 is the lesson proper and
+	// the only one that unlocks the next lesson; 2 and 3 are optional depth,
+	// entered from the path node. An out-of-range ?step= falls back to 1.
+	const step: LessonStep = (() => {
+		// Crowns belong to the lesson, so a crown run is always step 1 — earning
+		// one off the optional material would make it mean something else.
+		if (hard) return 1;
+		const raw = Number(page.url.searchParams.get('step'));
+		const wanted = raw === 2 || raw === 3 ? raw : 1;
+		return found && lessonSteps(found.lesson).includes(wanted) ? wanted : 1;
+	})();
+
+	const starsKey = found ? stepStarsKey(found.lesson.id, step) : '';
+
 	// Wrong answers get re-queued at the end, Duolingo-style.
 	let queue = $state<Exercise[]>(
 		found
 			? hard
-				? found.lesson.exercises.filter((e) => e.kind !== 'learn')
-				: [...found.lesson.exercises]
+				? stepExercises(found.lesson, step).filter((e) => e.kind !== 'learn')
+				: [...stepExercises(found.lesson, step)]
 			: []
 	);
 	let idx = $state(0);
@@ -195,9 +216,9 @@
 				progress.addXp(xpEarned);
 			}
 		} else {
-			xpEarned = progress.completeLesson(found!.lesson.id, stars) + comboBonus;
+			xpEarned = progress.completeLesson(starsKey, stars) + comboBonus;
 			if (comboBonus > 0) progress.addXp(comboBonus);
-			vocabSrs.introduceLesson(found!.lesson.id);
+			vocabSrs.introduceLesson(found!.lesson.id, step);
 		}
 		done = true;
 		sfx.fanfare();

@@ -26,14 +26,18 @@ describe('buildReaderQueue', () => {
 				// Options are distinct, so the answer is unambiguous.
 				const texts = ex.options.map((o) => o.text);
 				expect(new Set(texts).size).toBe(texts.length);
-				if (ex.kind === 'listen') expect(texts).toContain(ex.my);
+				// A listening drill's answer is the script it played, or — in the
+				// comprehension form — the meaning of it.
+				if (ex.kind === 'listen')
+					expect(texts).toContain(ex.optionLang === 'en' ? ex.en : ex.my);
 			}
 		}
 	});
 
-	it('rotates the three drill forms', () => {
+	it('rotates the four drill forms', () => {
 		const queue = buildReaderQueue(course[0]);
-		expect(queue.some((ex) => ex.kind === 'listen')).toBe(true);
+		expect(queue.some((ex) => ex.kind === 'listen' && ex.optionLang !== 'en')).toBe(true);
+		expect(queue.some((ex) => ex.kind === 'listen' && ex.optionLang === 'en')).toBe(true);
 		expect(queue.some((ex) => ex.kind === 'choice' && ex.promptMy)).toBe(true);
 		expect(queue.some((ex) => ex.kind === 'choice' && !ex.promptMy)).toBe(true);
 	});

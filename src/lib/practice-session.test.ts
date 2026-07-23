@@ -23,12 +23,10 @@ function introduceLessons(n: number) {
 describe('exerciseFor', () => {
 	const item = [...vocabByMy.values()][0];
 
-	it('rotates listen / my→en / en→my at low boxes and keeps the correct index valid', () => {
+	it('rotates listen / listen-meaning / my→en / en→my at low boxes, correct index valid', () => {
 		introduceLessons(3); // distractor pool
-		const kinds = [0, 1, 2].map((i) => exerciseFor(item, i, 0));
-		expect(kinds[0].kind).toBe('listen');
-		expect(kinds[1].kind).toBe('choice');
-		expect(kinds[2].kind).toBe('choice');
+		const kinds = [0, 1, 2, 3].map((i) => exerciseFor(item, i, 0));
+		expect(kinds.map((k) => k.kind)).toEqual(['listen', 'listen', 'choice', 'choice']);
 		for (const ex of kinds) {
 			if (ex.kind !== 'listen' && ex.kind !== 'choice') throw new Error('unexpected kind');
 			expect(ex.correct).toBeGreaterThanOrEqual(0);
@@ -36,9 +34,29 @@ describe('exerciseFor', () => {
 			const texts = ex.options.map((o) => o.text);
 			expect(new Set(texts).size).toBe(texts.length);
 		}
-		if (kinds[0].kind === 'listen') expect(kinds[0].options[kinds[0].correct].text).toBe(item.my);
-		if (kinds[1].kind === 'choice') expect(kinds[1].options[kinds[1].correct].text).toBe(item.en);
-		if (kinds[2].kind === 'choice') expect(kinds[2].options[kinds[2].correct].text).toBe(item.my);
+		// Slot 0 asks for the script, slot 1 asks for the meaning — the two
+		// listening directions, distinguished by optionLang.
+		if (kinds[0].kind === 'listen') {
+			expect(kinds[0].optionLang).toBeUndefined();
+			expect(kinds[0].options[kinds[0].correct].text).toBe(item.my);
+		}
+		if (kinds[1].kind === 'listen') {
+			expect(kinds[1].optionLang).toBe('en');
+			expect(kinds[1].options[kinds[1].correct].text).toBe(item.en);
+		}
+		if (kinds[2].kind === 'choice') expect(kinds[2].options[kinds[2].correct].text).toBe(item.en);
+		if (kinds[3].kind === 'choice') expect(kinds[3].options[kinds[3].correct].text).toBe(item.my);
+	});
+
+	it('never puts script in the options of a comprehension drill', () => {
+		introduceLessons(6);
+		const MY = /[က-႟]/;
+		for (const v of [...vocabByMy.values()].slice(0, 20)) {
+			const ex = exerciseFor(v, 1, 0);
+			if (ex.kind !== 'listen' || ex.optionLang !== 'en') continue;
+			// A script option would hand a reader the answer without listening.
+			for (const o of ex.options) expect(MY.test(o.text)).toBe(false);
+		}
 	});
 
 	it('climbs to production at box 2–3: assemble tiles rebuild the word', () => {

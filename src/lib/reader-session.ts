@@ -63,6 +63,29 @@ function listenEx(item: ReaderVocab, pool: ReaderVocab[]): ReaderExercise {
 	return { kind: 'listen', my: item.my, roman: item.roman, en: item.en, options, correct: 0 };
 }
 
+/**
+ * "What did you hear?": audio prompt, English options.
+ *
+ * Pointed straight at this track's audience — someone who can decode the
+ * script but doesn't know the words. Script options let them decode their way
+ * to the answer without ever meeting the meaning; these don't.
+ */
+function listenMeaningEx(item: ReaderVocab, pool: ReaderVocab[]): ReaderExercise {
+	const options: Option[] = [
+		{ text: item.en },
+		...distractors(item, pool, 2, (v) => v.en).map((v) => ({ text: v.en }))
+	];
+	return {
+		kind: 'listen',
+		my: item.my,
+		roman: item.roman,
+		en: item.en,
+		options,
+		correct: 0,
+		optionLang: 'en'
+	};
+}
+
 /** Read the script → pick the English meaning. */
 function readMyEn(item: ReaderVocab, pool: ReaderVocab[]): ReaderExercise {
 	const options: Option[] = [
@@ -100,9 +123,10 @@ export function buildReaderQueue(unit: Unit): ReaderExercise[] {
 	const vocab = unitVocab(unit);
 	const picked = shuffle(vocab).slice(0, MAX_ITEMS);
 	return picked.map((item, i) => {
-		const kind = i % 3;
+		const kind = i % 4;
 		if (kind === 0) return listenEx(item, vocab);
-		if (kind === 1) return readMyEn(item, vocab);
+		if (kind === 1) return listenMeaningEx(item, vocab);
+		if (kind === 2) return readMyEn(item, vocab);
 		return readEnMy(item, vocab);
 	});
 }

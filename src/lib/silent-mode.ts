@@ -24,6 +24,19 @@ function isListen(ex: { kind: string }): ex is ListenEx {
 
 /** The silent stand-in for a listening drill: read the options, pick the meaning. */
 function silentChoice(ex: ListenEx): ChoiceEx {
+	// Comprehension drills already have English options, so "which one says X"
+	// would put the answer in the question. Show the word instead of playing
+	// it and the drill reads straight across: same options, same correct index.
+	if (ex.optionLang === 'en') {
+		return {
+			kind: 'choice',
+			question: 'What does this mean?',
+			promptMy: ex.my,
+			promptRoman: ex.roman,
+			options: ex.options,
+			correct: ex.correct
+		};
+	}
 	return {
 		kind: 'choice',
 		question: `Which one says ${quoted(ex.en)}?`,
