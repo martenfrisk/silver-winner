@@ -147,6 +147,41 @@ handles two shapes differently:
   remaining round-5 candidates (record-and-compare tone practice, Myanmar
   keyboard course, retention analytics, review-first gating).
 
+## Round 8 — polish pass: correctness, a11y, payload (2026-07-23)
+
+An audit for UI/UX/perf gaps rather than a feature round. Everything below
+landed together; progress export/import (#20) was deliberately left out.
+
+- ✅ **The shuffle was biased** — seven call sites used
+  `sort(() => Math.random() - 0.5)`, which is not a shuffle: the comparator
+  ignores its arguments, so the result follows V8's sort internals. Measured
+  over 200k runs, a 3-option drill left the answer in the last slot 25% of the
+  time instead of 33%, and option position is the one cue a learner can
+  exploit without knowing any Burmese. Replaced with Fisher-Yates in
+  `shuffle.ts`, with a chi-square test over landing position.
+- ✅ **Three routes were missing from the service worker shell** — `/reader`,
+  `/stories` and `/script/loanwords` 404'd on an offline reload. The list
+  moved to `shell-pages.ts` and `shell-pages.test.ts` now diffs it against the
+  routes on disk, so it can't silently fall behind again.
+- ✅ **Accessibility pass** — see #19.
+- ✅ **Course data off every page** — `progress.svelte.ts` imported
+  `lessonOrder` from `course.ts`, and the root layout imports progress, so all
+  ~2000 lines of exercise content loaded before `/account` could render.
+  `lessonOrder` now lives in a generated `data/lesson-order.ts` (emitted by
+  `lint:content`, drift-checked by a unit test). The Script Studio dataset
+  came off the same path: the achievement asks `srs.unitsDone` directly, and
+  `ScriptSheet` dynamic-imports its chart body on first open.
+- ✅ **Self-hosted fonts** — the Google Fonts `<link>` was render-blocking and
+  cost two extra DNS+TLS handshakes before any text could paint; it also meant
+  the offline shell rendered Burmese in a fallback face. Nunito's latin subset
+  is declared by hand in `fonts.css` so the four unused subsets (~98KB) stay
+  out of the precache.
+- ✅ **Audio prefetch** — clips were fetched on first play, and drills
+  auto-speak ~350ms after the card mounts. `prefetch()` warms the next card's
+  clips during the current one, and populates the SW audio cache as a
+  side effect.
+- ✅ **Meta description + OpenGraph tags** — the app had no share preview.
+
 ## Highest impact next
 
 1. ✅ **Listening-only exercise type** — the audio pipeline exists but is never the
@@ -221,8 +256,15 @@ handles two shapes differently:
 18. 💤 **Voice option in settings** — offer the male voice
     (`my-MM-ThihaNeural`) alongside the female one; volume sliders for SFX vs.
     speech.
-19. 💤 **Accessibility pass** — focus management when exercises swap, `aria-live`
-    verdict announcements, discoverable trace-skip path.
+19. ✅ **Accessibility pass** — `VerdictAnnouncer.svelte` mirrors correct/wrong
+    into an `aria-live` region (naming the answer, so consecutive correct
+    answers stay distinct and actually re-announce); the exercise stage takes
+    `tabindex="-1"` and is focused per question, since `{#key idx}` otherwise
+    drops focus to `<body>` on every card; and `:focus-visible` rings are
+    defined in `app.css` — the chunky buttons are drawn with box-shadow, so the
+    UA default ring was invisible under it. Applied to the lesson player,
+    /practice, /reader **and** `ScriptSession` (all four surfaces).
+    The trace-skip path is moot while the pad is gated off (#6).
 20. 💤 **Progress export/import** — download/restore a JSON backup of the
     localStorage keys from the profile page.
 

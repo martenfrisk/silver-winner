@@ -35,6 +35,8 @@ SvelteKit 2 + **Svelte 5 runes** (forced on for all non-`node_modules` files in 
 
 `src/lib/data/course.ts` (units → lessons → exercises), `script.ts` (glyphs, teaching units, syllable composition, decodable words) and `stories.ts` are consumed by everything downstream: the lesson player and path UI, lesson unlocking, the vocab SRS index, the audio generator, the content linter, *and* the e2e tests (which read the course to answer exercises correctly). Adding content means editing these files only — nothing else needs registering.
 
+The one derived file is `src/lib/data/lesson-order.ts` (the flat unlock order), **generated** by `bun run lint:content` and never hand-edited. It exists so `progress.svelte.ts` — which the root layout pulls onto every page — doesn't drag all of `course.ts` along with it. `lesson-order.test.ts` fails if it drifts from the course.
+
 After editing `course.ts` / `script.ts` / `stories.ts`:
 
 ```bash
@@ -74,7 +76,7 @@ Both SRS stores use the same 5-box interval ladder (0 / 4h / 1d / 3d / 7d). The 
 
 - **Theme** — tokens in `src/app.css` (`--gold`, `--heat-0..4`, etc.), light/dark via `data-theme` on `<html>`. An inline script in `app.html` reads the progress key and applies it **pre-paint**; `progress.applyTheme()` keeps it in sync. Style with the tokens, not literal colors.
 - **Immersion mode** — `i18n.svelte.ts` swaps UI strings to Burmese in 3 tiers gated on how many glyphs the learner has met. New user-facing chrome strings belong in its `STRINGS` map.
-- **Service worker** — `src/service-worker.ts` precaches the app shell but excludes `/audio/` (cached lazily on play). It also has an explicit `shellPages` list; **add new top-level routes there** or an offline reload 404s.
+- **Service worker** — `src/service-worker.ts` precaches the app shell but excludes `/audio/` (cached lazily on play). The explicit route list lives in `src/lib/shell-pages.ts`; **add new static routes there** or an offline reload 404s. `shell-pages.test.ts` diffs the list against the routes on disk, so forgetting fails `bun run test` rather than shipping.
 - **e2e** — tests seed the progress key with `{ sound: false, profile: 'beginner' }` and wait on `body[data-hydrated="true"]`. Keep that attribute and don't break exact-text card labels casually.
 
 ## Conventions
