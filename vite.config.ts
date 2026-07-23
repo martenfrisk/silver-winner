@@ -1,7 +1,25 @@
 /// <reference types="vitest/config" />
-import adapter from '@sveltejs/adapter-vercel';
+import cloudflare from '@sveltejs/adapter-cloudflare';
+import vercel from '@sveltejs/adapter-vercel';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+
+// The app deploys to both Vercel and Cloudflare Workers, which need different
+// adapters. Both are imported statically so the dependency tree still resolves
+// in one pass (see the adapter comment below); only the call is conditional.
+//
+// ADAPTER wins when set — that is how `wrangler deploy` builds, via the
+// [build] command in wrangler.jsonc. Otherwise sniff the platform: Cloudflare
+// Workers Builds sets WORKERS_CI, Pages sets CF_PAGES, and anything else
+// (Vercel, a local `bun run build`) gets Vercel, the historical default.
+function pickAdapter() {
+	const target =
+		process.env.ADAPTER ??
+		(process.env.WORKERS_CI || process.env.CF_PAGES ? 'cloudflare' : 'vercel');
+	if (target === 'cloudflare') return cloudflare();
+	if (target === 'vercel') return vercel();
+	throw new Error(`Unknown ADAPTER "${target}" — expected "cloudflare" or "vercel".`);
+}
 
 export default defineConfig({
 	server: {
@@ -27,7 +45,7 @@ export default defineConfig({
 			// already hoisted — vitest's 3.0.3, whose exports map has no
 			// "require" condition. Declaring it here resolves the whole tree
 			// in one install pass instead. See https://svelte.dev/docs/kit/adapters
-			adapter: adapter()
+			adapter: pickAdapter()
 		})
 	]
 });

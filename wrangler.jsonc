@@ -1,0 +1,28 @@
+{
+	// Committed on purpose. Without a wrangler config in the repo, `wrangler
+	// deploy` falls into its interactive auto-config path, answers its own
+	// prompts in CI, and rewrites package.json and .gitignore mid-build — which
+	// is what broke the first Cloudflare deploy.
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "myanlingo",
+	"compatibility_date": "2026-07-23",
+	"compatibility_flags": ["nodejs_compat"],
+
+	// Paths match adapter-cloudflare's defaults; the adapter reads them back out
+	// of this file, so the two stay in step.
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".svelte-kit/cloudflare"
+	},
+
+	// The repo builds for Vercel by default, so force the adapter here rather
+	// than depending on how the deploy was invoked.
+	"build": {
+		"command": "ADAPTER=cloudflare bun run build"
+	},
+
+	"observability": {
+		"enabled": true
+	}
+}
