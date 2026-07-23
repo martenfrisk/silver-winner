@@ -31,6 +31,7 @@ const STRINGS = {
 	streak: { en: 'Streak', my: 'ရက်ဆက်', tier: 2 },
 	'match-pairs': { en: 'Tap the matching pairs', my: 'တွဲပါ', tier: 2 },
 	'tap-hear': { en: 'Tap what you hear', my: 'ကြားတာကို နှိပ်ပါ', tier: 2 },
+	'tap-hear-meaning': { en: 'What did you hear?', my: 'ဘာကြားရလဲ?', tier: 2 },
 	'script-studio': { en: 'Script Studio', my: 'အက္ခရာ စတူဒီယို', tier: 2 },
 	'to-review': { en: 'to review', my: 'ပြန်လေ့ကျင့်ရန်', tier: 3 },
 	profile: { en: 'Profile', my: 'ပရိုဖိုင်', tier: 3 },

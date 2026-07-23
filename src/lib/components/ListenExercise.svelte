@@ -30,11 +30,18 @@
 
 	let playing = $state(false);
 
+	// Comprehension variant: the options are English meanings, so this asks
+	// what the word means rather than which shape it is.
+	const meaningMode = $derived(ex.optionLang === 'en');
+
 	// Absolute beginners can't read the script yet, so bare Burmese options
 	// reduce this drill to shape-matching. Force romanization under the
 	// options until they've picked up some letters, whatever the global
-	// roman toggle says.
-	const forceRoman = $derived(progress.profile === 'beginner' && srs.introducedCount < 10);
+	// roman toggle says. Never needed in meaning mode — English options carry
+	// no script to decode.
+	const forceRoman = $derived(
+		!meaningMode && progress.profile === 'beginner' && srs.introducedCount < 10
+	);
 	const showSub = $derived(progress.showRoman || forceRoman);
 
 	function play() {
@@ -80,7 +87,7 @@
 </script>
 
 <div class="listen" bind:this={root}>
-	<h2 class="question">🎧 {ui('tap-hear').text}</h2>
+	<h2 class="question">🎧 {meaningMode ? ui('tap-hear-meaning').text : ui('tap-hear').text}</h2>
 	<button class="replay" class:playing onclick={play} aria-label="Play the audio again" title="Play again">
 		🔊
 	</button>
@@ -95,7 +102,7 @@
 				disabled={status !== 'answer'}
 			>
 				<span class="key">{n + 1}</span>
-				<span class="my main">{opt.text}</span>
+				<span class="main" class:my={!meaningMode}>{opt.text}</span>
 				{#if opt.sub && showSub}<span class="sub">{opt.sub}</span>{/if}
 			</button>
 		{/each}

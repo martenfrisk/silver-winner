@@ -36,9 +36,20 @@ export type Exercise =
       roman: string;
       /** English meaning, revealed after answering. */
       en: string;
-      /** Burmese-script options; one of them is `my`. */
+      /** One of them is the answer: `my` when optionLang is "my", `en` when "en". */
       options: Option[];
       correct: number;
+      /**
+       * What the options are written in. Default "my" — hear it, tap the
+       * matching script.
+       *
+       * "en" makes it a comprehension drill instead: hear it, tap what it
+       * means. Both directions matter, and the script one is weak at both ends
+       * of the skill range — a learner who can't read is shape-matching, and
+       * one who can read just decodes the options without ever needing the
+       * meaning. Only the "en" form resists both shortcuts.
+       */
+      optionLang?: "my" | "en";
     }
   | {
       kind: "assemble";

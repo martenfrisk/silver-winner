@@ -73,6 +73,30 @@ function listenEx(item: VocabItem): PracticeExercise {
 	return { kind: 'listen', my: item.my, roman: item.roman, en: item.en, options, correct: 0 };
 }
 
+/**
+ * "What did you hear?": audio prompt, English options.
+ *
+ * The counterpart to listenEx, and the only listening drill that can't be
+ * short-circuited. With script options, a learner who can't read is matching
+ * shapes and one who can read just decodes the options — neither has to know
+ * what the word means. Here the meaning is the whole answer.
+ */
+function listenMeaningEx(item: VocabItem): PracticeExercise {
+	const options: Option[] = [
+		{ text: item.en },
+		...distractors(item, 2, (v) => v.en).map((v) => ({ text: v.en }))
+	];
+	return {
+		kind: 'listen',
+		my: item.my,
+		roman: item.roman,
+		en: item.en,
+		options,
+		correct: 0,
+		optionLang: 'en'
+	};
+}
+
 /** Burmese prompt → pick the English meaning. */
 function choiceMyEn(item: VocabItem): PracticeExercise {
 	const options: Option[] = [
@@ -165,14 +189,19 @@ export function exerciseFor(
 	const build = isBuildable(item);
 	if (box >= 4) return i % 2 === 0 || !build ? recallEx(item) : assembleEx(item);
 	if (box >= 2) {
+		// The production rung used to spend two of its three slots on the same
+		// script-matching listen drill. One of them becomes the comprehension
+		// form rather than a fourth slot — this rung is about producing, and
+		// padding it with more recognition would blunt the ladder.
 		const kind = i % 3;
 		if (kind === 0) return build ? assembleEx(item) : listenEx(item);
-		if (kind === 1) return listenEx(item);
+		if (kind === 1) return listenMeaningEx(item);
 		return choiceEnMy(item);
 	}
-	const kind = i % 3;
+	const kind = i % 4;
 	if (kind === 0) return listenEx(item);
-	if (kind === 1) return choiceMyEn(item);
+	if (kind === 1) return listenMeaningEx(item);
+	if (kind === 2) return choiceMyEn(item);
 	return choiceEnMy(item);
 }
 

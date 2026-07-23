@@ -31,6 +31,21 @@ describe('silentSafe', () => {
 		expect(ex.options[ex.correct].text).toBe(listenEx.my);
 	});
 
+	it('shows the word instead of naming it when the options are meanings', () => {
+		const meaningEx: Exercise = { ...listenEx, optionLang: 'en', options: [
+			{ text: 'Hello' }, { text: 'Bye' }, { text: 'Yes' }
+		] };
+		const ex = silentSafe(meaningEx, false);
+		expect(ex.kind).toBe('choice');
+		if (ex.kind !== 'choice') return;
+		// The usual silent stand-in asks "which one says «Hello»?" — which would
+		// put the answer in the question here, since the options are meanings.
+		expect(ex.question).not.toContain('Hello');
+		expect(ex.promptMy).toBe(meaningEx.my);
+		expect(ex.options).toEqual(meaningEx.options);
+		expect(ex.correct).toBe(meaningEx.correct);
+	});
+
 	it('leaves non-listening exercises untouched when muted', () => {
 		const choice: Exercise = {
 			kind: 'choice',
