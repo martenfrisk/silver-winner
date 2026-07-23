@@ -9,6 +9,7 @@
 	import { scriptNeedsAudio } from '$lib/silent-mode';
 	import { AttemptTracker, MAX_ATTEMPTS } from '$lib/stuck';
 	import { noAudioPromptState } from '$lib/no-audio-prompt.svelte';
+	import { AutoAdvance } from '$lib/auto-advance.svelte';
 	import { clickNth, digitOf, isShortcutIgnored } from '$lib/keyboard';
 	import { progress } from '$lib/progress.svelte';
 	import { ui } from '$lib/i18n.svelte';
@@ -58,6 +59,9 @@
 	const attempts = new AttemptTracker();
 	let retired = $state(false);
 
+	// Correct answers move on by themselves after a beat.
+	const auto = new AutoAdvance();
+
 	const ex = $derived(queue[idx]);
 	const pct = $derived(queue.length === 0 ? 0 : (solved / queue.length) * 100);
 
@@ -92,7 +96,9 @@
 			ex?.kind === 'recall'
 		) {
 			if (g) ongrade?.(g, ok);
-			if (!ok) {
+			if (ok) {
+				auto.start(advance);
+			} else {
 				mistakes++;
 				// Practice it again at the end — unless it has already come back
 				// too many times, in which case let it go for this session.
@@ -111,6 +117,7 @@
 
 	function advance() {
 		if (!canContinue) return;
+		auto.cancel();
 		if (answered !== false) solved++;
 		idx++;
 		answered = null;
@@ -121,6 +128,7 @@
 	}
 
 	function finish() {
+		auto.cancel();
 		stars = starsFor(mistakes);
 		xpEarned = onfinish({ total: queue.length, mistakes, stars });
 		done = true;
@@ -128,6 +136,7 @@
 	}
 
 	function quit() {
+		auto.cancel();
 		goto('/script');
 	}
 
@@ -137,6 +146,7 @@
 			if (e.key === 'Enter') quit();
 			return;
 		}
+		auto.cancel(); // any keypress means "I'm still here" — stop the countdown
 		if (e.key === 'Enter') {
 			e.preventDefault();
 			advance(); // no-ops unless canContinue
@@ -150,7 +160,8 @@
 	}
 </script>
 
-<svelte:window {onkeydown} />
+<!-- Any touch or click interrupts the auto-advance countdown. -->
+<svelte:window {onkeydown} onpointerdown={() => auto.cancel()} />
 
 <svelte:head>
 	<title>{title} · MyanLingo</title>
@@ -256,7 +267,9 @@
 					disabled={!canContinue}
 					title={ui('continue').hint}
 				>
-					{answered === false ? ui('got-it').text : ui('continue').text}
+					{answered === false
+						? ui('got-it').text
+						: ui('continue').text}{#if auto.left > 0}<span class="count">{auto.left}</span>{/if}
 				</button>
 			</div>
 		</footer>
@@ -344,6 +357,18 @@
 		gap: 12px;
 		max-width: 680px;
 		margin: 0 auto;
+	}
+	/* Seconds left before the answer moves on by itself (see the lesson player). */
+	.count {
+		display: inline-grid;
+		place-items: center;
+		width: 1.35em;
+		height: 1.35em;
+		margin-left: 8px;
+		border-radius: 50%;
+		background: rgb(255 255 255 / 30%);
+		font-size: 0.8em;
+		font-variant-numeric: tabular-nums;
 	}
 	.verdict {
 		display: inline-flex;
