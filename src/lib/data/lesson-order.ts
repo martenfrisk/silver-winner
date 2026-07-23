@@ -25,5 +25,8 @@ export const lessonOrder: readonly string[] = [
 	"left-and-right",
 	"today-tomorrow",
 	"morning-to-night",
-	"days-of-week"
+	"days-of-week",
+	"little-words",
+	"how-people-really-greet",
+	"saying-it-with-feeling"
 ];
