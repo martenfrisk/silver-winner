@@ -213,8 +213,7 @@ export const course: Unit[] = [
             kind: "assemble",
             question: "Build the sentence: “I’m fine”",
             answer: [
-              { t: "နေ", sub: "nei" },
-              { t: "ကောင်း", sub: "kaung" },
+              { t: "နေကောင်း", sub: "nei-kaung" },
               { t: "ပါ", sub: "ba" },
               { t: "တယ်", sub: "deh" },
             ],
@@ -348,8 +347,7 @@ export const course: Unit[] = [
             kind: "assemble",
             question: "Build the phrase: “Thank you”",
             answer: [
-              { t: "ကျေးဇူး", sub: "kyei-zu" },
-              { t: "တင်", sub: "tin" },
+              { t: "ကျေးဇူးတင်", sub: "kyei-zu tin" },
               { t: "ပါ", sub: "ba" },
               { t: "တယ်", sub: "deh" },
             ],
@@ -657,7 +655,6 @@ export const course: Unit[] = [
             my: "က",
             roman: "ka",
             en: "The letter “ka”",
-            emoji: "🐔",
             note: "The first letter of the alphabet, ka-gyi (“big ka”). Burmese letters are built from circles.",
           },
           {
@@ -665,13 +662,21 @@ export const course: Unit[] = [
             my: "ခ",
             roman: "kha",
             en: "The letter “kha”",
-            emoji: "💨",
             note: "An aspirated “k”. Say it with a puff of air.",
           },
+          // Audio-first, never "which letter is 'ka'?": asking by romanization
+          // teaches the letter as a spelling of a Latin syllable, and that
+          // detour is exactly what a reader has to unlearn later.
           {
-            kind: "choice",
-            question: "Which letter is “ka”?",
-            options: [{ text: "က" }, { text: "ခ" }, { text: "ဂ" }],
+            kind: "listen",
+            my: "က",
+            roman: "ka",
+            en: "The letter “ka”",
+            options: [
+              { text: "က", sub: "ka" },
+              { text: "ခ", sub: "kha" },
+              { text: "ဂ", sub: "ga" },
+            ],
             correct: 0,
           },
           {
@@ -679,20 +684,24 @@ export const course: Unit[] = [
             my: "ဂ",
             roman: "ga",
             en: "The letter “ga”",
-            emoji: "🎸",
           },
           {
             kind: "learn",
             my: "င",
             roman: "nga",
             en: "The letter “nga”",
-            emoji: "🐟",
             note: "Like the “ng” in “sing”, but it can start a word!",
           },
           {
-            kind: "choice",
-            question: "Which letter is “nga”?",
-            options: [{ text: "င" }, { text: "က" }, { text: "ဂ" }],
+            kind: "listen",
+            my: "င",
+            roman: "nga",
+            en: "The letter “nga”",
+            options: [
+              { text: "င", sub: "nga" },
+              { text: "က", sub: "ka" },
+              { text: "ဂ", sub: "ga" },
+            ],
             correct: 0,
           },
           {
@@ -729,20 +738,24 @@ export const course: Unit[] = [
             my: "စ",
             roman: "sa",
             en: "The letter “sa”",
-            emoji: "🌀",
           },
           {
             kind: "learn",
             my: "ဆ",
             roman: "hsa",
             en: "The letter “hsa”",
-            emoji: "🌬️",
             note: "The aspirated twin of စ.",
           },
           {
-            kind: "choice",
-            question: "Which letter is “sa”?",
-            options: [{ text: "စ" }, { text: "ဆ" }, { text: "ဇ" }],
+            kind: "listen",
+            my: "စ",
+            roman: "sa",
+            en: "The letter “sa”",
+            options: [
+              { text: "စ", sub: "sa" },
+              { text: "ဆ", sub: "hsa" },
+              { text: "ဇ", sub: "za" },
+            ],
             correct: 0,
           },
           {
@@ -750,19 +763,17 @@ export const course: Unit[] = [
             my: "ဇ",
             roman: "za",
             en: "The letter “za”",
-            emoji: "⚡",
           },
           {
             kind: "learn",
             my: "ည",
             roman: "nya",
             en: "The letter “nya”",
-            emoji: "🌙",
             note: "ည on its own also means “night”.",
           },
           {
             kind: "choice",
-            question: "Which letter is “nya”?",
+            question: "Which letter also means “night” on its own?",
             options: [{ text: "ည" }, { text: "ဇ" }, { text: "စ" }],
             correct: 0,
           },
@@ -800,19 +811,23 @@ export const course: Unit[] = [
             my: "တ",
             roman: "ta",
             en: "The letter “ta”",
-            emoji: "🥁",
           },
           {
             kind: "learn",
             my: "န",
             roman: "na",
             en: "The letter “na”",
-            emoji: "👃",
           },
           {
-            kind: "choice",
-            question: "Which letter is “ta”?",
-            options: [{ text: "တ" }, { text: "န" }, { text: "ပ" }],
+            kind: "listen",
+            my: "တ",
+            roman: "ta",
+            en: "The letter “ta”",
+            options: [
+              { text: "တ", sub: "ta" },
+              { text: "န", sub: "na" },
+              { text: "ပ", sub: "pa" },
+            ],
             correct: 0,
           },
           {
@@ -832,20 +847,24 @@ export const course: Unit[] = [
             my: "ပ",
             roman: "pa",
             en: "The letter “pa”",
-            emoji: "🦜",
           },
           {
             kind: "learn",
             my: "မ",
             roman: "ma",
             en: "The letter “ma”",
-            emoji: "💜",
             note: "You already know it from မင်္ဂလာပါ!",
           },
           {
-            kind: "choice",
-            question: "Which letter is “ma”?",
-            options: [{ text: "မ" }, { text: "ပ" }, { text: "တ" }],
+            kind: "listen",
+            my: "ပ",
+            roman: "pa",
+            en: "The letter “pa”",
+            options: [
+              { text: "ပ", sub: "pa" },
+              { text: "မ", sub: "ma" },
+              { text: "တ", sub: "ta" },
+            ],
             correct: 0,
           },
           {
@@ -872,8 +891,7 @@ export const course: Unit[] = [
           },
           {
             kind: "choice",
-            question:
-              "Spot the familiar letters: which word starts with မ (ma)?",
+            question: "Spot the familiar letters: which word starts with မ?",
             options: [
               { text: "မင်္ဂလာပါ", sub: "min-ga-la-ba" },
               { text: "ကျေးဇူး", sub: "kyei-zu" },

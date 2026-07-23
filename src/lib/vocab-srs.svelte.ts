@@ -153,6 +153,20 @@ class VocabSrs {
 		this.save();
 	}
 
+	/**
+	 * Pushes an item's next review out without touching its box — used when a
+	 * session gives up on it (see $lib/stuck). A wrong grade leaves an item due
+	 * immediately, so without this the word a learner just failed three times
+	 * would lead the very next session too.
+	 */
+	defer(my: string, ms = INTERVALS[1]) {
+		const e = this.entries[my];
+		if (!e) return;
+		this.entries = { ...this.entries, [my]: { ...e, due: Date.now() + ms } };
+		this.mistakes = this.mistakes.filter((m) => m !== my);
+		this.save();
+	}
+
 	/** Records an in-lesson mistake for later practice (no SRS penalty). */
 	recordMistake(my: string) {
 		if (!byMy.has(my)) return; // unmappable — skip

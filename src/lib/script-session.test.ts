@@ -38,17 +38,33 @@ function expectValidChoice(ex: ReturnType<typeof g2s>) {
 }
 
 describe('drill generators', () => {
-	it('g2s asks for the glyph sound and includes it once', () => {
+	it('g2s asks the learner to read the glyph aloud, not to pick a romanization', () => {
 		const ex = g2s(ka);
+		// Romanized options would teach the letter as a spelling of "ka".
+		expect(ex.kind).toBe('recall');
+		if (ex.kind !== 'recall') return;
+		expect(ex.my).toBe(ka.char);
+		expect(ex.speak).toBe(ka.speak);
+		expect(ex.glyphId).toBe('ka');
+	});
+
+	it('g2s falls back to romanized choices only without audio to check against', () => {
+		const ex = g2s(ka, undefined, false);
 		expectValidChoice(ex);
 		if (ex.kind !== 'choice') return;
 		expect(ex.promptBig).toBe(ka.char);
 		expect(ex.options[ex.correct].label).toBe(ka.sound);
-		expect(ex.glyphId).toBe('ka');
 	});
 
-	it('g2s prefers confusables as distractors', () => {
-		const ex = g2s(ma);
+	it('g2s speed rounds stay multiple choice — no time to listen', () => {
+		const ex = g2s(ka, 5);
+		expect(ex.kind).toBe('choice');
+		if (ex.kind !== 'choice') return;
+		expect(ex.timed).toBe(5);
+	});
+
+	it('g2s prefers confusables as distractors in its fallback form', () => {
+		const ex = g2s(ma, undefined, false);
 		if (ex.kind !== 'choice') return;
 		const distractorLabels = ex.options.filter((_, i) => i !== ex.correct).map((o) => o.label);
 		const confusableSounds = ma.confusables.map((id) => glyphById.get(id)!.sound);
@@ -114,8 +130,9 @@ describe('buildIntroQueue', () => {
 		const queue = buildIntroQueue(unit);
 		for (const id of unit.glyphIds) {
 			expect(queue.some((ex) => ex.kind === 'intro' && ex.glyph.id === id)).toBe(true);
+			// The quiz is a read-aloud recall while audio is on, a choice without.
 			expect(
-				queue.some((ex) => ex.kind === 'choice' && ex.glyphId === id)
+				queue.some((ex) => (ex.kind === 'choice' || ex.kind === 'recall') && ex.glyphId === id)
 			).toBe(true);
 		}
 	});
@@ -149,11 +166,22 @@ describe('buildPracticeQueue', () => {
 		srs.introduce(['ka', 'ma', 'na', 'a', 'aa']);
 		const { queue, count } = buildPracticeQueue();
 		expect(count).toBe(5);
-		// Box-1 items drill glyph→sound.
-		const drills = queue.filter((ex) => ex.kind === 'choice' && ex.glyphId);
+		// Box-1 items drill glyph→sound, which is now a read-aloud recall.
+		const drills = queue.filter((ex) => ex.kind === 'recall' && ex.glyphId);
 		expect(drills.length).toBe(5);
 		for (const d of drills) {
-			if (d.kind === 'choice') expect(d.questionKey ?? 'what-sound').toBe('what-sound');
+			if (d.kind === 'recall') expect(d.speak).toBeTruthy();
+		}
+	});
+
+	it('drills stay romanization-free while audio is on', () => {
+		srs.introduce(['ka', 'ma', 'na', 'a', 'aa']);
+		const { queue } = buildPracticeQueue(true);
+		const sounds = new Set(['ka', 'ma', 'na', 'a', 'aa'].map((id) => glyphById.get(id)!.sound));
+		for (const ex of queue) {
+			if (ex.kind !== 'choice') continue;
+			// No drill may offer a romanized spelling as something to pick.
+			for (const o of ex.options) expect(sounds.has(o.label)).toBe(false);
 		}
 	});
 

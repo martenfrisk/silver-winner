@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { allLessons } from '$lib/data/course';
-import { buildVocabPracticeQueue, exerciseFor, starsFor } from './practice-session';
+import { buildVocabPracticeQueue, exerciseFor, isBuildable, starsFor } from './practice-session';
 import { vocabSrs, vocabByMy } from './vocab-srs.svelte';
 
 const T0 = new Date('2026-01-01T12:00:00Z').getTime();
@@ -58,6 +58,39 @@ describe('exerciseFor', () => {
 		expect(exerciseFor(item, 0, 0).kind).toBe('listen');
 		// …starts at the production rung for script readers.
 		expect(exerciseFor(item, 0, 0, 'script-reader').kind).toBe('assemble');
+	});
+
+	it('builds from syllable tiles, never bare vowel or tone marks', () => {
+		introduceLessons(6);
+		const school = vocabByMy.get('ကျောင်း')!;
+		const ex = exerciseFor(school, 0, 2);
+		expect(ex.kind).toBe('assemble');
+		if (ex.kind !== 'assemble') return;
+		// Grapheme-cluster tiles would give ["ကျေ","ာ","င်","း"] — three of them
+		// unrenderable on their own, and reorderable into nonsense.
+		expect(ex.answer.map((a) => a.t)).toEqual(['ကျောင်း']);
+		const dependent = /^[ါ-ှ]/;
+		for (const t of [...ex.answer, ...ex.extras]) expect(dependent.test(t.t)).toBe(false);
+	});
+
+	it('never asks for a long phrase to be built from memory', () => {
+		introduceLessons(6);
+		const thankYou = vocabByMy.get('ကျေးဇူးတင်ပါတယ်')!; // 5 syllables
+		expect(isBuildable(thankYou)).toBe(false);
+		// Every rung that would normally produce 'assemble' falls back instead.
+		for (const box of [2, 3, 4]) {
+			for (const i of [0, 1, 2]) {
+				expect(exerciseFor(thankYou, i, box).kind).not.toBe('assemble');
+			}
+		}
+		expect(exerciseFor(thankYou, 0, 0, 'script-reader').kind).not.toBe('assemble');
+	});
+
+	it('still builds short words at the production rung', () => {
+		introduceLessons(6);
+		const water = vocabByMy.get('ရေ')!;
+		expect(isBuildable(water)).toBe(true);
+		expect(exerciseFor(water, 0, 2).kind).toBe('assemble');
 	});
 
 	it('climbs to free recall at box 4, alternating with assemble', () => {

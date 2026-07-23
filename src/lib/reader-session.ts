@@ -3,6 +3,7 @@
 // of) the lesson path. No romanization is ever attached — options carry no
 // `sub` fields — so the script itself does all the work.
 import { course, type Exercise, type Option, type Unit } from '$lib/data/course';
+import { quoted } from '$lib/gloss';
 
 /** The exercise kinds a reader session generates. */
 export type ReaderExercise = Extract<Exercise, { kind: 'choice' } | { kind: 'listen' }>;
@@ -88,7 +89,7 @@ function readEnMy(item: ReaderVocab, pool: ReaderVocab[]): ReaderExercise {
 	];
 	return {
 		kind: 'choice',
-		question: `Which one says “${item.en}”?`,
+		question: `Which one says ${quoted(item.en)}?`,
 		options,
 		correct: 0
 	};

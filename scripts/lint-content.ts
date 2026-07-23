@@ -35,6 +35,12 @@ import { join } from 'node:path';
 
 const strictAudio = process.argv.includes('--strict-audio');
 
+/** Signs that can never begin a syllable — see src/lib/burmese.ts. */
+const DEPENDENT_START = /^[\u102B-\u103E\u105E-\u1060\u1062-\u1064\u1067-\u106D\u1071-\u1074\u1082-\u108D\u108F\u109A-\u109D]/;
+
+/** Most tiles an assemble exercise may ask a learner to order. */
+const MAX_BUILD_TILES = 4;
+
 const errors = new Map<string, string[]>();
 const warnings = new Map<string, string[]>();
 const add = (bucket: Map<string, string[]>, category: string, msg: string) => {
@@ -122,6 +128,20 @@ const warn = (category: string, msg: string) => add(warnings, category, msg);
 					const target = ex.my.replace(/\s+/g, '');
 					if (joined !== target)
 						err(cat, `${at}: answer tiles compose "${joined}" but "my" is "${target}"`);
+					// A tile that opens with a dependent sign (ာ, း, ်) renders as a
+					// stranded mark, so the word can never look right even when the
+					// answer is correct. Tiles must be whole syllables.
+					for (const t of [...ex.answer, ...ex.extras]) {
+						if (DEPENDENT_START.test(t.t))
+							err(cat, `${at}: tile "${t.t}" starts with a dependent mark — use whole syllables`);
+					}
+					// Ordering a long phrase tile-by-tile is a spelling test a
+					// beginner fails for reasons unrelated to knowing the phrase.
+					if (ex.answer.length > MAX_BUILD_TILES)
+						err(
+							cat,
+							`${at}: ${ex.answer.length} answer tiles (max ${MAX_BUILD_TILES}) — chunk by word or morpheme`
+						);
 				}
 			});
 		}

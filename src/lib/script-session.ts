@@ -46,7 +46,27 @@ export type ScriptEx =
 			timed?: number;
 	  }
 	| { kind: 'word'; word: DecodableWord; options: string[]; correct: number }
-	| { kind: 'sentence'; sentence: DecodableSentence; options: string[]; correct: number };
+	| { kind: 'sentence'; sentence: DecodableSentence; options: string[]; correct: number }
+	| {
+			/**
+			 * Read it aloud, then check yourself against the audio.
+			 *
+			 * The honest way to ask "what sound does this make?". Multiple choice
+			 * can only answer that question with romanized options, which teaches
+			 * the letter as a spelling of a Latin syllable — the exact habit a
+			 * reader has to unlearn. Self-grading keeps the direction (shape →
+			 * sound) and drops the crutch; the retrieval attempt is what counts,
+			 * and the audio is the answer key.
+			 */
+			kind: 'recall';
+			glyphId?: string;
+			/** Written form to read — a glyph or a composed syllable. */
+			my: string;
+			/** Burmese text to play as the answer. */
+			speak: string;
+			/** Shown only after revealing, so it can't be read off the prompt. */
+			hint?: string;
+	  };
 
 function shuffle<T>(a: T[]): T[] {
 	return [...a].sort(() => Math.random() - 0.5);
@@ -75,8 +95,23 @@ function withCorrect(options: ChoiceOption[], correctOption: ChoiceOption) {
 	return { options: all, correct: all.indexOf(correctOption) };
 }
 
-/** Glyph → sound. */
-export function g2s(glyph: Glyph, timed?: number): ScriptEx {
+/**
+ * Glyph → sound. Self-graded against the audio, so the learner produces the
+ * sound instead of picking its spelling in Latin letters. The romanized
+ * multiple choice survives only where there is no audio to check against
+ * (silent mode) or no time to listen (speed rounds), the same way s2g keeps a
+ * written prompt for digits.
+ */
+export function g2s(glyph: Glyph, timed?: number, audioOn = true): ScriptEx {
+	if (audioOn && !timed) {
+		return {
+			kind: 'recall',
+			glyphId: glyph.id,
+			my: glyph.char,
+			speak: glyph.speak,
+			hint: glyph.sound
+		};
+	}
 	const target: ChoiceOption = { label: glyph.sound };
 	const { options, correct } = withCorrect(
 		distractors(glyph, 2).map((d) => ({ label: d.sound })),
@@ -141,13 +176,23 @@ function learnedAudioVowels(): string[] {
  * options: testing a consonant varies the consonant; testing a vowel varies
  * the vowel — that's where the discrimination happens.
  */
-export function syllableRead(glyph: Glyph): ScriptEx | null {
+export function syllableRead(glyph: Glyph, audioOn = true): ScriptEx | null {
 	const cons = learnedConsonants();
 	const vowels = learnedAudioVowels();
+
+	/** Sound the syllable out, then check against the audio (see 'recall'). */
+	const readAloud = (text: string): ScriptEx => ({
+		kind: 'recall',
+		glyphId: glyph.id,
+		my: text,
+		speak: text
+	});
+
 	if (glyph.type === 'consonant') {
 		if (vowels.length === 0) return null;
 		const v = pick(vowels, 1)[0];
 		const target = buildSyllable(glyph.id, v);
+		if (audioOn) return readAloud(target.text);
 		const others = distractors(glyph, 2, cons).map((d) => buildSyllable(d.id, v));
 		const opts = [target, ...others].map((s) => ({ label: s.roman }));
 		const { options, correct } = withCorrect(opts.slice(1), opts[0]);
@@ -166,6 +211,7 @@ export function syllableRead(glyph: Glyph): ScriptEx | null {
 		if (cons.length === 0) return null;
 		const base = pick(cons, 1)[0];
 		const target = buildSyllable(base.id, glyph.id);
+		if (audioOn) return readAloud(target.text);
 		const otherVowels = pick(
 			AUDIO_VOWELS.filter((v) => v !== glyph.id),
 			2
@@ -318,7 +364,7 @@ export function buildIntroQueue(unit: ScriptUnit, audioOn = true): ScriptEx[] {
 		if (TRACING_ENABLED && g.traceable && g.type === 'consonant')
 			queue.push({ kind: 'trace', glyph: g });
 		// Quiz the letter right away, and re-quiz an earlier one for contrast.
-		queue.push(g2s(g));
+		queue.push(g2s(g, undefined, audioOn));
 		if (i >= 1 && i % 2 === 1) queue.push(s2g(unitGlyphs[i - 1], audioOn));
 	});
 
@@ -329,7 +375,7 @@ export function buildIntroQueue(unit: ScriptUnit, audioOn = true): ScriptEx[] {
 
 	// Syllable reading with the unit's new material where possible.
 	const sylls = unitGlyphs
-		.map((g) => syllableRead(g))
+		.map((g) => syllableRead(g, audioOn))
 		.filter((x): x is ScriptEx => x !== null);
 	queue.push(...pick(sylls, 3));
 
@@ -378,11 +424,11 @@ export function buildPracticeQueue(audioOn = true): { queue: ScriptEx[]; count: 
 		// listening drill — hearing the contrast is the hard part.
 		const listen = box >= 2 && Math.random() < 0.5 ? listenDrill(g, audioOn) : null;
 		if (box <= 1) {
-			queue.push(g2s(g));
+			queue.push(g2s(g, undefined, audioOn));
 		} else if (box === 2) {
 			queue.push(listen ?? s2g(g, audioOn));
 		} else if (box === 3) {
-			queue.push(listen ?? syllableRead(g) ?? s2g(g, audioOn));
+			queue.push(listen ?? syllableRead(g, audioOn) ?? s2g(g, audioOn));
 		} else {
 			// Mastered: keep it honest with a speed round — or, for traceable
 			// consonants, sometimes demand the shape from memory.

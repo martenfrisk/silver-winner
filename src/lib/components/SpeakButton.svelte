@@ -38,7 +38,9 @@
 		justify-content: center;
 		width: 40px;
 		height: 40px;
-		border-radius: 12px;
+		/* Round: it's a single icon action, and the squircle read as a cropped
+		   card next to the answer reveal it sits in. */
+		border-radius: 50%;
 		background: var(--teal);
 		box-shadow: 0 3px 0 var(--teal-dark);
 		font-size: 1.1rem;

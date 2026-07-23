@@ -5,7 +5,7 @@
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { scriptUnits, totalGlyphs } from '$lib/data/script';
 	import { readerStarsKey } from '$lib/reader-session';
-	import { primaryTrack, suggestFor, tracks } from '$lib/tracks';
+	import { canSkipUnit, primaryTrack, suggestFor, tracks } from '$lib/tracks';
 	import { ui } from '$lib/i18n.svelte';
 	import Mascot from '$lib/components/Mascot.svelte';
 	import StartChooser from '$lib/components/StartChooser.svelte';
@@ -79,6 +79,16 @@
 		}
 		sfx.tap();
 		goto(`/lesson/${id}`);
+	}
+
+	/** Skips (or restores) every not-yet-done lesson in a unit the learner knows. */
+	function toggleUnitSkip(lessons: { id: string }[], skipped: boolean) {
+		sfx.tap();
+		for (const l of lessons) {
+			if (progress.isCompleted(l.id)) continue;
+			if (skipped) progress.unskipLesson(l.id);
+			else progress.skipLesson(l.id);
+		}
 	}
 
 	function confirmReset() {
@@ -270,22 +280,40 @@
 
 		<div class="path">
 			{#each course as unit (unit.id)}
+				{@const pending = unit.lessons.filter((l) => !progress.isCompleted(l.id))}
+				{@const unitSkipped = pending.length > 0 && pending.every((l) => progress.isSkipped(l.id))}
 				<section class="unit">
 					<div class="unit-header" style="--unit-color: {unit.color}">
 						<div>
 							<h2>{unit.title}</h2>
 							<p class="my unit-my">{unit.my}</p>
 						</div>
+						<!-- You told us you read the script; this unit teaches it. Offer
+						     the way past instead of making you grind through it. -->
+						{#if pending.length > 0 && canSkipUnit(progress.profile, unit.id)}
+							<button
+								class="skip-unit"
+								class:done={unitSkipped}
+								onclick={() => toggleUnitSkip(pending, unitSkipped)}
+								title={unitSkipped
+									? 'Put these lessons back on the path'
+									: 'Unlock what comes after without doing these lessons'}
+							>
+								{unitSkipped ? '↩ Un-skip' : '⏭ I know this'}
+							</button>
+						{/if}
 					</div>
 					<div class="nodes">
 						{#each unit.lessons as lesson, i (lesson.id)}
 							{@const unlocked = progress.isUnlocked(lesson.id)}
 							{@const stars = progress.stars[lesson.id] ?? 0}
 							{@const isCurrent = progress.currentLesson === lesson.id}
+							{@const skipped = stars === 0 && progress.isSkipped(lesson.id)}
 							<div class="node-row" style="--offset: {[0, 1, -1][i % 3]}">
 								<div class="node-wrap">
 									<button
 										class="node {unlocked ? '' : 'locked'} {stars > 0 ? 'completed' : ''} {isCurrent ? 'current' : ''}"
+										class:skipped
 										style="--unit-color: {unit.color}"
 										onclick={() => openLesson(lesson.id, unlocked)}
 										disabled={!unlocked}
@@ -294,11 +322,16 @@
 										{#if isCurrent}
 											<span class="start-bubble" class:my={ui('start').my}>{ui('start').text}</span>
 										{/if}
-										<span class="node-emoji">{unlocked ? lesson.emoji : '🔒'}</span>
+										<!-- A skipped lesson isn't gating anything, so it never wears
+									     the padlock even while earlier units are unfinished. -->
+									<span class="node-emoji">{unlocked || skipped ? lesson.emoji : '🔒'}</span>
 										{#if stars > 0}
 											<span class="node-stars">
 												{'★'.repeat(stars)}<span class="dim">{'★'.repeat(3 - stars)}</span>
 											</span>
+										{:else if skipped}
+											<!-- Still tappable: skipping is "not now", not "never". -->
+											<span class="node-stars node-skipped">skipped</span>
 										{/if}
 									</button>
 									{#if !unlocked && progress.profile === 'speaker'}
@@ -820,11 +853,35 @@
 		padding-top: 20px;
 	}
 	.unit-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
 		background: var(--unit-color);
 		border-radius: var(--radius);
 		padding: 18px 22px;
 		color: #fff;
 		box-shadow: 0 4px 0 rgb(0 0 0 / 18%);
+	}
+	.skip-unit {
+		flex-shrink: 0;
+		padding: 8px 14px;
+		border-radius: 99px;
+		background: rgb(255 255 255 / 22%);
+		color: #fff;
+		font-size: 0.82rem;
+		font-weight: 800;
+		white-space: nowrap;
+		transition: background 0.15s ease, scale 0.2s var(--pop);
+	}
+	.skip-unit:hover {
+		background: rgb(255 255 255 / 34%);
+	}
+	.skip-unit:active {
+		scale: 0.94;
+	}
+	.skip-unit.done {
+		background: rgb(0 0 0 / 20%);
 	}
 	.unit-header h2 {
 		font-size: 1.25rem;
@@ -923,6 +980,18 @@
 	}
 	.node-stars .dim {
 		color: var(--star-dim);
+	}
+	/* Skipped lessons read as "passed over", not "done" — no stars, no colour. */
+	.node.skipped {
+		filter: grayscale(0.75);
+		opacity: 0.7;
+	}
+	.node-skipped {
+		color: var(--ink-soft);
+		font-size: 0.62rem;
+		font-weight: 800;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
 	}
 	.start-bubble {
 		position: absolute;

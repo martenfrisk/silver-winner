@@ -53,8 +53,14 @@ describe('scriptNeedsAudio', () => {
 		srs.reset();
 	});
 
-	it('clears drills that show the glyph', () => {
-		expect(scriptNeedsAudio(g2s(glyphById.get('ka')!))).toBe(false);
+	it('clears drills that show the glyph and can be answered in silence', () => {
+		// The muted form of glyph→sound: the shape is the prompt, the options
+		// are written, so nothing depends on hearing anything.
+		expect(scriptNeedsAudio(g2s(glyphById.get('ka')!, undefined, false))).toBe(false);
+	});
+
+	it('drops read-aloud recall when muted — the audio is the answer key', () => {
+		expect(scriptNeedsAudio(g2s(glyphById.get('ka')!))).toBe(true);
 	});
 });
 

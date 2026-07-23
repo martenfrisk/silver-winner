@@ -13,6 +13,7 @@
 //   without the audio the two options are equally valid. Those get skipped.
 import type { Exercise } from '$lib/data/course';
 import type { ScriptEx } from '$lib/script-session';
+import { quoted } from '$lib/gloss';
 
 type ListenEx = Extract<Exercise, { kind: 'listen' }>;
 type ChoiceEx = Extract<Exercise, { kind: 'choice' }>;
@@ -25,7 +26,7 @@ function isListen(ex: { kind: string }): ex is ListenEx {
 function silentChoice(ex: ListenEx): ChoiceEx {
 	return {
 		kind: 'choice',
-		question: `Which one says “${ex.en}”?`,
+		question: `Which one says ${quoted(ex.en)}?`,
 		options: ex.options,
 		correct: ex.correct
 	};
@@ -46,5 +47,8 @@ export function silentSafe<T extends { kind: string }>(ex: T, audioOn: boolean):
  * audio only (no glyph or syllable shown), so silence leaves nothing to go on.
  */
 export function scriptNeedsAudio(ex: ScriptEx): boolean {
+	// Read-aloud drills show the written form, so the prompt survives silence —
+	// but the audio *is* the answer key, so there's nothing to check against.
+	if (ex.kind === 'recall') return true;
 	return ex.kind === 'choice' && !!ex.promptSpeak && !ex.promptBig;
 }

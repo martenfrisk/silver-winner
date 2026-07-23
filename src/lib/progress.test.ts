@@ -1,12 +1,59 @@
 // The store runs headless here: `browser` is false under vitest's node
 // environment, so the constructor skips localStorage and save() no-ops.
 import { afterEach, describe, expect, it } from 'vitest';
+import { lessonOrder } from './data/course';
 import { progress } from './progress.svelte';
 
 afterEach(() => {
 	progress.sound = true;
 	progress.tempMute = false;
 	progress.profile = null;
+	progress.stars = {};
+	progress.skipped = {};
+});
+
+describe('skipping lessons', () => {
+	const [first, second, third] = lessonOrder;
+
+	it('a skipped lesson unlocks the next one', () => {
+		expect(progress.isUnlocked(second)).toBe(false);
+		progress.skipLesson(first);
+		expect(progress.isUnlocked(second)).toBe(true);
+	});
+
+	it('skipping earns nothing — no stars, and it does not count as completed', () => {
+		progress.skipLesson(first);
+		expect(progress.isCompleted(first)).toBe(false);
+		expect(progress.stars[first]).toBeUndefined();
+		expect(progress.completedCount).toBe(0);
+	});
+
+	it('moves the current lesson past the skipped ones', () => {
+		progress.skipLesson(first);
+		progress.skipLesson(second);
+		expect(progress.currentLesson).toBe(third);
+	});
+
+	it('un-skipping locks the path back up', () => {
+		progress.skipLesson(first);
+		progress.unskipLesson(first);
+		expect(progress.isSkipped(first)).toBe(false);
+		expect(progress.isUnlocked(second)).toBe(false);
+		expect(progress.currentLesson).toBe(first);
+	});
+
+	it('doing a skipped lesson supersedes the skip', () => {
+		progress.skipLesson(first);
+		progress.completeLesson(first, 3);
+		expect(progress.isSkipped(first)).toBe(false);
+		expect(progress.isCompleted(first)).toBe(true);
+	});
+
+	it('reset clears skips', () => {
+		progress.skipLesson(first);
+		progress.reset();
+		expect(progress.isSkipped(first)).toBe(false);
+	});
 });
 
 describe('profile', () => {

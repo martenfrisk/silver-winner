@@ -22,8 +22,12 @@
 	import ListenExercise from '$lib/components/ListenExercise.svelte';
 	import AnswerReveal from '$lib/components/AnswerReveal.svelte';
 	import NoAudioPrompt from '$lib/components/NoAudioPrompt.svelte';
+	import HeaderMute from '$lib/components/HeaderMute.svelte';
 	import { grammarTip } from '$lib/grammar-tips';
 	import { silentSafe } from '$lib/silent-mode';
+	import { AttemptTracker, MAX_ATTEMPTS } from '$lib/stuck';
+	import { AutoAdvance } from '$lib/auto-advance.svelte';
+	import { noAudioPromptState } from '$lib/no-audio-prompt.svelte';
 
 	const unit = course.find((u) => u.id === page.params.unit);
 
@@ -37,6 +41,13 @@
 	let xpEarned = $state(0);
 	let stars = $state(0);
 	let selected = $state<number | null>(null);
+
+	// Misses per drill, so nothing loops forever (see $lib/stuck).
+	const attempts = new AttemptTracker();
+	let retired = $state(false);
+
+	// Correct answers move on by themselves after a beat.
+	const auto = new AutoAdvance();
 
 	// Listening drills become reading drills while audio is off.
 	const ex = $derived(silentSafe(queue[idx], progress.audioOn));
@@ -54,19 +65,29 @@
 		return { my: ex.my, en: ex.en, speak: ex.my };
 	});
 
+	/** Stable identity for a drill across re-queues (silent-mode safe). */
+	function keyOf(e: ReaderExercise): string {
+		return e.kind === 'choice' ? `choice:${e.question}:${e.promptMy ?? ''}` : `${e.kind}:${e.my}`;
+	}
+
 	function check() {
 		if (!ex || status !== 'answer') return;
+		noAudioPromptState.noteAnswer();
 		const ok = selected === ex.correct;
 		if (ok) {
 			status = 'correct';
 			sfx.correct();
-			// Reinforce the sound on reading drills, where audio wasn't the prompt.
-			if (ex.kind === 'choice') speak(ex.promptMy ?? ex.options[ex.correct].text);
+			// Always hear the word after a right answer, not just on reading drills.
+			if (reveal?.speak) speak(reveal.speak);
+			auto.start(advance);
 		} else {
 			status = 'wrong';
 			mistakes++;
 			sfx.wrong();
-			queue = [...queue, ex]; // read it again at the end
+			// Read it again at the end — unless it has already come back too many
+			// times, in which case let it go rather than looping on it.
+			retired = !attempts.miss(keyOf(queue[idx]));
+			if (!retired) queue = [...queue, ex];
 			const answerAudio = reveal?.speak;
 			if (answerAudio) setTimeout(() => speak(answerAudio), 600);
 		}
@@ -74,14 +95,17 @@
 
 	function advance() {
 		if (!ex) return;
+		auto.cancel();
 		if (status !== 'wrong') solved++;
 		idx++;
 		status = 'answer';
 		selected = null;
+		retired = false;
 		if (idx >= queue.length) finish();
 	}
 
 	function finish() {
+		auto.cancel();
 		stars = starsFor(mistakes);
 		xpEarned = progress.completeLesson(readerStarsKey(unit!.id), stars);
 		done = true;
@@ -89,6 +113,7 @@
 	}
 
 	function quit() {
+		auto.cancel();
 		goto('/reader');
 	}
 
@@ -99,6 +124,7 @@
 			return;
 		}
 		if (!ex) return;
+		auto.cancel(); // any keypress means "I'm still here" — stop the countdown
 		if (e.key === 'Enter') {
 			e.preventDefault();
 			if (status !== 'answer') advance();
@@ -110,7 +136,8 @@
 	}
 </script>
 
-<svelte:window {onkeydown} />
+<!-- Any touch or click interrupts the auto-advance countdown. -->
+<svelte:window {onkeydown} onpointerdown={() => auto.cancel()} />
 
 <svelte:head>
 	<title>{unit ? `Reading: ${unit.title}` : 'Reader track'} · MyanLingo</title>
@@ -155,6 +182,7 @@
 			<div class="bar" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
 				<div class="fill" style="width: {pct}%"></div>
 			</div>
+			<HeaderMute />
 			<button
 				class="table-btn my"
 				onclick={() => scriptSheet.show()}
@@ -186,7 +214,9 @@
 					<div class="feedback-text">
 						<strong>{['ကောင်းတယ်!', 'Nice reading!', 'ဟုတ်ပြီ!'][solved % 3]}</strong>
 					</div>
-					<button class="btn green" onclick={advance}>{ui('continue').text}</button>
+					<button class="btn green" onclick={advance}>
+						{ui('continue').text}{#if auto.left > 0}<span class="count">{auto.left}</span>{/if}
+					</button>
 				</div>
 			{:else if status === 'wrong'}
 				<div class="feedback stacked" in:fly={{ y: 24, duration: 250 }}>
@@ -196,6 +226,11 @@
 					</div>
 					{#if reveal}
 						<AnswerReveal my={reveal.my} en={reveal.en} speakText={reveal.speak} tip={grammarTip(reveal.my)} />
+					{/if}
+					{#if retired}
+						<p class="retired">
+							That's {MAX_ATTEMPTS} tries. Moving on, you'll meet it again another day.
+						</p>
 					{/if}
 					<button class="btn red" onclick={advance}>{ui('got-it').text}</button>
 				</div>
@@ -262,7 +297,13 @@
 		flex: 1;
 		min-height: 0;
 		display: grid;
-		padding: 12px 0 24px;
+		/* A gutter for animations, not for layout: the correct-answer pop
+		   scales a card and the wrong-answer shake slides it sideways, and
+		   with overflow-x hidden flush to the card edge both got sliced off
+		   on phones, where cards run the full width. The negative margin
+		   gives the motion room while keeping the cards the same size. */
+		padding: 12px 10px 24px;
+		margin: 0 -10px;
 		overflow-y: auto;
 		overflow-x: hidden;
 		overscroll-behavior: contain;
@@ -296,6 +337,25 @@
 		color: var(--ink-soft);
 		font-size: 0.9rem;
 		font-weight: 700;
+	}
+	/* Seconds left before the answer moves on by itself (see the lesson player). */
+	.count {
+		display: inline-grid;
+		place-items: center;
+		width: 1.35em;
+		height: 1.35em;
+		margin-left: 8px;
+		border-radius: 50%;
+		background: rgb(255 255 255 / 30%);
+		font-size: 0.8em;
+		font-variant-numeric: tabular-nums;
+	}
+	.retired {
+		margin: 0;
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--ink-soft);
+		text-wrap: pretty;
 	}
 	.feedback {
 		display: flex;
