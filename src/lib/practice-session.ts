@@ -11,6 +11,8 @@
 // climb from tapping options to building words to recalling them cold.
 import type { Exercise, Option } from '$lib/data/course';
 import type { Profile } from '$lib/progress.svelte';
+import { syllables } from '$lib/burmese';
+import { quoted } from '$lib/gloss';
 import { allVocab, vocabByMy, vocabSrs, type VocabItem } from '$lib/vocab-srs.svelte';
 
 /** The course-exercise kinds a practice session generates. */
@@ -98,36 +100,31 @@ function choiceEnMy(item: VocabItem): PracticeExercise {
 	];
 	return {
 		kind: 'choice',
-		question: `How do you say “${item.en}”?`,
+		question: `How do you say ${quoted(item.en)}?`,
 		options,
 		correct: 0
 	};
 }
 
-// Burmese tiles: grapheme clusters (a consonant plus its attached marks)
-// are the natural draggable unit — Intl.Segmenter does the splitting.
-const seg = new Intl.Segmenter('my', { granularity: 'grapheme' });
-
-function graphemes(s: string): string[] {
-	return [...seg.segment(s)].map((x) => x.segment);
-}
-
 /** Build the word from tiles: production with a scaffold. */
 function assembleEx(item: VocabItem): PracticeExercise {
-	const answer = graphemes(item.my).map((t) => ({ t }));
+	// Tiles are syllables, not grapheme clusters: a cluster can be a bare
+	// vowel or tone mark (ါ, း), which renders as a stranded sign on a tile
+	// and can't be read back as a piece of the word. See $lib/burmese.
+	const answer = syllables(item.my).map((t) => ({ t }));
 	const answerSet = new Set(answer.map((a) => a.t));
 	// Decoy tiles from other known words — only ones not already in the answer,
 	// so every correct tile in the bank is genuinely correct.
 	const extras: { t: string }[] = [];
 	for (const v of distractors(item, 2, (x) => x.my)) {
-		for (const t of graphemes(v.my)) {
+		for (const t of syllables(v.my)) {
 			if (extras.length >= 3) break;
 			if (!answerSet.has(t) && !extras.some((e) => e.t === t)) extras.push({ t });
 		}
 	}
 	return {
 		kind: 'assemble',
-		question: `Build “${item.en}”`,
+		question: `Build ${quoted(item.en)}`,
 		answer,
 		extras,
 		my: item.my,
@@ -137,6 +134,21 @@ function assembleEx(item: VocabItem): PracticeExercise {
 
 function recallEx(item: VocabItem): RecallEx {
 	return { kind: 'recall', my: item.my, roman: item.roman, en: item.en };
+}
+
+/**
+ * Longest word we'll ask someone to build tile-by-tile from memory.
+ *
+ * A few course phrases run four or five syllables (ကျေးဇူးတင်ပါတယ်,
+ * တောင်းပန်ပါတယ်) — worth knowing and worth recognizing, but reconstructing
+ * one from a shuffled bank is a spelling test a beginner fails for reasons
+ * that have nothing to do with knowing the phrase. Those stay on recognition.
+ */
+export const MAX_PRODUCTION_SYLLABLES = 3;
+
+/** Whether an item is short enough to build from tiles. */
+export function isBuildable(item: VocabItem): boolean {
+	return syllables(item.my).length <= MAX_PRODUCTION_SYLLABLES;
 }
 
 /**
@@ -151,10 +163,13 @@ export function exerciseFor(
 	profile: Profile | null = null
 ): PracticeStep {
 	if (profile === 'script-reader') box = Math.max(box, 2);
-	if (box >= 4) return i % 2 === 0 ? recallEx(item) : assembleEx(item);
+	// Long phrases never reach the assemble rung; free recall is still fair
+	// (it's self-graded, so "close enough" is the learner's call).
+	const build = isBuildable(item);
+	if (box >= 4) return i % 2 === 0 || !build ? recallEx(item) : assembleEx(item);
 	if (box >= 2) {
 		const kind = i % 3;
-		if (kind === 0) return assembleEx(item);
+		if (kind === 0) return build ? assembleEx(item) : listenEx(item);
 		if (kind === 1) return listenEx(item);
 		return choiceEnMy(item);
 	}

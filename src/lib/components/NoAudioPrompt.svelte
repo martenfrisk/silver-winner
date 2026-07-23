@@ -8,7 +8,14 @@
 	import { progress } from '$lib/progress.svelte';
 	import { noAudioPromptState } from '$lib/no-audio-prompt.svelte';
 
-	const showPrompt = $derived(progress.sound && !progress.tempMute && !noAudioPromptState.seen);
+	// Once the offer has moved to the header (HeaderMute), the chip stops
+	// competing for the exercise's space.
+	const showPrompt = $derived(
+		progress.sound &&
+			!progress.tempMute &&
+			!noAudioPromptState.seen &&
+			!noAudioPromptState.relocated
+	);
 
 	function muteForNow() {
 		progress.toggleTempMute();
@@ -24,7 +31,9 @@
 	}
 </script>
 
-{#if progress.tempMute}
+{#if progress.tempMute && !noAudioPromptState.relocated}
+	<!-- After relocation the header toggle already shows the muted state, so a
+	     chip here would just say the same thing twice, over the exercise. -->
 	<div class="chip muted" in:fly={{ y: -8, duration: 180 }} role="status">
 		<span>
 			🔇 Muted
@@ -33,7 +42,13 @@
 		<button class="link-btn" onclick={unmute}>Turn back on</button>
 	</div>
 {:else if showPrompt}
-	<div class="chip prompt" in:fly={{ y: -8, duration: 180 }} role="status">
+	<!-- Exits upward, toward the header control it turns into. -->
+	<div
+		class="chip prompt"
+		in:fly={{ y: -8, duration: 180 }}
+		out:fly={{ y: -28, duration: 260 }}
+		role="status"
+	>
 		<!-- The detail sentence is dropped on phones, where it would wrap the
 		     chip to three rows and eat the exercise's space. "No headphones?"
 		     next to "Mute for now" carries the meaning on its own. -->

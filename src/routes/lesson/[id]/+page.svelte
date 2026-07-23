@@ -18,8 +18,12 @@
 	import ListenExercise from '$lib/components/ListenExercise.svelte';
 	import AnswerReveal from '$lib/components/AnswerReveal.svelte';
 	import NoAudioPrompt from '$lib/components/NoAudioPrompt.svelte';
+	import HeaderMute from '$lib/components/HeaderMute.svelte';
 	import { grammarTip } from '$lib/grammar-tips';
 	import { silentSafe } from '$lib/silent-mode';
+	import { AttemptTracker, MAX_ATTEMPTS } from '$lib/stuck';
+	import { AutoAdvance } from '$lib/auto-advance.svelte';
+	import { noAudioPromptState } from '$lib/no-audio-prompt.svelte';
 
 	const found = findLesson(page.params.id ?? '');
 
@@ -49,6 +53,13 @@
 	// Combo: consecutive correct answers. ≥5 at any point earns bonus XP.
 	let combo = $state(0);
 	let maxCombo = $state(0);
+
+	// Misses per exercise, so nothing can loop forever (see $lib/stuck).
+	const attempts = new AttemptTracker();
+	let retired = $state(false); // the exercise just answered has been given up on
+
+	// Correct answers move on by themselves after a beat.
+	const auto = new AutoAdvance();
 
 	// Per-exercise input state (reset on advance).
 	let selected = $state<number | null>(null);
@@ -89,8 +100,16 @@
 		return null;
 	});
 
+	/** Stable identity for an exercise across re-queues (silent-mode safe). */
+	function keyOf(e: Exercise): string {
+		if (e.kind === 'choice') return `choice:${e.question}:${e.promptMy ?? ''}`;
+		if (e.kind === 'match') return `match:${e.pairs.map((p) => p.l).join(',')}`;
+		return `${e.kind}:${e.my}`;
+	}
+
 	function check() {
 		if (!ex || status !== 'answer') return;
+		noAudioPromptState.noteAnswer();
 		let ok = false;
 		if (ex.kind === 'choice' || ex.kind === 'listen') ok = selected === ex.correct;
 		else if (ex.kind === 'assemble')
@@ -102,7 +121,11 @@
 			maxCombo = Math.max(maxCombo, combo);
 			sfx.correct();
 			if (combo > 0 && combo % 5 === 0) sfx.match(); // combo milestone
-			if (ex.kind === 'assemble') speak(ex.my);
+			// Always hear the answer, not just after building it — the sound is
+			// the thing being learned, and a right answer is the best moment to
+			// attach it to the word.
+			if (reveal?.speak) speak(reveal.speak);
+			auto.start(advance);
 		} else {
 			status = 'wrong';
 			mistakes++;
@@ -113,7 +136,10 @@
 			if (ex.kind === 'listen' || ex.kind === 'assemble') vocabSrs.recordMistake(ex.my);
 			else if (ex.kind === 'choice')
 				vocabSrs.recordMistake(ex.promptMy ?? ex.options[ex.correct].text);
-			queue = [...queue, ex];
+			// Re-queue it — unless it has already come back too many times, in
+			// which case let it go rather than trapping the learner on it.
+			retired = !attempts.miss(keyOf(queue[idx]));
+			if (!retired) queue = [...queue, ex];
 			// Hear the right answer while the reveal shows it.
 			const answerAudio = reveal?.speak;
 			if (answerAudio) setTimeout(() => speak(answerAudio), 600);
@@ -122,16 +148,19 @@
 
 	function advance() {
 		if (!ex) return;
+		auto.cancel();
 		if (status !== 'wrong') solved++;
 		idx++;
 		status = 'answer';
 		selected = null;
 		sequence = [];
 		matchReady = false;
+		retired = false;
 		if (idx >= queue.length) finish();
 	}
 
 	function finish() {
+		auto.cancel();
 		stars = mistakes === 0 ? 3 : mistakes <= 2 ? 2 : 1;
 		const comboBonus = maxCombo >= 5 ? 5 : 0;
 		if (hard) {
@@ -159,6 +188,7 @@
 	}
 
 	function quit() {
+		auto.cancel();
 		goto('/');
 	}
 
@@ -169,6 +199,7 @@
 			return;
 		}
 		if (!ex) return;
+		auto.cancel(); // any keypress means "I'm still here" — stop the countdown
 		if (e.key === 'Enter') {
 			e.preventDefault();
 			if (status !== 'answer' || ex.kind === 'learn') advance();
@@ -195,7 +226,9 @@
 	}
 </script>
 
-<svelte:window {onkeydown} />
+<!-- Any touch or click interrupts the auto-advance countdown, including the
+     tap on Continue itself (which then advances immediately anyway). -->
+<svelte:window {onkeydown} onpointerdown={() => auto.cancel()} />
 
 <svelte:head>
 	<title>{found ? `${found.lesson.title} · MyanLingo` : 'MyanLingo'}</title>
@@ -258,6 +291,7 @@
 			<div class="bar" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
 				<div class="fill" style="width: {pct}%"></div>
 			</div>
+			<HeaderMute />
 			<button
 				class="roman-toggle my"
 				onclick={() => scriptSheet.show()}
@@ -307,7 +341,9 @@
 					{#if combo >= 2}
 						<span class="combo-chip" class:hot={combo >= 5}>🔥×{combo}</span>
 					{/if}
-					<button class="btn green" onclick={advance}>{ui('continue').text}</button>
+					<button class="btn green" onclick={advance}>
+						{ui('continue').text}{#if auto.left > 0}<span class="count">{auto.left}</span>{/if}
+					</button>
 				</div>
 			{:else if status === 'wrong'}
 				<div class="feedback stacked" in:fly={{ y: 24, duration: 250 }}>
@@ -323,6 +359,11 @@
 							speakText={reveal.speak}
 							tip={grammarTip(reveal.my)}
 						/>
+					{/if}
+					{#if retired}
+						<p class="retired">
+							That's {MAX_ATTEMPTS} tries. Moving on, you'll meet it again another day.
+						</p>
 					{/if}
 					<button class="btn red" onclick={advance}>{ui('got-it').text}</button>
 				</div>
@@ -425,7 +466,13 @@
 		flex: 1;
 		min-height: 0; /* let it shrink instead of pushing the page taller */
 		display: grid;
-		padding: 12px 0 24px;
+		/* A gutter for animations, not for layout: the correct-answer pop
+		   scales a card and the wrong-answer shake slides it sideways, and
+		   with overflow-x hidden flush to the card edge both got sliced off
+		   on phones, where cards run the full width. The negative margin
+		   gives the motion room while keeping the cards the same size. */
+		padding: 12px 10px 24px;
+		margin: 0 -10px;
 		overflow-y: auto;
 		overflow-x: hidden; /* clips the fly-in transition */
 		overscroll-behavior: contain;
@@ -523,6 +570,26 @@
 		color: var(--ink-soft);
 		font-size: 0.9rem;
 		font-weight: 700;
+	}
+	/* Seconds left before the answer moves on by itself. Sits inside the
+	   Continue button so the button stays the same size as it counts down. */
+	.count {
+		display: inline-grid;
+		place-items: center;
+		width: 1.35em;
+		height: 1.35em;
+		margin-left: 8px;
+		border-radius: 50%;
+		background: rgb(255 255 255 / 30%);
+		font-size: 0.8em;
+		font-variant-numeric: tabular-nums;
+	}
+	.retired {
+		margin: 0;
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--ink-soft);
+		text-wrap: pretty;
 	}
 	.hard-badge {
 		font-size: 1.15rem;

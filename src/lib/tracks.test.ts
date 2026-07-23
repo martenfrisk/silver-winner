@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { primaryTrack, suggestFor, tracks, type SuggestState } from './tracks';
+import { canSkipUnit, primaryTrack, suggestFor, tracks, type SuggestState } from './tracks';
 
 const fullState: SuggestState = {
 	vocabDue: 3,
@@ -9,6 +9,24 @@ const fullState: SuggestState = {
 	nextScriptUnit: { id: 'first-letters', title: 'First letters' },
 	uncrownedLesson: { id: 'first-words', title: 'First words' }
 };
+
+describe('canSkipUnit', () => {
+	it('lets the profiles that read the script skip the script unit', () => {
+		expect(canSkipUnit('script-reader', 'script')).toBe(true);
+		expect(canSkipUnit('speaker', 'script')).toBe(true);
+	});
+
+	it('offers nothing to profiles that are here to learn the script', () => {
+		expect(canSkipUnit('beginner', 'script')).toBe(false);
+		expect(canSkipUnit('explorer', 'script')).toBe(false);
+		expect(canSkipUnit(null, 'script')).toBe(false);
+	});
+
+	it('never opens up units nobody claimed to know', () => {
+		for (const unit of ['greetings', 'numbers', 'food', 'family', 'places', 'time'])
+			expect(canSkipUnit('speaker', unit)).toBe(false);
+	});
+});
 
 describe('primaryTrack', () => {
 	it('routes each profile to its natural starting corner', () => {

@@ -16,8 +16,12 @@
 	import RecallCard from '$lib/components/RecallCard.svelte';
 	import AnswerReveal from '$lib/components/AnswerReveal.svelte';
 	import NoAudioPrompt from '$lib/components/NoAudioPrompt.svelte';
+	import HeaderMute from '$lib/components/HeaderMute.svelte';
 	import { grammarTip } from '$lib/grammar-tips';
 	import { silentSafe } from '$lib/silent-mode';
+	import { AttemptTracker, MAX_ATTEMPTS } from '$lib/stuck';
+	import { AutoAdvance } from '$lib/auto-advance.svelte';
+	import { noAudioPromptState } from '$lib/no-audio-prompt.svelte';
 
 	// The queue is built once at mount; requeues append copies.
 	let queue = $state<VocabEx[]>(buildVocabPracticeQueue(progress.profile));
@@ -32,6 +36,13 @@
 	let sequence = $state<string[]>([]);
 	let combo = $state(0);
 	let maxCombo = $state(0);
+
+	// Misses per word, so a review can't trap you on one item (see $lib/stuck).
+	const attempts = new AttemptTracker();
+	let retired = $state(false);
+
+	// Correct answers move on by themselves after a beat.
+	const auto = new AutoAdvance();
 
 	const item = $derived(queue[idx]);
 	// Listening drills become reading drills while audio is off.
@@ -69,6 +80,7 @@
 
 	function applyResult(ok: boolean, { autoSpeak = true } = {}) {
 		if (!item) return;
+		noAudioPromptState.noteAnswer();
 		vocabSrs.grade(item.my, ok);
 		if (ok) {
 			status = 'correct';
@@ -76,12 +88,18 @@
 			maxCombo = Math.max(maxCombo, combo);
 			sfx.correct();
 			if (combo > 0 && combo % 5 === 0) sfx.match(); // combo milestone
+			auto.start(advance);
 		} else {
 			status = 'wrong';
 			mistakes++;
 			combo = 0;
 			sfx.wrong();
-			queue = [...queue, item]; // practice it again at the end
+			// Practice it again at the end — unless it has already come back too
+			// many times, in which case defer it to a later session instead of
+			// looping on it for the rest of this one.
+			retired = !attempts.miss(item.my);
+			if (retired) vocabSrs.defer(item.my);
+			else queue = [...queue, item];
 			// Hear the right answer while the reveal shows it.
 			const answerAudio = reveal?.speak;
 			if (autoSpeak && answerAudio) setTimeout(() => speak(answerAudio), 600);
@@ -95,11 +113,19 @@
 		else if (ex.kind === 'assemble') ok = sequence.join('') === ex.answer.map((a) => a.t).join('');
 		else return; // recall grades itself via onresult
 		applyResult(ok);
-		if (ok) {
-			// Reinforce the word's sound where audio wasn't the prompt.
-			if (ex.kind === 'assemble') speak(ex.my);
-			else if (ex.kind === 'choice' && ex.promptMy) speak(ex.promptMy);
-		}
+		// Always hear the word after a right answer, whatever the drill was.
+		if (ok && reveal?.speak) speak(reveal.speak);
+	}
+
+	/**
+	 * Escape hatch: drop the current item without grading it. Nothing is
+	 * penalised, it simply stops being this session's problem.
+	 */
+	function skip() {
+		if (!ex || !item || status !== 'answer') return;
+		vocabSrs.defer(item.my);
+		sfx.tap();
+		advance();
 	}
 
 	function recallResult(ok: boolean) {
@@ -110,15 +136,18 @@
 
 	function advance() {
 		if (!ex) return;
+		auto.cancel();
 		if (status !== 'wrong') solved++;
 		idx++;
 		status = 'answer';
 		selected = null;
 		sequence = [];
+		retired = false;
 		if (idx >= queue.length) finish();
 	}
 
 	function finish() {
+		auto.cancel();
 		stars = starsFor(mistakes);
 		xpEarned = 10 + (stars === 3 ? 5 : 0) + (maxCombo >= 5 ? 5 : 0);
 		progress.addXp(xpEarned);
@@ -127,6 +156,7 @@
 	}
 
 	function quit() {
+		auto.cancel();
 		goto('/');
 	}
 
@@ -137,6 +167,7 @@
 			return;
 		}
 		if (!ex) return;
+		auto.cancel(); // any keypress means "I'm still here" — stop the countdown
 		if (e.key === 'Enter') {
 			e.preventDefault();
 			if (status !== 'answer') advance();
@@ -158,7 +189,8 @@
 	}
 </script>
 
-<svelte:window {onkeydown} />
+<!-- Any touch or click interrupts the auto-advance countdown. -->
+<svelte:window {onkeydown} onpointerdown={() => auto.cancel()} />
 
 <svelte:head>
 	<title>{ui('practice').text} · MyanLingo</title>
@@ -204,6 +236,7 @@
 			<div class="bar" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
 				<div class="fill" style="width: {pct}%"></div>
 			</div>
+			<HeaderMute />
 			<button
 				class="roman-toggle my"
 				onclick={() => scriptSheet.show()}
@@ -251,7 +284,9 @@
 					{#if combo >= 2}
 						<span class="combo-chip" class:hot={combo >= 5}>🔥×{combo}</span>
 					{/if}
-					<button class="btn green" onclick={advance}>{ui('continue').text}</button>
+					<button class="btn green" onclick={advance}>
+						{ui('continue').text}{#if auto.left > 0}<span class="count">{auto.left}</span>{/if}
+					</button>
 				</div>
 			{:else if status === 'wrong'}
 				<div class="feedback stacked" in:fly={{ y: 24, duration: 250 }}>
@@ -268,21 +303,29 @@
 							tip={grammarTip(reveal.my)}
 						/>
 					{/if}
+					{#if retired}
+						<p class="retired">
+							That's {MAX_ATTEMPTS} tries. Moving on, this one comes back another day.
+						</p>
+					{/if}
 					<button class="btn red" onclick={advance}>{ui('got-it').text}</button>
 				</div>
-			{:else if ex.kind === 'assemble'}
-				<div class="actions">
-					<button class="btn green" onclick={check} disabled={!canCheck} title={ui('check').hint}>
-						{ui('check').text}
-					</button>
-				</div>
-			{:else if ex.kind === 'recall'}
-				<div class="actions">
-					<span class="tap-hint">Grade yourself honestly, it drives the schedule</span>
-				</div>
 			{:else}
+				<!-- Skip is always available: a review you can't leave is a trap,
+				     and skipping just defers the word instead of grading it. -->
 				<div class="actions">
-					<span class="tap-hint">{ui('tap-answer').text}</span>
+					<button class="btn ghost" onclick={skip} title="Come back to this one another day">
+						{ui('skip').text}
+					</button>
+					{#if ex.kind === 'assemble'}
+						<button class="btn green" onclick={check} disabled={!canCheck} title={ui('check').hint}>
+							{ui('check').text}
+						</button>
+					{:else if ex.kind === 'recall'}
+						<span class="tap-hint">Grade yourself honestly, it drives the schedule</span>
+					{:else}
+						<span class="tap-hint">{ui('tap-answer').text}</span>
+					{/if}
 				</div>
 			{/if}
 		</footer>
@@ -349,7 +392,13 @@
 		flex: 1;
 		min-height: 0;
 		display: grid;
-		padding: 12px 0 24px;
+		/* A gutter for animations, not for layout: the correct-answer pop
+		   scales a card and the wrong-answer shake slides it sideways, and
+		   with overflow-x hidden flush to the card edge both got sliced off
+		   on phones, where cards run the full width. The negative margin
+		   gives the motion room while keeping the cards the same size. */
+		padding: 12px 10px 24px;
+		margin: 0 -10px;
 		overflow-y: auto;
 		overflow-x: hidden;
 		overscroll-behavior: contain;
@@ -375,7 +424,8 @@
 	}
 	.actions {
 		display: flex;
-		justify-content: flex-end;
+		align-items: center;
+		justify-content: space-between;
 		gap: 12px;
 		max-width: 680px;
 		margin: 0 auto;
@@ -440,6 +490,26 @@
 		color: var(--ink-soft);
 		font-size: 0.9rem;
 		font-weight: 700;
+		text-align: right;
+	}
+	/* Seconds left before the answer moves on by itself (see the lesson player). */
+	.count {
+		display: inline-grid;
+		place-items: center;
+		width: 1.35em;
+		height: 1.35em;
+		margin-left: 8px;
+		border-radius: 50%;
+		background: rgb(255 255 255 / 30%);
+		font-size: 0.8em;
+		font-variant-numeric: tabular-nums;
+	}
+	.retired {
+		margin: 0;
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--ink-soft);
+		text-wrap: pretty;
 	}
 	.combo-chip {
 		font-weight: 900;

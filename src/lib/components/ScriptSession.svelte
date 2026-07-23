@@ -7,6 +7,8 @@
 	import { sfx } from '$lib/audio';
 	import { scriptSheet } from '$lib/script-sheet.svelte';
 	import { scriptNeedsAudio } from '$lib/silent-mode';
+	import { AttemptTracker, MAX_ATTEMPTS } from '$lib/stuck';
+	import { noAudioPromptState } from '$lib/no-audio-prompt.svelte';
 	import { clickNth, digitOf, isShortcutIgnored } from '$lib/keyboard';
 	import { progress } from '$lib/progress.svelte';
 	import { ui } from '$lib/i18n.svelte';
@@ -19,6 +21,7 @@
 	import WordRead from './WordRead.svelte';
 	import SentenceRead from './SentenceRead.svelte';
 	import NoAudioPrompt from './NoAudioPrompt.svelte';
+	import HeaderMute from './HeaderMute.svelte';
 
 	let {
 		initialQueue,
@@ -49,6 +52,11 @@
 	let stars = $state(0);
 	let xpEarned = $state(0);
 
+	// Misses per drill, so a glyph you can't place doesn't loop forever
+	// (see $lib/stuck). The SRS still has it; it comes back another day.
+	const attempts = new AttemptTracker();
+	let retired = $state(false);
+
 	const ex = $derived(queue[idx]);
 	const pct = $derived(queue.length === 0 ? 0 : (solved / queue.length) * 100);
 
@@ -63,14 +71,26 @@
 		if (idx >= queue.length) finish();
 	});
 
+	/** Stable identity for a drill across re-queues. */
+	function keyOf(e: ScriptEx): string {
+		if (e.kind === 'word') return `word:${e.word.my}`;
+		if (e.kind === 'sentence') return `sentence:${e.sentence.my}`;
+		if (e.kind === 'choice') return `choice:${e.glyphId}:${e.questionKey ?? e.question}`;
+		return `${e.kind}:${'glyph' in e ? e.glyph.id : ''}`;
+	}
+
 	function grade(ok: boolean) {
 		answered = ok;
+		noAudioPromptState.noteAnswer();
 		const g = ex && 'glyph' in ex ? ex.glyph.id : ex?.kind === 'choice' ? ex.glyphId : undefined;
 		if (ex?.kind === 'choice' || ex?.kind === 'word' || ex?.kind === 'sentence') {
 			if (g) ongrade?.(g, ok);
 			if (!ok) {
 				mistakes++;
-				queue = [...queue, ex]; // practice it again at the end
+				// Practice it again at the end — unless it has already come back
+				// too many times, in which case let it go for this session.
+				retired = !attempts.miss(keyOf(ex));
+				if (!retired) queue = [...queue, ex];
 			}
 		}
 	}
@@ -89,6 +109,7 @@
 		answered = null;
 		traced = false;
 		peeked = false;
+		retired = false;
 		if (idx >= queue.length) finish();
 	}
 
@@ -161,6 +182,7 @@
 			<div class="bar" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
 				<div class="fill" style="width: {pct}%"></div>
 			</div>
+			<HeaderMute />
 		</header>
 
 		<NoAudioPrompt />
@@ -212,7 +234,10 @@
 				{#if answered === true}
 					<span class="verdict good"><Mascot mood="happy" size={48} /> {['ကောင်းတယ်!', 'Nice!', 'ဟုတ်ပြီ!'][solved % 3]}</span>
 				{:else if answered === false}
-					<span class="verdict bad"><Mascot mood="sad" size={48} /> {ui('not-quite').text}</span>
+					<span class="verdict bad">
+						<Mascot mood="sad" size={48} />
+						{retired ? `That's ${MAX_ATTEMPTS} tries, moving on` : ui('not-quite').text}
+					</span>
 				{:else}
 					<span></span>
 				{/if}
@@ -273,7 +298,13 @@
 		flex: 1;
 		min-height: 0;
 		display: grid;
-		padding: 12px 0 24px;
+		/* A gutter for animations, not for layout: the correct-answer pop
+		   scales a card and the wrong-answer shake slides it sideways, and
+		   with overflow-x hidden flush to the card edge both got sliced off
+		   on phones, where cards run the full width. The negative margin
+		   gives the motion room while keeping the cards the same size. */
+		padding: 12px 10px 24px;
+		margin: 0 -10px;
 		overflow-y: auto;
 		overflow-x: hidden;
 		overscroll-behavior: contain;

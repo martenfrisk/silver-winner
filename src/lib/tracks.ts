@@ -42,6 +42,24 @@ export const tracks: Track[] = [
 
 export const trackById = new Map(tracks.map((t) => [t.id, t]));
 
+/** Course units whose material a given profile has already told us it knows. */
+const KNOWN_UNITS: Partial<Record<NonNullable<Profile>, readonly string[]>> = {
+	// Both of these profiles read the script; sitting through "The Script"
+	// teaching က, ခ, ဂ… is busywork standing between them and the course.
+	'script-reader': ['script'],
+	speaker: ['script']
+};
+
+/**
+ * Whether a course unit can be waved through for this profile. Skipping is
+ * offered, never applied automatically — the learner said they know the
+ * script, not that they want to be sent past it.
+ */
+export function canSkipUnit(profile: Profile | null, unitId: string): boolean {
+	if (!profile) return false;
+	return KNOWN_UNITS[profile]?.includes(unitId) ?? false;
+}
+
 /** The track a profile should lead with. Unset/explorer keeps the course front and center. */
 export function primaryTrack(profile: Profile | null): TrackId {
 	if (profile === 'script-reader') return 'reader';

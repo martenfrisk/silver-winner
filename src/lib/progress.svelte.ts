@@ -31,6 +31,7 @@ interface Saved {
 	achievements: Record<string, number>; // achievement id -> epoch ms earned
 	freezes: number; // streak freezes held (bought with XP)
 	crowns: Record<string, number>; // lessonId -> epoch ms of the perfect hard-mode run
+	skipped: Record<string, number>; // lessonId -> epoch ms it was skipped
 }
 
 export const FREEZE_COST = 100;
@@ -79,6 +80,11 @@ class Progress {
 	freezes = $state(0);
 	// Crowns: perfect hard-mode (drills-only) replays of completed lessons.
 	crowns = $state<Record<string, number>>({});
+	// Lessons waved through because the learner already knows the material
+	// (see canSkipUnit in $lib/tracks). Skipped lessons unlock what follows but
+	// earn nothing: no stars, no XP, and their words stay out of the SRS. They
+	// stay openable, and un-skipping puts them back exactly as they were.
+	skipped = $state<Record<string, number>>({});
 
 	constructor() {
 		if (browser) {
@@ -101,6 +107,7 @@ class Progress {
 					this.achievements = s.achievements ?? {};
 					this.freezes = s.freezes ?? 0;
 					this.crowns = s.crowns ?? {};
+					this.skipped = s.skipped ?? {};
 				}
 			} catch {
 				// Corrupt storage — start fresh.
@@ -153,13 +160,16 @@ class Progress {
 			dailyGoal: this.dailyGoal,
 			achievements: this.achievements,
 			freezes: this.freezes,
-			crowns: this.crowns
+			crowns: this.crowns,
+			skipped: this.skipped
 		};
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
 	}
 
 	/** Records a finished lesson. Returns the XP earned. */
 	completeLesson(lessonId: string, earnedStars: number): number {
+		// Doing a lesson you'd skipped supersedes the skip.
+		this.unskipLesson(lessonId);
 		const isFirstTime = !(lessonId in this.stars);
 		const xpEarned = (isFirstTime ? 20 : 10) + (earnedStars === 3 ? 5 : 0);
 		this.stars = {
@@ -232,16 +242,40 @@ class Progress {
 		return lessonId in this.stars;
 	}
 
-	/** A lesson is unlocked if it is first, or the previous lesson is completed. */
+	isSkipped(lessonId: string): boolean {
+		return lessonId in this.skipped;
+	}
+
+	/** Waves a lesson through: it stops blocking the path but earns nothing. */
+	skipLesson(lessonId: string) {
+		if (this.isSkipped(lessonId)) return;
+		this.skipped = { ...this.skipped, [lessonId]: Date.now() };
+		this.save();
+	}
+
+	/** Undoes a skip. Completing the lesson later works exactly as before. */
+	unskipLesson(lessonId: string) {
+		if (!this.isSkipped(lessonId)) return;
+		const { [lessonId]: _, ...rest } = this.skipped;
+		this.skipped = rest;
+		this.save();
+	}
+
+	/** Whether a lesson stops blocking the ones after it. */
+	private isCleared(lessonId: string): boolean {
+		return this.isCompleted(lessonId) || this.isSkipped(lessonId);
+	}
+
+	/** A lesson is unlocked if it is first, or the previous one is cleared. */
 	isUnlocked(lessonId: string): boolean {
 		const i = lessonOrder.indexOf(lessonId);
 		if (i <= 0) return i === 0;
-		return this.isCompleted(lessonOrder[i - 1]);
+		return this.isCleared(lessonOrder[i - 1]);
 	}
 
-	/** The first not-yet-completed unlocked lesson (the "current" node). */
+	/** The first lesson still worth doing (the "current" node). */
 	get currentLesson(): string | undefined {
-		return lessonOrder.find((id) => !this.isCompleted(id));
+		return lessonOrder.find((id) => !this.isCleared(id));
 	}
 
 	get completedCount(): number {
@@ -294,6 +328,7 @@ class Progress {
 		this.achievements = {};
 		this.freezes = 0;
 		this.crowns = {};
+		this.skipped = {};
 		this.profile = null; // re-ask on the next home visit
 		this.save();
 	}

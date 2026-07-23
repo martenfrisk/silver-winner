@@ -13,6 +13,7 @@
 //   without the audio the two options are equally valid. Those get skipped.
 import type { Exercise } from '$lib/data/course';
 import type { ScriptEx } from '$lib/script-session';
+import { quoted } from '$lib/gloss';
 
 type ListenEx = Extract<Exercise, { kind: 'listen' }>;
 type ChoiceEx = Extract<Exercise, { kind: 'choice' }>;
@@ -25,7 +26,7 @@ function isListen(ex: { kind: string }): ex is ListenEx {
 function silentChoice(ex: ListenEx): ChoiceEx {
 	return {
 		kind: 'choice',
-		question: `Which one says “${ex.en}”?`,
+		question: `Which one says ${quoted(ex.en)}?`,
 		options: ex.options,
 		correct: ex.correct
 	};

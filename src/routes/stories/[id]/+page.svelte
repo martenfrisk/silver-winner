@@ -12,6 +12,8 @@
 	import Mascot from '$lib/components/Mascot.svelte';
 	import Confetti from '$lib/components/Confetti.svelte';
 	import NoAudioPrompt from '$lib/components/NoAudioPrompt.svelte';
+	import HeaderMute from '$lib/components/HeaderMute.svelte';
+	import { noAudioPromptState } from '$lib/no-audio-prompt.svelte';
 
 	const story = storyById.get(page.params.id ?? '');
 
@@ -30,6 +32,7 @@
 	});
 
 	function next() {
+		noAudioPromptState.noteAnswer(); // a revealed line is this screen's "question"
 		if (!story) return;
 		openGloss = null;
 		if (shown < story.lines.length) {
@@ -99,6 +102,7 @@
 			<a class="quit" href="/stories" aria-label="Quit story">✕</a>
 			<span class="story-name">{story.emoji} {story.title}</span>
 			<span class="counter">{Math.min(shown, story.lines.length)}/{story.lines.length}</span>
+			<HeaderMute />
 		</header>
 
 		<NoAudioPrompt />
