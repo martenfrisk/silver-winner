@@ -21,7 +21,7 @@ export const tracks: Track[] = [
 		id: 'course',
 		title: 'Course',
 		emoji: '🐱',
-		href: '/',
+		href: '/learn',
 		audience: 'Learn to speak and understand. Start here if Burmese is new to you'
 	},
 	{

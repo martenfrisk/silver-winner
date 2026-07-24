@@ -26,6 +26,12 @@ export default defineConfig({
 		// Honor the port assigned by the preview harness, if any.
 		port: process.env.PORT ? Number(process.env.PORT) : 5173
 	},
+	ssr: {
+		// @lucide/svelte ships raw .svelte files; without this SSR externalizes
+		// them and Node throws on the unknown extension. noExternal routes them
+		// through the Svelte plugin so they compile like any other component.
+		noExternal: ['@lucide/svelte']
+	},
 	test: {
 		// Unit tests only — Playwright owns e2e/ via `bun run test:e2e`.
 		include: ['src/**/*.test.ts'],

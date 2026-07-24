@@ -92,10 +92,12 @@ test('home loads with brand, mascot and lesson 1 ready to start', async ({ page 
 	await expect(page.locator('.brand-name')).toHaveText('MyanLingo');
 	await expect(page.getByRole('img', { name: /Shwe the cat mascot/ })).toBeVisible();
 
-	// Lesson 1 node is unlocked (aria-label has no "(locked)" suffix) and marked START.
+	// The course path lives under Learn now. Lesson 1 is unlocked (aria-label
+	// has no "(locked)" suffix) and flagged as the current lesson.
+	await gotoApp(page, '/learn');
 	const node1 = page.getByRole('button', { name: lesson1.title, exact: true });
 	await expect(node1).toBeEnabled();
-	await expect(node1.locator('.start-bubble')).toHaveText('START');
+	await expect(page.getByText('Start here', { exact: true })).toBeVisible();
 });
 
 test('start chooser asks once and personalizes the home screen', async ({ page }) => {
@@ -115,11 +117,12 @@ test('start chooser asks once and personalizes the home screen', async ({ page }
 	await chooser.getByRole('button', { name: /I speak it/ }).click();
 	await expect(chooser).toBeHidden();
 	await expect(page.locator('.primary-card')).toContainText('Continue the script');
+	// The course path stays available under Learn.
+	await gotoApp(page, '/learn');
 	await expect(page.getByRole('button', { name: lesson1.title, exact: true })).toBeVisible();
 
 	// The choice persists — no re-asking on the next visit.
-	await page.reload();
-	await page.locator('body[data-hydrated="true"]').waitFor();
+	await gotoApp(page, '/');
 	await expect(page.locator('.chooser')).toBeHidden();
 	await expect(page.locator('.primary-card')).toContainText('Continue the script');
 });
@@ -152,15 +155,15 @@ test('completes lesson 1, persists progress and unlocks lesson 2', async ({ page
 	expect(saved?.stars?.[lesson1.id]).toBeGreaterThanOrEqual(1);
 	expect(saved?.xp).toBeGreaterThan(0);
 
-	// After a full reload, lesson 1 shows as completed and lesson 2 is unlocked.
-	await page.reload();
+	// On the Learn path, lesson 1 shows completed (a filled node with stars) and
+	// lesson 2 is unlocked and current.
+	await gotoApp(page, '/learn');
 	const node1 = page.getByRole('button', { name: lesson1.title, exact: true });
-	await expect(node1).toHaveClass(/completed/);
-	await expect(node1.locator('.node-stars')).toBeVisible();
+	await expect(node1).toHaveClass(/done/);
+	await expect(page.locator('.lrow', { has: node1 }).locator('.stars')).toBeVisible();
 	if (lesson2) {
 		const node2 = page.getByRole('button', { name: lesson2.title, exact: true });
 		await expect(node2).toBeEnabled();
-		await expect(node2.locator('.start-bubble')).toHaveText('START');
 	}
 });
 
@@ -177,7 +180,7 @@ test('earns a crown with a perfect hard-mode run', async ({ page }) => {
 		},
 		[STORAGE_KEY, lesson1.id] as const
 	);
-	await gotoApp(page, '/');
+	await gotoApp(page, '/learn');
 
 	// The completed node carries a crown chip linking to hard mode.
 	const chip = page.getByRole('link', { name: `Hard mode for ${lesson1.title}` });
@@ -199,8 +202,11 @@ test('earns a crown with a perfect hard-mode run', async ({ page }) => {
 	);
 	expect(saved?.crowns?.[lesson1.id]).toBeDefined();
 
-	// Home now shows the chip in its crowned state.
+	// The Learn path now shows the chip in its crowned state. Reach it by
+	// client-side navigation (the Learn tab) — a full reload would re-run the
+	// seeding init script and wipe the crown we just earned.
 	await page.locator('.complete').getByRole('button', { name: 'Continue' }).click();
+	await page.locator('.bottomnav').getByRole('link', { name: 'Learn' }).click();
 	await expect(page.getByRole('link', { name: `Hard mode for ${lesson1.title}` })).toHaveClass(
 		/crowned/
 	);
