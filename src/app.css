@@ -376,13 +376,18 @@ button:disabled {
 		background 0.2s ease;
 }
 
-.answer-card:hover:not(:disabled) {
-	background: var(--card-hover);
-}
-
-.answer-card:active:not(:disabled) {
-	translate: 0 1px;
-	box-shadow: inset 0 0 0 1.5px var(--teal);
+/* Pointer feedback only on devices that actually hover. On touch these
+   pseudo-classes stick after a tap, so the teal ring lingered on the answer
+   you'd just picked — and showed again on the next question's card in the same
+   spot. Touch relies on the semantic selected/correct/wrong states instead. */
+@media (hover: hover) {
+	.answer-card:hover:not(:disabled) {
+		background: var(--card-hover);
+	}
+	.answer-card:active:not(:disabled) {
+		translate: 0 1px;
+		box-shadow: inset 0 0 0 1.5px var(--teal);
+	}
 }
 
 .answer-card.selected {
