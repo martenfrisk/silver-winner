@@ -75,7 +75,7 @@
 		white-space: nowrap;
 		/* Lifted off the page: it overlaps the question text for a few seconds,
 		   and without the drop shadow the two just look tangled together. */
-		box-shadow: 0 3px 0 var(--teal-dark), 0 10px 22px rgb(0 0 0 / 22%);
+		box-shadow: var(--shadow-pop);
 	}
 	.tip::after {
 		content: '';

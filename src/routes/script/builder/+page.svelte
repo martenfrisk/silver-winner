@@ -279,16 +279,16 @@
 		height: 60px;
 		border-radius: 14px;
 		background: var(--card);
-		box-shadow: 0 3px 0 var(--line), inset 0 0 0 2px var(--line);
+		box-shadow: inset 0 0 0 1.5px var(--line);
 		transition: translate 0.08s ease, box-shadow 0.15s ease, background 0.2s ease;
 	}
 	.dia:active {
-		translate: 0 3px;
-		box-shadow: 0 0 0 var(--line), inset 0 0 0 2px var(--line);
+		translate: 0 1px;
+		box-shadow: inset 0 0 0 1.5px var(--teal);
 	}
 	.dia.active {
 		background: var(--teal-soft);
-		box-shadow: 0 3px 0 var(--teal-dark), inset 0 0 0 2px var(--teal);
+		box-shadow: inset 0 0 0 2px var(--teal);
 	}
 	.dia.disabled {
 		opacity: 0.45;
@@ -325,14 +325,15 @@
 		height: 52px;
 		display: grid;
 		place-items: center;
-		border-radius: 14px;
-		background: var(--teal);
-		box-shadow: 0 4px 0 var(--teal-dark);
+		border-radius: 50%;
+		color: var(--on-primary);
+		background: var(--teal-deep);
+		box-shadow: 0 8px 20px -10px rgba(15, 63, 58, 0.6);
 		font-size: 1.4rem;
 	}
 	.speak-big:disabled {
 		background: var(--disabled-bg);
-		box-shadow: 0 4px 0 var(--disabled-shadow);
+		box-shadow: none;
 	}
 	.speak-big:active:not(:disabled) {
 		translate: 0 4px;

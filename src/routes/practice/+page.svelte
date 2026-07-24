@@ -331,7 +331,7 @@
 							That's {MAX_ATTEMPTS} tries. Moving on, this one comes back another day.
 						</p>
 					{/if}
-					<button class="btn red" onclick={advance}>{ui('got-it').text}</button>
+					<button class="btn" onclick={advance}>{ui('got-it').text}</button>
 				</div>
 			{:else}
 				<!-- Skip is always available: a review you can't leave is a trap,
@@ -547,7 +547,7 @@
 	.combo-chip.hot {
 		color: #fff;
 		background: var(--coral);
-		box-shadow: 0 2px 0 var(--coral-dark);
+		box-shadow: none;
 	}
 
 	.empty,

@@ -491,24 +491,23 @@
 		max-width: 240px;
 	}
 	.theme-picker button.active {
-		color: #fff;
-		background: var(--gold);
-		box-shadow: 0 2px 0 var(--gold-dark);
+		color: var(--on-primary);
+		background: var(--teal-deep);
 	}
 	.buy-btn {
 		padding: 10px 16px;
 		border-radius: 12px;
-		font-weight: 800;
+		font-weight: 700;
 		font-size: 0.85rem;
-		color: #fff;
-		background: var(--teal);
-		box-shadow: 0 3px 0 var(--teal-dark);
+		color: var(--on-primary);
+		background: var(--teal-deep);
+		box-shadow: 0 8px 20px -10px rgba(15, 63, 58, 0.5);
 		flex-shrink: 0;
 	}
 	.buy-btn:disabled {
 		color: var(--disabled-ink, var(--ink-soft));
 		background: var(--disabled-bg, var(--line));
-		box-shadow: 0 3px 0 var(--disabled-shadow, var(--line));
+		box-shadow: none;
 		cursor: not-allowed;
 	}
 	.danger-row {
@@ -528,7 +527,7 @@
 	.danger-btn.worst {
 		color: #fff;
 		background: var(--coral);
-		box-shadow: 0 3px 0 var(--coral-dark);
+		box-shadow: 0 8px 20px -10px rgba(224, 85, 72, 0.5);
 	}
 	.note {
 		margin: 14px 0 0;

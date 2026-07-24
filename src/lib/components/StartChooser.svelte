@@ -88,15 +88,15 @@
 		align-items: center;
 		gap: 14px;
 		text-align: left;
-		padding: 14px 18px;
+		padding: 15px 18px;
 		border-radius: var(--radius);
 		background: var(--card);
-		box-shadow: 0 4px 0 var(--gold-dark), inset 0 0 0 2px var(--gold);
-		transition: translate 0.1s ease, box-shadow 0.1s ease;
+		box-shadow: inset 0 0 0 1.5px var(--line);
+		transition: translate 0.1s ease, box-shadow 0.15s ease;
 	}
 	.choice:active {
-		translate: 0 4px;
-		box-shadow: 0 0 0 var(--gold-dark), inset 0 0 0 2px var(--gold);
+		translate: 0 1px;
+		box-shadow: inset 0 0 0 1.5px var(--teal);
 	}
 	.choice-emoji {
 		width: 44px;
@@ -105,7 +105,7 @@
 		place-items: center;
 		font-size: 1.5rem;
 		border-radius: 13px;
-		background: var(--gold-soft);
+		background: var(--teal-soft);
 		flex-shrink: 0;
 	}
 	.choice-text {

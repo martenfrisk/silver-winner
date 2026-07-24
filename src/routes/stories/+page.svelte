@@ -126,18 +126,21 @@
 		padding: 14px 18px;
 		border-radius: var(--radius);
 		background: var(--card);
-		box-shadow: 0 4px 0 var(--coral-dark), inset 0 0 0 2px var(--coral);
+		box-shadow: inset 0 0 0 1px var(--line);
 		text-decoration: none;
 		color: var(--ink);
-		transition: translate 0.1s ease, box-shadow 0.1s ease;
+		transition: translate 0.1s ease, box-shadow 0.15s ease;
 	}
 	a.story-card:active {
-		translate: 0 4px;
-		box-shadow: 0 0 0 var(--coral-dark), inset 0 0 0 2px var(--coral);
+		translate: 0 1px;
+		box-shadow: inset 0 0 0 1.5px var(--coral);
 	}
 	.story-card.locked {
-		box-shadow: inset 0 0 0 2px var(--line);
-		opacity: 0.75;
+		box-shadow: inset 0 0 0 1px var(--line);
+		opacity: 0.7;
+	}
+	.story-card :global(svg) {
+		color: var(--coral-ink);
 	}
 	.story-emoji {
 		width: 48px;
