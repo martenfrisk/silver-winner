@@ -3,6 +3,7 @@
 	// button. The parent auto-plays the audio once; this lets the learner
 	// replay it while reading the reveal.
 	import SpeakButton from './SpeakButton.svelte';
+	import { Lightbulb } from '@lucide/svelte';
 
 	let {
 		my,
@@ -32,7 +33,7 @@
 			{#if sub}<span class="reveal-sub">{sub}</span>{/if}
 			{#if en}<span class="reveal-en">{en}</span>{/if}
 		</span>
-		{#if tip}<span class="reveal-tip">💡 {tip}</span>{/if}
+		{#if tip}<span class="reveal-tip"><Lightbulb size={15} strokeWidth={2} /> {tip}</span>{/if}
 	</div>
 </div>
 
@@ -86,6 +87,9 @@
 	}
 	.reveal-tip {
 		margin-top: 4px;
+		display: inline-flex;
+		align-items: baseline;
+		gap: 5px;
 		font-family: var(--font-ui);
 		font-size: 0.85rem;
 		font-weight: 700;

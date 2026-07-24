@@ -185,7 +185,7 @@
 <svelte:window {onkeydown} onpointerdown={() => auto.cancel()} />
 
 <svelte:head>
-	<title>{title} · MyanLingo</title>
+	<title>{title} · Shwe</title>
 </svelte:head>
 
 {#if done}

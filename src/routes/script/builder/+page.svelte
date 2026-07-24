@@ -79,7 +79,7 @@
 </script>
 
 <svelte:head>
-	<title>Syllable builder · MyanLingo</title>
+	<title>Syllable builder · Shwe</title>
 </svelte:head>
 
 <div class="builder">

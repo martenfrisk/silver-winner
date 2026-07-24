@@ -74,7 +74,7 @@
 </script>
 
 <svelte:head>
-	<title>{story ? story.title : 'Stories'} · MyanLingo</title>
+	<title>{story ? story.title : 'Stories'} · Shwe</title>
 </svelte:head>
 
 {#if !story}

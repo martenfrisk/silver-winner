@@ -208,7 +208,7 @@
 <svelte:window {onkeydown} onpointerdown={() => auto.cancel()} />
 
 <svelte:head>
-	<title>{ui('practice').text} · MyanLingo</title>
+	<title>{ui('practice').text} · Shwe</title>
 </svelte:head>
 
 {#if queue.length === 0}

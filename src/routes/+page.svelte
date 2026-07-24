@@ -82,13 +82,13 @@
 </script>
 
 <svelte:head>
-	<title>MyanLingo: Learn Burmese</title>
+	<title>Shwe: Learn Burmese</title>
 	<meta name="description" content="A playful way to learn the Burmese language." />
 </svelte:head>
 
 <div class="today" class:onboarding={progress.profile === null}>
 	<header class="topbar">
-		<span class="brand-name">MyanLingo</span>
+		<span class="brand-name">Shwe</span>
 		<div class="tools">
 			<button
 				class="tool"
@@ -247,9 +247,9 @@
 	.dial .ring svg { width: 100%; height: 100%; }
 	.dial .ring .bg { fill: none; stroke: rgba(255, 255, 255, 0.16); stroke-width: 6; }
 	.dial .ring .fill { fill: none; stroke: var(--gold-bright, #f6c445); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.8s var(--pop); }
-	.dial .ring .mid { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; line-height: 1; }
+	.dial .ring .mid { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; line-height: 1; }
 	.dial .ring .n { font-family: var(--font-display); font-style: italic; font-size: 1.9rem; color: var(--gold-bright, #f6c445); }
-	.dial .ring .u { font-size: 0.56rem; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.8; display: block; margin-top: 2px; }
+	.dial .ring .u { font-size: 0.56rem; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.8; margin-top: 5px; }
 	.dial .dtext { display: flex; flex-direction: column; gap: 3px; }
 	.dial .lab { font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700; opacity: 0.82; }
 	.dial .big { font-family: var(--font-display); font-style: italic; font-size: 1.3rem; }

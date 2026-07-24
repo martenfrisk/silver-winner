@@ -3,6 +3,7 @@
 	import { canSpeak, speak } from '$lib/audio';
 	import { sfx } from '$lib/audio';
 	import { progress } from '$lib/progress.svelte';
+	import { Volume2 } from '@lucide/svelte';
 
 	let { text, size = 'md' }: { text: string; size?: 'md' | 'lg' } = $props();
 	let hasAudio = $state(false);
@@ -27,7 +28,7 @@
 
 {#if available}
 	<button class="speak {size}" {onclick} aria-label="Listen to pronunciation" title="Listen">
-		🔊
+		<Volume2 size={size === 'lg' ? 26 : 20} strokeWidth={2} />
 	</button>
 {/if}
 
@@ -41,18 +42,17 @@
 		/* Round: it's a single icon action, and the squircle read as a cropped
 		   card next to the answer reveal it sits in. */
 		border-radius: 50%;
+		color: var(--on-primary);
 		background: var(--teal);
-		box-shadow: 0 3px 0 var(--teal-dark);
-		font-size: 1.1rem;
-		transition: translate 0.08s ease, box-shadow 0.08s ease;
+		box-shadow: 0 6px 16px -8px rgba(11, 110, 110, 0.6);
+		transition: translate 0.1s var(--pop), filter 0.15s ease;
 	}
 	.speak.lg {
 		width: 52px;
 		height: 52px;
-		font-size: 1.5rem;
 	}
 	.speak:active {
-		translate: 0 3px;
-		box-shadow: 0 0 0 var(--teal-dark);
+		translate: 0 1px;
+		filter: brightness(0.95);
 	}
 </style>

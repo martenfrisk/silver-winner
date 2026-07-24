@@ -31,7 +31,7 @@
 </script>
 
 <svelte:head>
-	<title>Script Studio · MyanLingo</title>
+	<title>Script Studio · Shwe</title>
 </svelte:head>
 
 <div class="studio">

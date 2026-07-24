@@ -7,6 +7,7 @@
 	import { srs } from '$lib/srs.svelte';
 	import { ui } from '$lib/i18n.svelte';
 	import { shuffle } from '$lib/shuffle';
+	import { Headphones, Volume2 } from '@lucide/svelte';
 
 	type ListenEx = Extract<Exercise, { kind: 'listen' }>;
 
@@ -87,9 +88,9 @@
 </script>
 
 <div class="listen" bind:this={root}>
-	<h2 class="question">🎧 {meaningMode ? ui('tap-hear-meaning').text : ui('tap-hear').text}</h2>
+	<h2 class="question"><Headphones size={20} strokeWidth={2} /> {meaningMode ? ui('tap-hear-meaning').text : ui('tap-hear').text}</h2>
 	<button class="replay" class:playing onclick={play} aria-label="Play the audio again" title="Play again">
-		🔊
+		<Volume2 size={26} strokeWidth={2} />
 	</button>
 	<div class="options" role="radiogroup" aria-label="Answer options">
 		{#each order as i, n (i)}
@@ -126,8 +127,11 @@
 		gap: 20px;
 	}
 	.question {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
 		font-size: 1.3rem;
-		font-weight: 900;
+		font-weight: 800;
 	}
 	.replay {
 		align-self: center;
@@ -135,15 +139,24 @@
 		height: 96px;
 		display: grid;
 		place-items: center;
-		font-size: 2.6rem;
-		border-radius: 28px;
-		background: var(--teal);
-		box-shadow: 0 5px 0 var(--teal-dark);
-		transition: translate 0.08s ease, box-shadow 0.08s ease;
+		color: var(--on-primary);
+		border-radius: 50%;
+		background: var(--teal-deep);
+		box-shadow: 0 12px 28px -10px rgba(15, 63, 58, 0.65);
+		transition: translate 0.1s var(--pop), filter 0.15s ease;
 	}
+	.replay::after {
+		content: '';
+		position: absolute;
+		inset: -8px;
+		border-radius: 50%;
+		border: 2px solid var(--gold);
+		opacity: 0.35;
+	}
+	.replay { position: relative; }
 	.replay:active {
-		translate: 0 5px;
-		box-shadow: 0 0 0 var(--teal-dark);
+		translate: 0 1px;
+		filter: brightness(0.96);
 	}
 	.replay.playing {
 		animation: wiggle 0.45s ease infinite;

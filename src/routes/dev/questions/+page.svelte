@@ -180,7 +180,7 @@
 </script>
 
 <svelte:head>
-	<title>Question variants · MyanLingo dev</title>
+	<title>Question variants · Shwe dev</title>
 	<meta name="robots" content="noindex" />
 </svelte:head>
 

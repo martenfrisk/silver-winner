@@ -153,7 +153,7 @@
 <svelte:window {onkeydown} onpointerdown={() => auto.cancel()} />
 
 <svelte:head>
-	<title>{unit ? `Reading: ${unit.title}` : 'Reader track'} · MyanLingo</title>
+	<title>{unit ? `Reading: ${unit.title}` : 'Reader track'} · Shwe</title>
 </svelte:head>
 
 {#if !unit}

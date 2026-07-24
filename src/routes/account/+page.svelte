@@ -60,7 +60,7 @@
 </script>
 
 <svelte:head>
-	<title>Profile · MyanLingo</title>
+	<title>Profile · Shwe</title>
 </svelte:head>
 
 <div class="account">

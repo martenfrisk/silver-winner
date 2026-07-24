@@ -268,7 +268,7 @@
 <svelte:window {onkeydown} onpointerdown={() => auto.cancel()} />
 
 <svelte:head>
-	<title>{found ? `${found.lesson.title} · MyanLingo` : 'MyanLingo'}</title>
+	<title>{found ? `${found.lesson.title} · Shwe` : 'Shwe'}</title>
 </svelte:head>
 
 {#if !found}

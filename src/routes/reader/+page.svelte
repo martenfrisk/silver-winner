@@ -7,7 +7,7 @@
 </script>
 
 <svelte:head>
-	<title>Reader track · MyanLingo</title>
+	<title>Reader track · Shwe</title>
 </svelte:head>
 
 <div class="reader-home">

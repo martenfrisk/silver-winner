@@ -89,7 +89,7 @@ async function solveExercise(page: Page, ex: Exercise) {
 test('home loads with brand, mascot and lesson 1 ready to start', async ({ page }) => {
 	await gotoApp(page, '/');
 
-	await expect(page.locator('.brand-name')).toHaveText('MyanLingo');
+	await expect(page.locator('.brand-name')).toHaveText('Shwe');
 	await expect(page.getByRole('img', { name: /Shwe the cat mascot/ })).toBeVisible();
 
 	// The course path lives under Learn now. Lesson 1 is unlocked (aria-label

@@ -17,7 +17,7 @@
 </script>
 
 <svelte:head>
-	<title>Stories · MyanLingo</title>
+	<title>Stories · Shwe</title>
 </svelte:head>
 
 <div class="stories-home">
