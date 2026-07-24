@@ -14,6 +14,7 @@
 	import NoAudioPrompt from '$lib/components/NoAudioPrompt.svelte';
 	import HeaderMute from '$lib/components/HeaderMute.svelte';
 	import { noAudioPromptState } from '$lib/no-audio-prompt.svelte';
+	import { Volume2, Languages, X } from '@lucide/svelte';
 
 	const story = storyById.get(page.params.id ?? '');
 
@@ -25,6 +26,10 @@
 	let xpEarned = $state(0);
 	/** The chunk whose gloss is open, as `${lineIdx}:${chunkIdx}`. */
 	let openGloss = $state<string | null>(null);
+	/** Lines whose full translation the learner has chosen to reveal. The story
+	 *  is reading practice, so the English is a peek behind a toggle, not the
+	 *  default — otherwise there's nothing to read and the check is trivial. */
+	let showEn = $state<Record<number, boolean>>({});
 
 	$effect(() => {
 		// Speak each line as it appears (also fires for line 0 on mount).
@@ -124,9 +129,23 @@
 										{chunk.my}{#if chunk.isNew}<span class="new-dot" title="New word">•</span>{/if}
 									</button>
 								{/each}
-								{#if progress.audioOn}
-									<button class="replay" onclick={() => replayLine(li)} aria-label="Replay line">🔊</button>
-								{/if}
+								<span class="line-tools">
+									{#if progress.audioOn}
+										<button class="line-tool" onclick={() => replayLine(li)} aria-label="Replay line">
+											<Volume2 size={17} strokeWidth={2} />
+										</button>
+									{/if}
+									<button
+										class="line-tool"
+										class:on={showEn[li]}
+										onclick={() => (showEn[li] = !showEn[li])}
+										aria-pressed={!!showEn[li]}
+										aria-label={showEn[li] ? 'Hide translation' : 'Show translation'}
+										title={showEn[li] ? 'Hide translation' : 'Show translation'}
+									>
+										<Languages size={17} strokeWidth={2} />
+									</button>
+								</span>
 							</div>
 							{#if openGloss?.startsWith(`${li}:`)}
 								{@const chunk = line.chunks[Number(openGloss.split(':')[1])]}
@@ -135,7 +154,7 @@
 								</p>
 							{/if}
 							{#if progress.showRoman}<p class="roman">{line.roman}</p>{/if}
-							<p class="line-en">{line.en}</p>
+							{#if showEn[li]}<p class="line-en" in:fly={{ y: 6, duration: 150 }}>{line.en}</p>{/if}
 						</div>
 						{#if line.speaker === 'b'}<span class="avatar">🧑</span>{/if}
 					</div>
@@ -202,7 +221,7 @@
 	}
 	.story-name {
 		flex: 1;
-		font-weight: 900;
+		font-weight: 800;
 	}
 	.counter {
 		font-weight: 800;
@@ -237,7 +256,7 @@
 		max-width: 82%;
 		background: var(--card);
 		border-radius: 18px;
-		box-shadow: inset 0 0 0 2px var(--line);
+		box-shadow: inset 0 0 0 1.5px var(--line);
 		padding: 12px 16px;
 	}
 	.line.a .bubble {
@@ -245,8 +264,8 @@
 	}
 	.line.b .bubble {
 		border-bottom-right-radius: 6px;
-		background: var(--gold-soft);
-		box-shadow: inset 0 0 0 2px var(--gold);
+		background: var(--teal-soft);
+		box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--teal) 40%, transparent);
 	}
 	.chunks {
 		display: flex;
@@ -270,10 +289,27 @@
 		font-weight: 900;
 		margin-left: 2px;
 	}
-	.replay {
-		font-size: 0.95rem;
-		opacity: 0.7;
-		padding: 2px 4px;
+	.line-tools {
+		display: inline-flex;
+		align-items: center;
+		gap: 2px;
+		margin-left: 2px;
+	}
+	.line-tool {
+		display: grid;
+		place-items: center;
+		width: 28px;
+		height: 28px;
+		border-radius: 8px;
+		color: var(--ink-soft);
+		transition: background 0.12s ease, color 0.12s ease;
+	}
+	.line-tool:hover {
+		background: var(--sink);
+	}
+	.line-tool.on {
+		color: var(--teal-ink);
+		background: var(--teal-soft);
 	}
 	.gloss {
 		margin: 6px 0 0;
@@ -312,7 +348,7 @@
 	}
 	.check h2 {
 		font-size: 1.15rem;
-		font-weight: 900;
+		font-weight: 800;
 	}
 	.options {
 		display: flex;
@@ -346,9 +382,11 @@
 		text-decoration: none;
 	}
 	.complete h1 {
+		font-family: var(--font-display);
+		font-style: italic;
 		font-size: 2rem;
-		font-weight: 900;
-		color: var(--coral-ink);
+		font-weight: 400;
+		color: var(--ink);
 	}
 	.earned {
 		font-weight: 900;
