@@ -65,7 +65,7 @@
 	.stories-home {
 		max-width: 560px;
 		margin: 0 auto;
-		padding: 0 20px 60px;
+		padding: 0 20px calc(96px + env(safe-area-inset-bottom));
 	}
 	header {
 		display: flex;
