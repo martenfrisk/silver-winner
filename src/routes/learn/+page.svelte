@@ -9,7 +9,7 @@
 	import { scriptSheet } from '$lib/script-sheet.svelte';
 	import { sfx } from '$lib/audio';
 	import { goto } from '$app/navigation';
-	import { Lock, Crown, Zap } from '@lucide/svelte';
+	import { Lock, Crown, Zap, Search } from '@lucide/svelte';
 
 	const MY_DIGITS = ['၀', '၁', '၂', '၃', '၄', '၅', '၆', '၇', '၈', '၉'];
 	const myDigit = (n: number) => String(n).split('').map((d) => MY_DIGITS[+d]).join('');
@@ -44,6 +44,7 @@
 	<header class="head">
 		<h1>Learn</h1>
 		<div class="tools">
+			<a class="tool" href="/dictionary" aria-label="Dictionary: look up any word"><Search size={19} strokeWidth={2} /></a>
 			<button
 				class="tool"
 				class:off={!progress.showRoman}
@@ -187,12 +188,15 @@
 	.tool {
 		width: 40px;
 		height: 40px;
+		display: grid;
+		place-items: center;
 		border-radius: var(--radius-sm);
 		background: var(--card);
 		box-shadow: inset 0 0 0 1px var(--line);
 		color: var(--ink);
 		font-weight: 700;
 		font-size: 0.9rem;
+		text-decoration: none;
 	}
 	.tool.my { font-size: 1.1rem; color: var(--teal-ink); }
 	.tool.off { color: var(--ink-soft); }

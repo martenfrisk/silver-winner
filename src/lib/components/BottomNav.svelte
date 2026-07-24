@@ -10,13 +10,13 @@
 	// Hubs get the bar; players (lesson, practice run, script drills, a story)
 	// do not. An exact-match allowlist is easier to reason about than trying to
 	// enumerate every immersive route.
-	const HUBS = ['/', '/learn', '/reader', '/script', '/account', '/stories'];
+	const HUBS = ['/', '/learn', '/reader', '/script', '/account', '/stories', '/dictionary', '/cards'];
 	const show = $derived(HUBS.includes(path));
 
 	const tabs = [
 		{ href: '/', label: 'Today', icon: House, on: (p: string) => p === '/' },
-		{ href: '/learn', label: 'Learn', icon: GraduationCap, on: (p: string) => p === '/learn' || p.startsWith('/lesson') },
-		{ href: '/practice', label: 'Practice', icon: Dumbbell, on: (p: string) => p.startsWith('/practice') },
+		{ href: '/learn', label: 'Learn', icon: GraduationCap, on: (p: string) => p === '/learn' || p.startsWith('/lesson') || p === '/dictionary' },
+		{ href: '/practice', label: 'Practice', icon: Dumbbell, on: (p: string) => p.startsWith('/practice') || p === '/cards' },
 		{ href: '/script', label: 'Script', glyph: 'က', on: (p: string) => p.startsWith('/script') },
 		{ href: '/account', label: 'You', icon: User, on: (p: string) => p.startsWith('/account') }
 	];

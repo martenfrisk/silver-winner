@@ -15,6 +15,8 @@
 export const shellPages = [
 	'/',
 	'/account',
+	'/cards',
+	'/dictionary',
 	'/learn',
 	'/practice',
 	'/reader',

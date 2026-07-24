@@ -13,9 +13,10 @@
 	import Mascot from '$lib/components/Mascot.svelte';
 	import StartChooser from '$lib/components/StartChooser.svelte';
 	import { stories } from '$lib/data/stories';
+	import { customCards } from '$lib/custom-cards.svelte';
 	import { scriptSheet } from '$lib/script-sheet.svelte';
 	import {
-		GraduationCap, BookOpen, PenLine, Dumbbell, ArrowRight, Volume2, VolumeX
+		GraduationCap, BookOpen, PenLine, Dumbbell, Layers, ArrowRight, Volume2, VolumeX
 	} from '@lucide/svelte';
 
 	const totalLessons = course.reduce((n, u) => n + u.lessons.length, 0);
@@ -177,6 +178,19 @@
 			</a>
 		{/if}
 
+		{#if customCards.count > 0}
+			<a class="tile" href="/cards">
+				<span class="tile-icon plum"><Layers size={20} strokeWidth={2} /></span>
+				<span class="tile-text">
+					<span class="tile-title">My cards</span>
+					<span class="tile-sub">
+						{#if customCards.dueCount > 0}{customCards.dueCount} ready to review{:else}{customCards.count} card{customCards.count > 1 ? 's' : ''} · all caught up{/if}
+					</span>
+				</span>
+				{#if customCards.dueCount > 0}<span class="due">{customCards.dueCount}</span>{:else}<ArrowRight size={18} strokeWidth={2} class="tile-arrow" />{/if}
+			</a>
+		{/if}
+
 		{#if unlockedStories > 0}
 			<a class="tile" href="/stories">
 				<span class="tile-icon gold"><BookOpen size={20} strokeWidth={2} /></span>
@@ -201,6 +215,16 @@
 					{#if t.id === 'script' && srs.dueCount > 0}<span class="due">{srs.dueCount}</span>{:else}<ArrowRight size={18} strokeWidth={2} class="tile-arrow" />{/if}
 				</a>
 			{/each}
+			{#if customCards.count === 0}
+				<a class="tile" href="/cards">
+					<span class="tile-icon plum"><Layers size={20} strokeWidth={2} /></span>
+					<span class="tile-text">
+						<span class="tile-title">My cards</span>
+						<span class="tile-sub">Make your own review cards for anything you want to remember</span>
+					</span>
+					<ArrowRight size={18} strokeWidth={2} class="tile-arrow" />
+				</a>
+			{/if}
 		</section>
 	{/if}
 </div>
