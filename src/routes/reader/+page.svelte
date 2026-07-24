@@ -4,6 +4,7 @@
 	import { progress } from '$lib/progress.svelte';
 	import { srs } from '$lib/srs.svelte';
 	import Mascot from '$lib/components/Mascot.svelte';
+	import { BookOpenText, Lightbulb, ArrowLeft } from '@lucide/svelte';
 </script>
 
 <svelte:head>
@@ -12,8 +13,8 @@
 
 <div class="reader-home">
 	<header>
-		<a class="back" href="/" aria-label="Back home">←</a>
-		<h1>📖 Reader track</h1>
+		<a class="back" href="/" aria-label="Back home"><ArrowLeft size={22} strokeWidth={2} /></a>
+		<h1><BookOpenText size={24} strokeWidth={2} /> Reader track</h1>
 	</header>
 
 	<div class="intro">
@@ -27,7 +28,7 @@
 
 	{#if srs.introducedCount < 10}
 		<p class="warmup">
-			💡 This track assumes you can read the letters. New to the script? Start in the
+			<Lightbulb size={16} strokeWidth={2} /> This track assumes you can read the letters. New to the script? Start in the
 			<a href="/script">Script Studio</a> first.
 		</p>
 	{/if}
@@ -79,9 +80,21 @@
 		background: var(--line);
 	}
 	h1 {
-		font-size: 1.5rem;
-		font-weight: 900;
+		display: inline-flex;
+		align-items: center;
+		gap: 9px;
+		font-family: var(--font-display);
+		font-style: italic;
+		font-weight: 400;
+		font-size: 1.6rem;
+		color: var(--ink);
+	}
+	h1 :global(svg) {
 		color: var(--teal-ink);
+	}
+	.warmup :global(svg) {
+		vertical-align: -3px;
+		color: var(--gold-ink);
 	}
 	.intro {
 		display: flex;

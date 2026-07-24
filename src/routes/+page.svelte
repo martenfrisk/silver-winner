@@ -261,7 +261,6 @@
 		border-radius: var(--radius-lg); padding: var(--s5); text-decoration: none;
 		position: relative; overflow: hidden;
 	}
-	.primary-card::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: linear-gradient(90deg, var(--gold), var(--gold-bright, #f6c445), transparent 72%); }
 	.pc-icon { width: 46px; height: 46px; border-radius: var(--radius-sm); background: rgba(255, 255, 255, 0.12); display: grid; place-items: center; flex: 0 0 auto; }
 	.pc-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
 	.pc-title { font-weight: 700; font-size: 1.1rem; }
