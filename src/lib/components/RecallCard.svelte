@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Brain } from '@lucide/svelte';
 	// Free recall (top of the ladder): see the meaning, produce the Burmese in
 	// your head, reveal, then grade yourself honestly. Self-graded recall is
 	// still recall — the retrieval attempt is what strengthens the memory.
@@ -34,7 +35,7 @@
 </script>
 
 <div class="recall">
-	<p class="tag">🧠 From memory</p>
+	<p class="tag"><Brain size={14} strokeWidth={2.2} /> From memory</p>
 	<h2 class="question">How do you say this in Burmese?</h2>
 	<div class="meaning-card">
 		<span class="meaning">{ex.en}</span>
@@ -70,10 +71,13 @@
 		text-align: center;
 	}
 	.tag {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
 		margin: 0;
 		align-self: flex-start;
 		font-size: 0.8rem;
-		font-weight: 900;
+		font-weight: 800;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
 		color: var(--plum-ink);
@@ -81,7 +85,7 @@
 	.question {
 		align-self: flex-start;
 		font-size: 1.3rem;
-		font-weight: 900;
+		font-weight: 800;
 		text-align: left;
 	}
 	.meaning-card {

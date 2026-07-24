@@ -3,6 +3,7 @@
 	import SpeakButton from './SpeakButton.svelte';
 	import { speak } from '$lib/audio';
 	import { progress } from '$lib/progress.svelte';
+	import { Sparkles, Lightbulb } from '@lucide/svelte';
 
 	let {
 		my,
@@ -35,7 +36,7 @@
 </script>
 
 <div class="learn" style="--accent-soft: var(--{accent}-soft)">
-	<p class="new-word-tag">✨ New word</p>
+	<p class="new-word-tag"><Sparkles size={14} strokeWidth={2.2} /> New word</p>
 	<div class="stage">
 		<!-- Decorative: the card's visual interest lives here, not in an emoji. -->
 		<span class="halo" aria-hidden="true"></span>
@@ -50,7 +51,7 @@
 	{/if}
 	<p class="en">{en}</p>
 	{#if note}
-		<p class="note">💡 {note}</p>
+		<p class="note"><Lightbulb size={15} strokeWidth={2} /> {note}</p>
 	{/if}
 </div>
 
@@ -64,9 +65,12 @@
 		padding: 12px 0;
 	}
 	.new-word-tag {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
 		margin: 0;
 		font-size: 0.8rem;
-		font-weight: 900;
+		font-weight: 800;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
 		color: var(--gold-ink);
@@ -132,16 +136,25 @@
 	.en {
 		margin: 0;
 		font-size: 1.35rem;
-		font-weight: 900;
+		font-weight: 800;
 	}
 	.note {
+		display: flex;
+		align-items: baseline;
+		gap: 7px;
 		margin: 8px 0 0;
 		max-width: 420px;
+		text-align: left;
 		font-size: 0.95rem;
-		font-weight: 700;
+		font-weight: 600;
 		color: var(--ink-soft);
-		background: var(--gold-soft);
+		background: var(--sink);
 		border-radius: 12px;
 		padding: 10px 16px;
+	}
+	.note :global(svg) {
+		flex: 0 0 auto;
+		color: var(--gold-ink);
+		translate: 0 3px;
 	}
 </style>

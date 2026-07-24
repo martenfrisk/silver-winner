@@ -3,6 +3,7 @@
 	import { glyphById } from '$lib/data/script';
 	import SpeakButton from './SpeakButton.svelte';
 	import { srs, MAX_BOX } from '$lib/srs.svelte';
+	import { Lightbulb, X } from '@lucide/svelte';
 
 	let { glyph, onclose, onjump }: { glyph: Glyph; onclose: () => void; onjump: (g: Glyph) => void } =
 		$props();
@@ -20,14 +21,14 @@
 	aria-label="Close"
 ></div>
 <div class="sheet" role="dialog" aria-label="{glyph.name} details">
-	<button class="close" onclick={onclose} aria-label="Close">✕</button>
+	<button class="close" onclick={onclose} aria-label="Close"><X size={20} strokeWidth={2.2} /></button>
 	<div class="char-row">
 		<span class="my char">{glyph.char}</span>
 		<SpeakButton text={glyph.speak} size="lg" />
 	</div>
 	<p class="name">{glyph.name} <span class="meaning">· “{glyph.nameMeaning}”</span></p>
 	<p class="sound">sounds like <strong>{glyph.sound}</strong></p>
-	<p class="mnemonic">💡 {glyph.mnemonic}</p>
+	<p class="mnemonic"><Lightbulb size={15} strokeWidth={2} /> {glyph.mnemonic}</p>
 
 	<div class="mastery">
 		{#if box < 0}
@@ -124,12 +125,21 @@
 		color: var(--teal-ink);
 		font-weight: 800;
 	}
+	.mnemonic :global(svg) {
+		flex: 0 0 auto;
+		color: var(--gold-ink);
+		translate: 0 3px;
+	}
 	.mnemonic {
+		display: flex;
+		align-items: baseline;
+		gap: 7px;
+		text-align: left;
 		margin: 0;
 		font-size: 0.9rem;
-		font-weight: 700;
+		font-weight: 600;
 		color: var(--ink-soft);
-		background: var(--gold-soft);
+		background: var(--sink);
 		border-radius: 12px;
 		padding: 8px 14px;
 	}

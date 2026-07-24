@@ -345,7 +345,7 @@
 	.fill {
 		height: 100%;
 		border-radius: 99px;
-		background: var(--plum);
+		background: var(--gold);
 		transition: width 0.5s var(--pop);
 	}
 	main {
