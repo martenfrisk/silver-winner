@@ -1,11 +1,12 @@
 <script lang="ts">
+	import { Info } from '@lucide/svelte';
 	import type { UnitNote } from '$lib/data/script';
 
 	let { note }: { note: UnitNote } = $props();
 </script>
 
 <div class="script-note">
-	<p class="tag">📚 Good to know</p>
+	<p class="tag"><Info size={14} strokeWidth={2.2} /> Good to know</p>
 	<h2 class="title">{note.title}</h2>
 	<p class="body">{note.body}</p>
 	{#if note.examples}
@@ -30,9 +31,12 @@
 		padding: 8px 0;
 	}
 	.tag {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
 		margin: 0;
 		font-size: 0.8rem;
-		font-weight: 900;
+		font-weight: 800;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
 		color: var(--gold-dark);

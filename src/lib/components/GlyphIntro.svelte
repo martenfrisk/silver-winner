@@ -5,6 +5,7 @@
 	import { speak } from '$lib/audio';
 	import { srs } from '$lib/srs.svelte';
 	import { glyphById } from '$lib/data/script';
+	import { Sparkles, Lightbulb, TriangleAlert } from '@lucide/svelte';
 
 	let { glyph }: { glyph: Glyph } = $props();
 
@@ -30,17 +31,17 @@
 </script>
 
 <div class="glyph-intro">
-	<p class="tag">✨ {TYPE_LABEL[glyph.type]}</p>
+	<p class="tag"><Sparkles size={14} strokeWidth={2.2} /> {TYPE_LABEL[glyph.type]}</p>
 	<div class="char-row">
 		<span class="my char">{glyph.char}</span>
 		<SpeakButton text={glyph.speak} size="lg" />
 	</div>
 	<p class="name">{glyph.name} <span class="meaning">· “{glyph.nameMeaning}”</span></p>
 	<p class="sound">sounds like <strong>{glyph.sound}</strong></p>
-	<p class="mnemonic">💡 {glyph.mnemonic}</p>
+	<p class="mnemonic"><Lightbulb size={15} strokeWidth={2} /> {glyph.mnemonic}</p>
 	{#if knownConfusables.length > 0}
 		<p class="confuse">
-			⚠️ Don’t mix it up with
+			<TriangleAlert size={15} strokeWidth={2} /> Don’t mix it up with
 			{#each knownConfusables as c, i (c.id)}
 				{#if i > 0}{' or '}{/if}
 				<span class="my c-char">{c.char}</span> ({c.sound})
@@ -59,9 +60,12 @@
 		padding: 8px 0;
 	}
 	.tag {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
 		margin: 0;
 		font-size: 0.8rem;
-		font-weight: 900;
+		font-weight: 800;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
 		color: var(--gold-ink);
@@ -79,7 +83,7 @@
 	.name {
 		margin: 0;
 		font-size: 1.3rem;
-		font-weight: 900;
+		font-weight: 800;
 	}
 	.meaning {
 		color: var(--ink-soft);
@@ -93,23 +97,35 @@
 		font-weight: 800;
 	}
 	.mnemonic {
+		display: flex;
+		align-items: baseline;
+		gap: 7px;
+		text-align: left;
 		margin: 6px 0 0;
 		max-width: 420px;
 		font-size: 0.95rem;
-		font-weight: 700;
+		font-weight: 600;
 		color: var(--ink-soft);
-		background: var(--gold-soft);
+		background: var(--sink);
 		border-radius: 12px;
 		padding: 10px 16px;
+	}
+	.mnemonic :global(svg) {
+		flex: 0 0 auto;
+		color: var(--gold-ink);
+		translate: 0 3px;
 	}
 	.confuse {
 		margin: 0;
 		font-size: 0.9rem;
-		font-weight: 700;
+		font-weight: 600;
 		color: var(--coral-ink);
 		background: var(--coral-soft);
 		border-radius: 12px;
 		padding: 8px 14px;
+	}
+	.confuse :global(svg) {
+		vertical-align: -3px;
 	}
 	.c-char {
 		font-size: 1.3rem;

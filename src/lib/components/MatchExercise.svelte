@@ -115,7 +115,7 @@
 	.answer-card.done {
 		opacity: 0.35;
 		background: var(--green-soft);
-		box-shadow: 0 3px 0 var(--line), inset 0 0 0 2px var(--green);
+		box-shadow: inset 0 0 0 2px var(--green);
 		animation: pulse-pop 0.4s ease-in-out;
 	}
 </style>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { ScrollText } from '@lucide/svelte';
 	import type { DecodableSentence } from '$lib/data/script';
 	import SpeakButton from './SpeakButton.svelte';
 	import { sfx, speak } from '$lib/audio';
@@ -37,7 +38,7 @@
 </script>
 
 <div class="sentence-read">
-	<p class="tag">📜 Real reading</p>
+	<p class="tag"><ScrollText size={14} strokeWidth={2.2} /> Real reading</p>
 	<h2 class="question">{ui('what-mean').text}</h2>
 	<div class="sentence-row">
 		<span class="my sentence">{sentence.my}</span>
@@ -67,16 +68,19 @@
 		gap: 16px;
 	}
 	.tag {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
 		margin: 0;
 		font-size: 0.8rem;
-		font-weight: 900;
+		font-weight: 800;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
 		color: var(--teal-dark);
 	}
 	.question {
 		font-size: 1.3rem;
-		font-weight: 900;
+		font-weight: 800;
 	}
 	.sentence-row {
 		display: flex;

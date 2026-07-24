@@ -1,71 +1,92 @@
-/* ── MyanLingo design tokens ─────────────────────────────────────────── */
+/* ── Shwe design tokens ─────────────────────────────────────────── */
 :root {
 	/* Brand: Shwedagon gold on warm cream, with teal + plum + coral accents */
-	--gold: #f7b500;
-	--gold-dark: #d99a00;
-	--gold-soft: #ffe9ad;
-	--teal: #0ea5a5;
-	--teal-dark: #0b8383;
+	/* Padauk Bloom: deep-teal ink on paper cream, gold kept as an accent that
+	   rings / threads / rewards but never a button. See the Shwe design system. */
+	--gold: #e3a017;
+	--gold-dark: #c98a12;
+	--gold-soft: #ffe6ad;
+	--teal: #0b6e6e;
+	--teal-dark: #0a5f5f;
+	/* Deep teal is the primary surface + button fill (11.7:1 with white). */
+	--teal-deep: #0f3f3a;
+	--on-primary: #f5faf8;
 	--plum: #8b5cf6;
 	--plum-dark: #7443d6;
 	--coral: #ff6b5e;
 	--coral-dark: #e05548;
 
-	--bg: #fffaf0;
+	--bg: #fbfaf4;
 	--card: #ffffff;
-	--ink: #4a3520;
-	--ink-soft: #8a7458;
-	--line: #f0e4cc;
+	--sink: #f3efe2;
+	--ink: #17332f;
+	--ink-soft: #5c7a74;
+	--line: #e6ede9;
 
-	--green: #2fb350;
-	--green-dark: #26923f;
-	--green-soft: #d9f5e1;
-	--red: #e5484d;
-	--red-dark: #c73a3f;
-	--red-soft: #fde2e3;
+	--green: #2fa257;
+	--green-dark: #268047;
+	--green-soft: #dcf1e4;
+	--red: #d8474c;
+	--red-dark: #bd3a3f;
+	--red-soft: #fbe2e3;
 
 	/* Accent text on tinted/soft backgrounds. Matches the -dark variants in
 	   light mode; brightened in dark mode where the -dark shades vanish. */
-	--gold-ink: #d99a00;
-	--teal-ink: #0b8383;
-	--plum-ink: #7443d6;
-	--coral-ink: #e05548;
-	--green-ink: #26923f;
-	--red-ink: #c73a3f;
+	--gold-ink: #a6740a;
+	--teal-ink: #0b6e6e;
+	--plum-ink: #6b46c9;
+	--coral-ink: #cf4a3d;
+	--green-ink: #227a44;
+	--red-ink: #b8383d;
 
 	/* Tinted surfaces */
-	--card-hover: #fdf6e5;
-	--gold-wash: #fdf8ec;
-	--teal-soft: #e7f7f7;
-	--plum-soft: #f1e9ff;
-	--coral-soft: #fff0ee;
-	--coral-line: #f5cfc9;
+	--card-hover: #f5f2e9;
+	--gold-wash: #faf6ea;
+	--teal-soft: #e6f2f0;
+	--plum-soft: #f0eaff;
+	--coral-soft: #fdeeec;
+	--coral-line: #f2cdc8;
 
 	/* Disabled / dimmed */
-	--disabled-bg: #e8e0d0;
-	--disabled-shadow: #d5cbb5;
-	--disabled-ink: #b0a58a;
-	--star-dim: #e3d9c3;
+	--disabled-bg: #e8e6da;
+	--disabled-shadow: #d4d2c4;
+	--disabled-ink: #9aa8a2;
+	--star-dim: #dfe4de;
 
 	/* Overlays + soft shadows */
-	--backdrop: rgb(0 0 0 / 30%);
-	--shadow-pop: 0 12px 40px rgb(0 0 0 / 22%);
-	--trace-guide: rgba(74, 53, 32, 0.13);
+	--backdrop: rgb(15 40 35 / 34%);
+	--shadow-pop: 0 18px 44px rgb(20 40 35 / 20%);
+	--trace-guide: rgba(23, 51, 47, 0.12);
 
-	/* SRS heat scale: new → learning → good → strong → mastered */
-	--heat-0: #e8e0d0;
-	--heat-1: #ffe9ad;
-	--heat-2: #f7b500;
-	--heat-3: #7fd4d4;
-	--heat-4: #2fb350;
+	/* SRS heat scale: new → learning → good → strong → mastered.
+	   Warm petal climbs to cool teal — mastery reads as the brand's teal. */
+	--heat-0: #e6ede9;
+	--heat-1: #ffe6ad;
+	--heat-2: #e3a017;
+	--heat-3: #86cfca;
+	--heat-4: #0b6e6e;
 
 	color-scheme: light;
 
 	--radius: 16px;
+	--radius-lg: 22px;
+	--radius-sm: 12px;
+
+	/* 4pt spacing scale — every gap and pad comes from here. */
+	--s1: 4px;
+	--s2: 8px;
+	--s3: 12px;
+	--s4: 16px;
+	--s5: 24px;
+	--s6: 32px;
+
 	--font-ui:
 		'Nunito Variable', 'Nunito', -apple-system, 'Segoe UI', sans-serif;
 	--font-my:
 		'Padauk', 'Myanmar MN', 'Noto Sans Myanmar', 'Myanmar Text', sans-serif;
+	/* Display serif for headline moments and numerals — used with restraint. */
+	--font-display:
+		'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
 
 	/* Springy easing for pops and bounces (linear() approximation) */
 	--spring: linear(
@@ -78,95 +99,108 @@
 	--pop: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* ── Dark theme ──────────────────────────────────────────────────────────
-   Deep warm plum-tinted charcoal; gold stays the hero. The two blocks below
-   (system preference + explicit [data-theme='dark']) must stay in sync. */
+/* ── Dark theme (Bloom night) ─────────────────────────────────────────────
+   Deep teal-black ground, cream ink, gold brightened to hold on the dark.
+   The two blocks below (system preference + explicit [data-theme='dark'])
+   must stay in sync. */
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme='light']) {
-		--gold-soft: #4a3a10;
+		--gold: #eab534;
+		--gold-dark: #c99320;
+		--gold-soft: #3a3410;
+		--teal: #1e5f58;
+		--teal-dark: #164843;
+		--teal-deep: #1e5f58;
 
-		--bg: #1f1820;
-		--card: #2a2129;
-		--ink: #f0e6d8;
-		--ink-soft: #b0a094;
-		--line: #423645;
+		--bg: #0e1f1d;
+		--card: #16302c;
+		--sink: #122824;
+		--ink: #eaf3ee;
+		--ink-soft: #9db8b2;
+		--line: #24403b;
 
-		--green-soft: #1d3a27;
-		--red-soft: #45242a;
+		--green-soft: #163a29;
+		--red-soft: #3f242a;
 
-		--gold-ink: #ffcf4d;
-		--teal-ink: #4dd0d0;
+		--gold-ink: #f6c445;
+		--teal-ink: #5fc9c4;
 		--plum-ink: #c4b5fd;
 		--coral-ink: #ff9c92;
-		--green-ink: #7fe0a1;
+		--green-ink: #6fd097;
 		--red-ink: #ff9a9e;
 
-		--card-hover: #332937;
-		--gold-wash: #332b1d;
-		--teal-soft: #163a3a;
-		--plum-soft: #322948;
-		--coral-soft: #43262b;
-		--coral-line: #5f3a3a;
+		--card-hover: #1d3a34;
+		--gold-wash: #24301a;
+		--teal-soft: #143732;
+		--plum-soft: #2a2542;
+		--coral-soft: #3f2529;
+		--coral-line: #5a3636;
 
-		--disabled-bg: #3a313d;
-		--disabled-shadow: #2b242e;
-		--disabled-ink: #7c6f80;
-		--star-dim: #4b4050;
+		--disabled-bg: #2a3a36;
+		--disabled-shadow: #1e2c29;
+		--disabled-ink: #6d827c;
+		--star-dim: #3a4a45;
 
 		--backdrop: rgb(0 0 0 / 55%);
-		--shadow-pop: 0 12px 40px rgb(0 0 0 / 60%);
-		--trace-guide: rgba(240, 230, 216, 0.15);
+		--shadow-pop: 0 18px 44px rgb(0 0 0 / 55%);
+		--trace-guide: rgba(234, 243, 238, 0.14);
 
-		--heat-0: #3a313d;
-		--heat-1: #86610a;
-		--heat-2: #f7b500;
-		--heat-3: #4fc0c0;
-		--heat-4: #3bc568;
+		--heat-0: #24403b;
+		--heat-1: #6b5410;
+		--heat-2: #eab534;
+		--heat-3: #3f8a85;
+		--heat-4: #5fc9c4;
 
 		color-scheme: dark;
 	}
 }
 
 :root[data-theme='dark'] {
-	--gold-soft: #4a3a10;
+	--gold: #eab534;
+	--gold-dark: #c99320;
+	--gold-soft: #3a3410;
+	--teal: #1e5f58;
+	--teal-dark: #164843;
+	--teal-deep: #1e5f58;
 
-	--bg: #1f1820;
-	--card: #2a2129;
-	--ink: #f0e6d8;
-	--ink-soft: #b0a094;
-	--line: #423645;
+	--bg: #0e1f1d;
+	--card: #16302c;
+	--sink: #122824;
+	--ink: #eaf3ee;
+	--ink-soft: #9db8b2;
+	--line: #24403b;
 
-	--green-soft: #1d3a27;
-	--red-soft: #45242a;
+	--green-soft: #163a29;
+	--red-soft: #3f242a;
 
-	--gold-ink: #ffcf4d;
-	--teal-ink: #4dd0d0;
+	--gold-ink: #f6c445;
+	--teal-ink: #5fc9c4;
 	--plum-ink: #c4b5fd;
 	--coral-ink: #ff9c92;
-	--green-ink: #7fe0a1;
+	--green-ink: #6fd097;
 	--red-ink: #ff9a9e;
 
-	--card-hover: #332937;
-	--gold-wash: #332b1d;
-	--teal-soft: #163a3a;
-	--plum-soft: #322948;
-	--coral-soft: #43262b;
-	--coral-line: #5f3a3a;
+	--card-hover: #1d3a34;
+	--gold-wash: #24301a;
+	--teal-soft: #143732;
+	--plum-soft: #2a2542;
+	--coral-soft: #3f2529;
+	--coral-line: #5a3636;
 
-	--disabled-bg: #3a313d;
-	--disabled-shadow: #2b242e;
-	--disabled-ink: #7c6f80;
-	--star-dim: #4b4050;
+	--disabled-bg: #2a3a36;
+	--disabled-shadow: #1e2c29;
+	--disabled-ink: #6d827c;
+	--star-dim: #3a4a45;
 
 	--backdrop: rgb(0 0 0 / 55%);
-	--shadow-pop: 0 12px 40px rgb(0 0 0 / 60%);
-	--trace-guide: rgba(240, 230, 216, 0.15);
+	--shadow-pop: 0 18px 44px rgb(0 0 0 / 55%);
+	--trace-guide: rgba(234, 243, 238, 0.14);
 
-	--heat-0: #3a313d;
-	--heat-1: #86610a;
-	--heat-2: #f7b500;
-	--heat-3: #4fc0c0;
-	--heat-4: #3bc568;
+	--heat-0: #24403b;
+	--heat-1: #6b5410;
+	--heat-2: #eab534;
+	--heat-3: #3f8a85;
+	--heat-4: #5fc9c4;
 
 	color-scheme: dark;
 }
@@ -189,7 +223,9 @@ body {
 	background: var(--bg);
 	color: var(--ink);
 	font-family: var(--font-ui);
-	font-weight: 700;
+	/* Lighter default than the old 700 — headings and labels ask for weight
+	   explicitly, so ordinary text stops shouting. */
+	font-weight: 500;
 	-webkit-font-smoothing: antialiased;
 	overflow-x: hidden;
 }
@@ -232,7 +268,7 @@ button:disabled {
    feature, so keyboard users need to see where they are. :focus-visible only,
    to keep the ring off mouse and touch presses. */
 :where(button, a, [role='radio'], input, select, textarea, [tabindex]):focus-visible {
-	outline: 3px solid var(--plum);
+	outline: 3px solid var(--gold);
 	outline-offset: 3px;
 	border-radius: 6px;
 }
@@ -257,65 +293,69 @@ button:disabled {
 	border: 0;
 }
 
-/* ── Chunky game buttons (Duolingo-style 3D press) ───────────────────── */
+/* ── Buttons ─────────────────────────────────────────────────────────────
+   Flat, calm, sentence-case. Deep teal is the default primary (gold has left
+   the buttons entirely — it only rings, threads and rewards now). The press
+   is a small settle, not a chunky 3D drop. */
 .btn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	gap: 8px;
-	padding: 14px 28px;
+	gap: var(--s2);
+	padding: 14px 24px;
 	border-radius: var(--radius);
 	font-size: 1rem;
-	font-weight: 900;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-	color: #fff;
-	background: var(--gold);
-	box-shadow: 0 4px 0 var(--gold-dark);
+	font-weight: 700;
+	letter-spacing: 0;
+	color: var(--on-primary);
+	background: var(--teal-deep);
+	box-shadow: 0 8px 20px -10px rgba(15, 63, 58, 0.55);
 	transition:
-		translate 0.1s ease,
-		box-shadow 0.1s ease,
+		translate 0.12s var(--pop),
+		box-shadow 0.15s ease,
 		filter 0.15s ease,
 		background 0.2s ease;
 	user-select: none;
 }
 
 .btn:hover:not(:disabled) {
-	filter: brightness(1.05);
+	filter: brightness(1.06);
 }
 
 .btn:active:not(:disabled) {
-	translate: 0 4px;
-	box-shadow: 0 0 0 var(--gold-dark);
+	translate: 0 1px;
+	filter: brightness(0.97);
+	box-shadow: 0 4px 12px -8px rgba(15, 63, 58, 0.5);
 }
 
 .btn:disabled {
 	background: var(--disabled-bg);
-	box-shadow: 0 4px 0 var(--disabled-shadow);
+	box-shadow: none;
 	color: var(--disabled-ink);
 }
 
 .btn.green {
 	background: var(--green);
-	box-shadow: 0 4px 0 var(--green-dark);
+	box-shadow: 0 8px 20px -10px rgba(38, 128, 71, 0.5);
 }
 .btn.green:active:not(:disabled) {
-	box-shadow: 0 0 0 var(--green-dark);
+	box-shadow: 0 4px 12px -8px rgba(38, 128, 71, 0.45);
 }
 .btn.red {
 	background: var(--red);
-	box-shadow: 0 4px 0 var(--red-dark);
+	box-shadow: 0 8px 20px -10px rgba(189, 58, 63, 0.5);
 }
 .btn.red:active:not(:disabled) {
-	box-shadow: 0 0 0 var(--red-dark);
+	box-shadow: 0 4px 12px -8px rgba(189, 58, 63, 0.45);
 }
 .btn.ghost {
-	background: var(--card);
-	color: var(--teal);
-	box-shadow: 0 4px 0 var(--line), inset 0 0 0 2px var(--line);
+	background: transparent;
+	color: var(--teal-ink);
+	box-shadow: inset 0 0 0 1.5px var(--line);
 }
 .btn.ghost:active:not(:disabled) {
-	box-shadow: 0 0 0 var(--line), inset 0 0 0 2px var(--line);
+	background: var(--card-hover);
+	box-shadow: inset 0 0 0 1.5px var(--line);
 }
 
 /* ── Answer cards ────────────────────────────────────────────────────── */
@@ -325,10 +365,10 @@ button:disabled {
 	align-items: center;
 	gap: 2px;
 	width: 100%;
-	padding: 14px 16px;
+	padding: 15px 16px;
 	border-radius: var(--radius);
 	background: var(--card);
-	box-shadow: 0 3px 0 var(--line), inset 0 0 0 2px var(--line);
+	box-shadow: inset 0 0 0 1.5px var(--line);
 	font-size: 1.05rem;
 	transition:
 		translate 0.08s ease,
@@ -341,26 +381,26 @@ button:disabled {
 }
 
 .answer-card:active:not(:disabled) {
-	translate: 0 3px;
-	box-shadow: 0 0 0 var(--line), inset 0 0 0 2px var(--line);
+	translate: 0 1px;
+	box-shadow: inset 0 0 0 1.5px var(--teal);
 }
 
 .answer-card.selected {
 	background: var(--teal-soft);
-	box-shadow: 0 3px 0 var(--teal), inset 0 0 0 2px var(--teal);
+	box-shadow: inset 0 0 0 2px var(--teal), 0 0 0 3px rgba(11, 110, 110, 0.12);
 	color: var(--teal-ink);
 }
 
 .answer-card.correct {
 	background: var(--green-soft);
-	box-shadow: 0 3px 0 var(--green-dark), inset 0 0 0 2px var(--green);
+	box-shadow: inset 0 0 0 2px var(--green), 0 0 0 3px rgba(47, 162, 87, 0.14);
 	color: var(--green-ink);
 	animation: pulse-pop 0.4s ease-in-out;
 }
 
 .answer-card.wrong {
 	background: var(--red-soft);
-	box-shadow: 0 3px 0 var(--red-dark), inset 0 0 0 2px var(--red);
+	box-shadow: inset 0 0 0 2px var(--red), 0 0 0 3px rgba(216, 71, 76, 0.14);
 	color: var(--red-ink);
 	animation: shake 0.4s ease;
 }

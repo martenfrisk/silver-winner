@@ -3,6 +3,7 @@
 	// button. The parent auto-plays the audio once; this lets the learner
 	// replay it while reading the reveal.
 	import SpeakButton from './SpeakButton.svelte';
+	import { Lightbulb } from '@lucide/svelte';
 
 	let {
 		my,
@@ -32,7 +33,7 @@
 			{#if sub}<span class="reveal-sub">{sub}</span>{/if}
 			{#if en}<span class="reveal-en">{en}</span>{/if}
 		</span>
-		{#if tip}<span class="reveal-tip">💡 {tip}</span>{/if}
+		{#if tip}<span class="reveal-tip"><Lightbulb size={15} strokeWidth={2} /> {tip}</span>{/if}
 	</div>
 </div>
 
@@ -43,10 +44,10 @@
 		   not floating next to the meaning or the tip below it. */
 		align-items: flex-start;
 		gap: 12px;
-		background: var(--card);
-		border-radius: 14px;
-		box-shadow: inset 0 0 0 2px var(--green);
-		padding: 9px 12px;
+		background: var(--green-soft);
+		border-radius: var(--radius);
+		box-shadow: inset 0 0 0 1.5px var(--green);
+		padding: 12px 14px;
 		/* Fills its row — the parent decides the width. Shrink-wrapping here
 		   used to squeeze the card into a narrow column on phones. */
 		align-self: stretch;
@@ -86,6 +87,9 @@
 	}
 	.reveal-tip {
 		margin-top: 4px;
+		display: inline-flex;
+		align-items: baseline;
+		gap: 5px;
 		font-family: var(--font-ui);
 		font-size: 0.85rem;
 		font-weight: 700;

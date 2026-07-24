@@ -4,6 +4,7 @@
 	import SpeakButton from './SpeakButton.svelte';
 	import { sfx, speak } from '$lib/audio';
 	import { ui } from '$lib/i18n.svelte';
+	import { Zap, Ear } from '@lucide/svelte';
 
 	let {
 		question,
@@ -85,7 +86,7 @@
 			<div class="timer-fill" class:running style="--t: {timed}s"></div>
 		</div>
 	{/if}
-	<h2 class="question">{#if timed}⚡ {/if}{shownQuestion}</h2>
+	<h2 class="question">{#if timed}<Zap size={18} strokeWidth={2.2} /> {/if}{shownQuestion}</h2>
 	{#if promptBig}
 		<div class="prompt">
 			<span class="my big" class:word={promptBig.length > 2}>{promptBig}</span>
@@ -96,7 +97,7 @@
 	{:else if promptSpeak}
 		<!-- Listening drill: audio-only prompt, tap to replay. -->
 		<div class="prompt listen">
-			<span class="listen-ear" aria-hidden="true">👂</span>
+			<span class="listen-ear" aria-hidden="true"><Ear size={22} strokeWidth={2} /></span>
 			<SpeakButton text={promptSpeak} size="lg" />
 		</div>
 	{/if}
@@ -141,8 +142,14 @@
 		to { width: 0%; }
 	}
 	.question {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
 		font-size: 1.3rem;
-		font-weight: 900;
+		font-weight: 800;
+	}
+	.question :global(svg) {
+		color: var(--gold-ink);
 	}
 	.prompt {
 		display: flex;
@@ -163,7 +170,9 @@
 		padding: 18px 0;
 	}
 	.listen-ear {
-		font-size: 2.4rem;
+		display: grid;
+		place-items: center;
+		color: var(--teal-ink);
 	}
 	.options {
 		display: flex;

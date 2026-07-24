@@ -126,19 +126,19 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		padding: 8px 16px;
-		border-radius: 14px;
+		padding: 9px 16px;
+		border-radius: var(--radius-sm);
 		background: var(--card);
-		box-shadow: 0 3px 0 var(--line), inset 0 0 0 2px var(--line);
-		transition: translate 0.08s ease, box-shadow 0.08s ease, opacity 0.15s ease;
+		box-shadow: inset 0 0 0 1.5px var(--line);
+		transition: translate 0.08s ease, box-shadow 0.15s ease, opacity 0.15s ease;
 	}
 	.tile:active:not(:disabled) {
-		translate: 0 3px;
-		box-shadow: 0 0 0 var(--line), inset 0 0 0 2px var(--line);
+		translate: 0 1px;
+		box-shadow: inset 0 0 0 1.5px var(--teal);
 	}
 	.placed-tile {
-		background: var(--gold-soft);
-		box-shadow: 0 3px 0 var(--gold-dark), inset 0 0 0 2px var(--gold);
+		background: var(--teal-soft);
+		box-shadow: inset 0 0 0 1.5px var(--teal);
 	}
 	.tile.used {
 		opacity: 0.25;

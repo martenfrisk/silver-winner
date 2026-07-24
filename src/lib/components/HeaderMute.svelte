@@ -6,6 +6,7 @@
 	import { fly, scale } from 'svelte/transition';
 	import { progress } from '$lib/progress.svelte';
 	import { noAudioPromptState } from '$lib/no-audio-prompt.svelte';
+	import { Volume2, VolumeX } from '@lucide/svelte';
 
 	// Only appears after the relocation, and only while the permanent Sound
 	// setting is on — with sound off there is nothing to mute.
@@ -26,7 +27,7 @@
 			title={progress.tempMute ? 'Unmute for this session' : 'Mute for this session'}
 			aria-pressed={progress.tempMute}
 		>
-			{progress.tempMute ? '🔇' : '🔊'}
+			{#if progress.tempMute}<VolumeX size={18} strokeWidth={2} />{:else}<Volume2 size={18} strokeWidth={2} />{/if}
 		</button>
 		{#if noAudioPromptState.tooltip}
 			<span class="tip" role="status" transition:fly={{ y: -6, duration: 220 }}>
@@ -49,7 +50,7 @@
 		border-radius: 10px;
 		background: var(--card);
 		box-shadow: inset 0 0 0 2px var(--teal);
-		font-size: 0.95rem;
+		color: var(--teal-ink);
 		transition: scale 0.2s var(--pop), box-shadow 0.15s ease;
 	}
 	.mute:active {
@@ -74,7 +75,7 @@
 		white-space: nowrap;
 		/* Lifted off the page: it overlaps the question text for a few seconds,
 		   and without the drop shadow the two just look tangled together. */
-		box-shadow: 0 3px 0 var(--teal-dark), 0 10px 22px rgb(0 0 0 / 22%);
+		box-shadow: var(--shadow-pop);
 	}
 	.tip::after {
 		content: '';

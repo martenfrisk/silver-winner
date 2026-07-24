@@ -153,7 +153,7 @@
 <svelte:window {onkeydown} onpointerdown={() => auto.cancel()} />
 
 <svelte:head>
-	<title>{unit ? `Reading: ${unit.title}` : 'Reader track'} · MyanLingo</title>
+	<title>{unit ? `Reading: ${unit.title}` : 'Reader track'} · Shwe</title>
 </svelte:head>
 
 {#if !unit}
@@ -253,7 +253,7 @@
 							That's {MAX_ATTEMPTS} tries. Moving on, you'll meet it again another day.
 						</p>
 					{/if}
-					<button class="btn red" onclick={advance}>{ui('got-it').text}</button>
+					<button class="btn" onclick={advance}>{ui('got-it').text}</button>
 				</div>
 			{:else}
 				<div class="actions">

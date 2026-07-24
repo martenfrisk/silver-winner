@@ -3,6 +3,7 @@
 	import { allLessons } from '$lib/data/course';
 	import { progress } from '$lib/progress.svelte';
 	import Mascot from '$lib/components/Mascot.svelte';
+	import { BookOpen, Lock, ArrowLeft } from '@lucide/svelte';
 
 	const lessonTitle = (id: string) =>
 		allLessons.find((l) => l.lesson.id === id)?.lesson.title ?? id;
@@ -17,13 +18,13 @@
 </script>
 
 <svelte:head>
-	<title>Stories · MyanLingo</title>
+	<title>Stories · Shwe</title>
 </svelte:head>
 
 <div class="stories-home">
 	<header>
-		<a class="back" href="/" aria-label="Back home">←</a>
-		<h1>📚 Stories</h1>
+		<a class="back" href="/" aria-label="Back home"><ArrowLeft size={22} strokeWidth={2} /></a>
+		<h1><BookOpen size={24} strokeWidth={2} /> Stories</h1>
 	</header>
 
 	<div class="intro">
@@ -49,7 +50,7 @@
 				</a>
 			{:else}
 				<div class="story-card locked">
-					<span class="story-emoji">🔒</span>
+					<span class="story-emoji"><Lock size={20} strokeWidth={2} /></span>
 					<span class="story-text">
 						<span class="story-title">{story.title}</span>
 						<span class="story-sub">Finish {missing(story.requires).join(' + ')} first</span>
@@ -64,7 +65,7 @@
 	.stories-home {
 		max-width: 560px;
 		margin: 0 auto;
-		padding: 0 20px 60px;
+		padding: 0 20px calc(96px + env(safe-area-inset-bottom));
 	}
 	header {
 		display: flex;
@@ -87,8 +88,16 @@
 		background: var(--line);
 	}
 	h1 {
-		font-size: 1.5rem;
-		font-weight: 900;
+		display: inline-flex;
+		align-items: center;
+		gap: 9px;
+		font-family: var(--font-display);
+		font-style: italic;
+		font-weight: 400;
+		font-size: 1.6rem;
+		color: var(--ink);
+	}
+	h1 :global(svg) {
 		color: var(--coral-ink);
 	}
 	.intro {
@@ -117,18 +126,21 @@
 		padding: 14px 18px;
 		border-radius: var(--radius);
 		background: var(--card);
-		box-shadow: 0 4px 0 var(--coral-dark), inset 0 0 0 2px var(--coral);
+		box-shadow: inset 0 0 0 1px var(--line);
 		text-decoration: none;
 		color: var(--ink);
-		transition: translate 0.1s ease, box-shadow 0.1s ease;
+		transition: translate 0.1s ease, box-shadow 0.15s ease;
 	}
 	a.story-card:active {
-		translate: 0 4px;
-		box-shadow: 0 0 0 var(--coral-dark), inset 0 0 0 2px var(--coral);
+		translate: 0 1px;
+		box-shadow: inset 0 0 0 1.5px var(--coral);
 	}
 	.story-card.locked {
-		box-shadow: inset 0 0 0 2px var(--line);
-		opacity: 0.75;
+		box-shadow: inset 0 0 0 1px var(--line);
+		opacity: 0.7;
+	}
+	.story-card :global(svg) {
+		color: var(--coral-ink);
 	}
 	.story-emoji {
 		width: 48px;

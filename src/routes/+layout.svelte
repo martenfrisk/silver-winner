@@ -13,6 +13,7 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import AchievementToast from '$lib/components/AchievementToast.svelte';
 	import ScriptSheet from '$lib/components/ScriptSheet.svelte';
+	import BottomNav from '$lib/components/BottomNav.svelte';
 
 	let { children } = $props();
 
@@ -30,3 +31,4 @@
 {@render children()}
 <AchievementToast />
 <ScriptSheet />
+<BottomNav />

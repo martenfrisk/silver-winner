@@ -1,5 +1,5 @@
 <script lang="ts">
-	// Shwe (ရွှေ, "gold") — MyanLingo's Burmese cat mascot.
+	// Shwe (ရွှေ, "gold") — Shwe's Burmese cat mascot.
 	// Moods drive small SVG animations: idle blink, happy bounce,
 	// sad ears, celebratory wiggle.
 	let {

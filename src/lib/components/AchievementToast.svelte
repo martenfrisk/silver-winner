@@ -51,8 +51,8 @@
 		gap: 12px;
 		background: var(--card);
 		border-radius: var(--radius);
-		box-shadow: 0 4px 0 var(--gold-dark), inset 0 0 0 2px var(--gold);
-		padding: 10px 18px;
+		box-shadow: inset 0 0 0 1.5px var(--gold), var(--shadow-pop);
+		padding: 12px 18px;
 		white-space: nowrap;
 	}
 	.emoji {

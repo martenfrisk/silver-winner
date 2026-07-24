@@ -8,6 +8,7 @@
 	import { achievements } from '$lib/achievements';
 	import Mascot from '$lib/components/Mascot.svelte';
 	import Heatmap from '$lib/components/Heatmap.svelte';
+	import { Zap, Flame, GraduationCap, Trophy, Brain, ArrowLeft, Snowflake, Headphones } from '@lucide/svelte';
 
 	const totalLessons = course.reduce((n, u) => n + u.lessons.length, 0);
 
@@ -60,12 +61,12 @@
 </script>
 
 <svelte:head>
-	<title>Profile · MyanLingo</title>
+	<title>Profile · Shwe</title>
 </svelte:head>
 
 <div class="account">
 	<header class="topbar">
-		<a class="back" href="/" aria-label="Back home">←</a>
+		<a class="back" href="/" aria-label="Back home"><ArrowLeft size={22} strokeWidth={2} /></a>
 		<h1>{ui('profile').text}</h1>
 	</header>
 
@@ -79,27 +80,27 @@
 
 	<section class="stats-grid">
 		<div class="stat">
-			<span class="stat-value">⚡ {progress.xp}</span>
+			<span class="stat-value"><Zap size={18} strokeWidth={2} /> {progress.xp}</span>
 			<span class="stat-label">total XP</span>
 		</div>
 		<div class="stat">
-			<span class="stat-value">🔥 {progress.streak}</span>
+			<span class="stat-value"><Flame size={18} strokeWidth={2} /> {progress.streak}</span>
 			<span class="stat-label">day {ui('streak').text.toLowerCase()}</span>
 		</div>
 		<div class="stat">
-			<span class="stat-value">📚 {progress.completedCount}/{totalLessons}</span>
+			<span class="stat-value"><GraduationCap size={18} strokeWidth={2} /> {progress.completedCount}/{totalLessons}</span>
 			<span class="stat-label">course lessons</span>
 		</div>
 		<div class="stat">
-			<span class="stat-value my-accent">က {srs.introducedCount}/{totalGlyphs}</span>
+			<span class="stat-value"><span class="my-accent my">က</span> {srs.introducedCount}/{totalGlyphs}</span>
 			<span class="stat-label">glyphs learned</span>
 		</div>
 		<div class="stat">
-			<span class="stat-value">🏆 {srs.masteredCount}</span>
+			<span class="stat-value"><Trophy size={18} strokeWidth={2} /> {srs.masteredCount}</span>
 			<span class="stat-label">glyphs mastered</span>
 		</div>
 		<div class="stat">
-			<span class="stat-value">🧠 {srs.dueCount}</span>
+			<span class="stat-value"><Brain size={18} strokeWidth={2} /> {srs.dueCount}</span>
 			<span class="stat-label">reviews due</span>
 		</div>
 	</section>
@@ -167,7 +168,7 @@
 		</div>
 		<div class="setting">
 			<span class="setting-text">
-				<span class="setting-title">Streak freeze 🧊</span>
+				<span class="setting-title"><Snowflake size={16} strokeWidth={2} /> Streak freeze</span>
 				<span class="setting-desc">
 					Each one silently covers a missed day so your streak survives.
 					Holding {progress.freezes}/{MAX_FREEZES}.
@@ -194,7 +195,7 @@
 		</label>
 		<label class="setting">
 			<span class="setting-text">
-				<span class="setting-title">No-audio mode 🎧</span>
+				<span class="setting-title"><Headphones size={16} strokeWidth={2} /> No-audio mode</span>
 				<span class="setting-desc">
 					Temporarily mute everything, for when you don't have headphones.
 					Resets next time you open the app; your Sound setting above is unaffected.
@@ -273,7 +274,7 @@
 	.account {
 		max-width: 560px;
 		margin: 0 auto;
-		padding: 0 20px 60px;
+		padding: 0 20px calc(96px + env(safe-area-inset-bottom));
 	}
 	.topbar {
 		display: flex;
@@ -334,11 +335,19 @@
 		padding: 14px 16px;
 	}
 	.stat-value {
+		display: inline-flex;
+		align-items: center;
+		gap: 7px;
 		font-size: 1.2rem;
-		font-weight: 900;
+		font-weight: 800;
+		color: var(--ink);
+	}
+	.stat-value :global(svg) {
+		color: var(--teal-ink);
 	}
 	.my-accent {
 		font-family: var(--font-my);
+		color: var(--teal-ink);
 	}
 	.stat-label {
 		font-size: 0.75rem;
@@ -419,7 +428,10 @@
 		gap: 3px;
 	}
 	.setting-title {
-		font-weight: 900;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-weight: 800;
 	}
 	.setting-desc {
 		font-size: 0.85rem;
@@ -479,24 +491,23 @@
 		max-width: 240px;
 	}
 	.theme-picker button.active {
-		color: #fff;
-		background: var(--gold);
-		box-shadow: 0 2px 0 var(--gold-dark);
+		color: var(--on-primary);
+		background: var(--teal-deep);
 	}
 	.buy-btn {
 		padding: 10px 16px;
 		border-radius: 12px;
-		font-weight: 800;
+		font-weight: 700;
 		font-size: 0.85rem;
-		color: #fff;
-		background: var(--teal);
-		box-shadow: 0 3px 0 var(--teal-dark);
+		color: var(--on-primary);
+		background: var(--teal-deep);
+		box-shadow: 0 8px 20px -10px rgba(15, 63, 58, 0.5);
 		flex-shrink: 0;
 	}
 	.buy-btn:disabled {
 		color: var(--disabled-ink, var(--ink-soft));
 		background: var(--disabled-bg, var(--line));
-		box-shadow: 0 3px 0 var(--disabled-shadow, var(--line));
+		box-shadow: none;
 		cursor: not-allowed;
 	}
 	.danger-row {
@@ -516,7 +527,7 @@
 	.danger-btn.worst {
 		color: #fff;
 		background: var(--coral);
-		box-shadow: 0 3px 0 var(--coral-dark);
+		box-shadow: 0 8px 20px -10px rgba(224, 85, 72, 0.5);
 	}
 	.note {
 		margin: 14px 0 0;

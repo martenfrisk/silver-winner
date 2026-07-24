@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { BookOpen } from '@lucide/svelte';
 	import type { DecodableWord } from '$lib/data/script';
 	import SpeakButton from './SpeakButton.svelte';
 	import { sfx, speak } from '$lib/audio';
@@ -37,7 +38,7 @@
 </script>
 
 <div class="word-read">
-	<p class="tag">📖 Real reading</p>
+	<p class="tag"><BookOpen size={14} strokeWidth={2.2} /> Real reading</p>
 	<h2 class="question">{ui('what-say').text}</h2>
 	<div class="word-row">
 		<span class="my word">{word.my}</span>
@@ -67,16 +68,19 @@
 		gap: 16px;
 	}
 	.tag {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
 		margin: 0;
 		font-size: 0.8rem;
-		font-weight: 900;
+		font-weight: 800;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
 		color: var(--teal-ink);
 	}
 	.question {
 		font-size: 1.3rem;
-		font-weight: 900;
+		font-weight: 800;
 	}
 	.word-row {
 		display: flex;

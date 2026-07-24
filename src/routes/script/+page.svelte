@@ -7,6 +7,7 @@
 	import Mascot from '$lib/components/Mascot.svelte';
 	import { sfx } from '$lib/audio';
 	import { goto } from '$app/navigation';
+	import { Flame, Zap, Brain, Coffee, Lock, ArrowLeft } from '@lucide/svelte';
 
 	const unitIds = scriptUnits.map((u) => u.id);
 	let profileGlyph = $state<Glyph | null>(null);
@@ -31,19 +32,19 @@
 </script>
 
 <svelte:head>
-	<title>Script Studio · MyanLingo</title>
+	<title>Script Studio · Shwe</title>
 </svelte:head>
 
 <div class="studio">
 	<header class="topbar">
-		<a class="back" href="/" aria-label="Back home">←</a>
+		<a class="back" href="/" aria-label="Back home"><ArrowLeft size={22} strokeWidth={2} /></a>
 		<div class="title">
 			<h1>{ui('script-studio').text}</h1>
 			<p class="my sub">အက္ခရာ</p>
 		</div>
 		<div class="pills">
-			<span class="pill" title="Day streak">🔥 {progress.streak}</span>
-			<span class="pill" title="Total XP">⚡ {progress.xp}</span>
+			<span class="pill" title="Day streak"><Flame size={15} strokeWidth={2} /> {progress.streak}</span>
+			<span class="pill" title="Total XP"><Zap size={15} strokeWidth={2} /> {progress.xp}</span>
 		</div>
 	</header>
 
@@ -56,7 +57,7 @@
 				goto('/script/practice');
 			}}
 		>
-			<span class="card-emoji">🧠</span>
+			<span class="card-emoji"><Brain size={28} strokeWidth={1.8} /></span>
 			<span class="card-title">{ui('practice').text}</span>
 			<span class="card-sub">
 				{#if !anyIntroduced}
@@ -90,7 +91,7 @@
 				goto('/script/loanwords');
 			}}
 		>
-			<span class="card-emoji">☕</span>
+			<span class="card-emoji"><Coffee size={28} strokeWidth={1.8} /></span>
 			<span class="card-title">Loanword Lab</span>
 			<span class="card-sub">
 				{srs.isUnitDone('first-letters')
@@ -118,7 +119,7 @@
 					onclick={() => openUnit(unit.id, unlocked)}
 					disabled={!unlocked}
 				>
-					<span class="unit-glyph my">{unlocked ? (unit.icon ?? glyphById.get(unit.glyphIds[0])?.char) : '🔒'}</span>
+					<span class="unit-glyph my">{#if unlocked}{unit.icon ?? glyphById.get(unit.glyphIds[0])?.char}{:else}<Lock size={20} strokeWidth={2} />{/if}</span>
 					<span class="unit-text">
 						<span class="unit-title">{unit.title}</span>
 						<span class="unit-blurb">{unit.blurb}</span>
@@ -183,7 +184,7 @@
 	.studio {
 		max-width: 560px;
 		margin: 0 auto;
-		padding: 0 20px 60px;
+		padding: 0 20px calc(96px + env(safe-area-inset-bottom));
 	}
 	.topbar {
 		display: flex;
@@ -208,9 +209,14 @@
 		flex: 1;
 	}
 	.title h1 {
-		font-size: 1.35rem;
-		font-weight: 900;
-		color: var(--plum-ink);
+		font-family: var(--font-display);
+		font-style: italic;
+		font-size: 1.5rem;
+		font-weight: 400;
+		color: var(--ink);
+	}
+	.pill :global(svg) {
+		color: var(--gold-ink);
 	}
 	.sub {
 		margin: 0;
@@ -257,16 +263,19 @@
 		padding: 16px;
 		border-radius: var(--radius);
 		background: var(--card);
-		box-shadow: 0 4px 0 var(--line), inset 0 0 0 2px var(--line);
+		box-shadow: inset 0 0 0 1px var(--line);
 		text-align: left;
-		transition: translate 0.1s ease, box-shadow 0.1s ease;
+		transition: translate 0.1s ease, box-shadow 0.15s ease;
 	}
 	.card:active:not(:disabled) {
-		translate: 0 4px;
-		box-shadow: 0 0 0 var(--line), inset 0 0 0 2px var(--line);
+		translate: 0 1px;
+		box-shadow: inset 0 0 0 1.5px var(--teal);
 	}
 	.card:disabled {
 		opacity: 0.55;
+	}
+	.card :global(svg) {
+		color: var(--teal-ink);
 	}
 	.loanword-card {
 		grid-column: 1 / -1;
@@ -324,19 +333,19 @@
 		padding: 12px 14px;
 		border-radius: var(--radius);
 		background: var(--card);
-		box-shadow: 0 3px 0 var(--line), inset 0 0 0 2px var(--line);
+		box-shadow: inset 0 0 0 1px var(--line);
 		text-align: left;
-		transition: translate 0.1s ease, box-shadow 0.1s ease;
+		transition: translate 0.1s ease, box-shadow 0.15s ease;
 	}
 	.unit-card:active:not(:disabled) {
-		translate: 0 3px;
-		box-shadow: 0 0 0 var(--line), inset 0 0 0 2px var(--line);
+		translate: 0 1px;
+		box-shadow: inset 0 0 0 1.5px var(--teal);
 	}
 	.unit-card.locked {
 		opacity: 0.55;
 	}
 	.unit-card.next {
-		box-shadow: 0 3px 0 var(--plum-dark), inset 0 0 0 2px var(--plum);
+		box-shadow: inset 0 0 0 2px var(--teal), 0 0 0 3px rgba(11, 110, 110, 0.12);
 	}
 	.unit-card.done {
 		background: var(--gold-wash);

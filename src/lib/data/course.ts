@@ -1,4 +1,4 @@
-// MyanLingo beginner course data.
+// Shwe beginner course data.
 // Romanization is a simplified phonetic scheme aimed at absolute beginners,
 // not a strict MLC transcription.
 

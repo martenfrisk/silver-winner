@@ -7,6 +7,7 @@
 	import { fly } from 'svelte/transition';
 	import { progress } from '$lib/progress.svelte';
 	import { noAudioPromptState } from '$lib/no-audio-prompt.svelte';
+	import { Headphones, VolumeX, X } from '@lucide/svelte';
 
 	// Once the offer has moved to the header (HeaderMute), the chip stops
 	// competing for the exercise's space.
@@ -35,8 +36,8 @@
 	<!-- After relocation the header toggle already shows the muted state, so a
 	     chip here would just say the same thing twice, over the exercise. -->
 	<div class="chip muted" in:fly={{ y: -8, duration: 180 }} role="status">
-		<span>
-			🔇 Muted
+		<span class="lbl">
+			<VolumeX size={16} strokeWidth={2} /> Muted
 			<span class="detail">for this session</span>
 		</span>
 		<button class="link-btn" onclick={unmute}>Turn back on</button>
@@ -52,13 +53,13 @@
 		<!-- The detail sentence is dropped on phones, where it would wrap the
 		     chip to three rows and eat the exercise's space. "No headphones?"
 		     next to "Mute for now" carries the meaning on its own. -->
-		<span>
-			🎧 No headphones?
+		<span class="lbl">
+			<Headphones size={16} strokeWidth={2} /> No headphones?
 			<span class="detail">This plays pronunciation out loud.</span>
 		</span>
 		<div class="actions">
 			<button class="link-btn" onclick={muteForNow}>Mute for now</button>
-			<button class="dismiss" onclick={dismiss} aria-label="Dismiss">✕</button>
+			<button class="dismiss" onclick={dismiss} aria-label="Dismiss"><X size={15} strokeWidth={2.5} /></button>
 		</div>
 	</div>
 {/if}
@@ -87,6 +88,11 @@
 			padding: 7px 11px;
 			font-size: 0.8rem;
 		}
+	}
+	.lbl {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
 	}
 	.chip.prompt {
 		background: var(--teal-soft);
