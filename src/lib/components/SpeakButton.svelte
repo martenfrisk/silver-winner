@@ -42,6 +42,9 @@
 		/* Round: it's a single icon action, and the squircle read as a cropped
 		   card next to the answer reveal it sits in. */
 		border-radius: 50%;
+		/* Keep it circular inside flex rows, which would otherwise squeeze the
+		   width below the height and turn the circle into an ellipse. */
+		flex: 0 0 auto;
 		color: var(--on-primary);
 		background: var(--teal);
 		box-shadow: 0 6px 16px -8px rgba(11, 110, 110, 0.6);

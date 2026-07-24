@@ -44,10 +44,10 @@
 		   not floating next to the meaning or the tip below it. */
 		align-items: flex-start;
 		gap: 12px;
-		background: var(--card);
-		border-radius: 14px;
-		box-shadow: inset 0 0 0 2px var(--green);
-		padding: 9px 12px;
+		background: var(--green-soft);
+		border-radius: var(--radius);
+		box-shadow: inset 0 0 0 1.5px var(--green);
+		padding: 12px 14px;
 		/* Fills its row — the parent decides the width. Shrink-wrapping here
 		   used to squeeze the card into a narrow column on phones. */
 		align-self: stretch;
