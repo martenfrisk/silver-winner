@@ -67,6 +67,19 @@ export function primaryTrack(profile: Profile | null): TrackId {
 	return 'course';
 }
 
+/**
+ * Which row leads inside a unit on the course path.
+ *
+ * The course unit is one ladder with two ways up it: do the lessons, or read
+ * the same material in script. A script-reader wants the reading row first; a
+ * beginner wants the lessons. This is `primaryTrack` applied per unit instead
+ * of per screen, and it is a reorder only — both rows always render and both
+ * stay tappable, which is the never-hide-or-lock rule at unit granularity.
+ */
+export function primaryMode(profile: Profile | null): 'lessons' | 'read' {
+	return profile === 'script-reader' ? 'read' : 'lessons';
+}
+
 /** Live-state snapshot the suggestion logic needs (built by the home page). */
 export interface SuggestState {
 	vocabDue: number;

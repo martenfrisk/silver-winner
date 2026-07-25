@@ -187,3 +187,34 @@ export const storyById = new Map(stories.map((s) => [s.id, s]));
 export function storyStarsKey(storyId: string): string {
 	return `story-${storyId}`;
 }
+
+/**
+ * Which unit a story belongs under on the course path.
+ *
+ * A story's prerequisites can span units (the tea shop one needs digits from
+ * unit 2 and two food lessons from unit 4), so the home unit is the one
+ * holding the prerequisite that comes *latest* in the course. That is the unit
+ * the learner is working through when the story unlocks, which is the only
+ * placement where it reads as a reward rather than a locked curiosity.
+ *
+ * Takes the lesson order rather than importing it, so this file stays free of
+ * the generated module and testable on its own.
+ */
+export function storiesForUnit(
+	unitId: string,
+	unitOfLesson: (lessonId: string) => string | undefined,
+	lessonOrder: readonly string[]
+): Story[] {
+	return stories.filter((s) => {
+		let latest: string | undefined;
+		let latestAt = -1;
+		for (const id of s.requires) {
+			const at = lessonOrder.indexOf(id);
+			if (at > latestAt) {
+				latestAt = at;
+				latest = id;
+			}
+		}
+		return latest !== undefined && unitOfLesson(latest) === unitId;
+	});
+}
