@@ -16,9 +16,13 @@
 	import Mascot from '$lib/components/Mascot.svelte';
 	import Heatmap from '$lib/components/Heatmap.svelte';
 	import HubHeader from '$lib/components/HubHeader.svelte';
-	import { Zap, Flame, GraduationCap, Trophy, Brain, Snowflake, Headphones, Download, Upload } from '@lucide/svelte';
+	import { overview } from '$lib/overview.svelte';
+	import { Zap, Flame, GraduationCap, Trophy, Brain, Snowflake, Headphones, Download, Upload, Layers, Crown, BookOpen, BookOpenText, MessageSquare, PenLine } from '@lucide/svelte';
 
-	const totalLessons = course.reduce((n, u) => n + u.lessons.length, 0);
+	const courseTrack = $derived(overview.track('course'));
+	const readerTrack = $derived(overview.track('reader'));
+	const scriptTrack = $derived(overview.track('script'));
+	const storyTrack = $derived(overview.track('stories'));
 
 	const since = $derived(
 		new Date(progress.createdAt).toLocaleDateString(undefined, {
@@ -136,6 +140,10 @@
 		</div>
 	</section>
 
+	<!-- Every track, not just the course and the glyphs. Reader units, stories,
+	     deeper rounds, crowns and the vocabulary deck all existed and none of
+	     them appeared here; the old "reviews due" tile showed the glyph deck
+	     alone, which read as if it were every deck. -->
 	<section class="stats-grid">
 		<div class="stat">
 			<span class="stat-value"><Zap size={18} strokeWidth={2} /> {progress.xp}</span>
@@ -146,8 +154,32 @@
 			<span class="stat-label">day {ui('streak').text.toLowerCase()}</span>
 		</div>
 		<div class="stat">
-			<span class="stat-value"><GraduationCap size={18} strokeWidth={2} /> {progress.completedCount}/{totalLessons}</span>
+			<span class="stat-value"><Brain size={18} strokeWidth={2} /> {overview.combinedDue}</span>
+			<span class="stat-label">reviews due, all decks</span>
+		</div>
+		<div class="stat">
+			<span class="stat-value"><GraduationCap size={18} strokeWidth={2} /> {courseTrack.done}/{courseTrack.total}</span>
 			<span class="stat-label">course lessons</span>
+		</div>
+		<div class="stat">
+			<span class="stat-value"><Layers size={18} strokeWidth={2} /> {overview.rounds.done}/{overview.rounds.total}</span>
+			<span class="stat-label">deeper rounds</span>
+		</div>
+		<div class="stat">
+			<span class="stat-value"><Crown size={18} strokeWidth={2} /> {overview.crownCount}</span>
+			<span class="stat-label">{overview.crownCount === 1 ? 'crown' : 'crowns'}</span>
+		</div>
+		<div class="stat">
+			<span class="stat-value"><BookOpenText size={18} strokeWidth={2} /> {readerTrack.done}/{readerTrack.total}</span>
+			<span class="stat-label">units read in script</span>
+		</div>
+		<div class="stat">
+			<span class="stat-value"><BookOpen size={18} strokeWidth={2} /> {storyTrack.done}/{storyTrack.total}</span>
+			<span class="stat-label">stories finished</span>
+		</div>
+		<div class="stat">
+			<span class="stat-value"><MessageSquare size={18} strokeWidth={2} /> {vocabSrs.introducedCount}</span>
+			<span class="stat-label">words learned</span>
 		</div>
 		<div class="stat">
 			<span class="stat-value"><span class="my-accent my">က</span> {srs.introducedCount}/{totalGlyphs}</span>
@@ -158,8 +190,8 @@
 			<span class="stat-label">glyphs mastered</span>
 		</div>
 		<div class="stat">
-			<span class="stat-value"><Brain size={18} strokeWidth={2} /> {srs.dueCount}</span>
-			<span class="stat-label">reviews due</span>
+			<span class="stat-value"><PenLine size={18} strokeWidth={2} /> {scriptTrack.done}/{scriptTrack.total}</span>
+			<span class="stat-label">alphabet units</span>
 		</div>
 	</section>
 

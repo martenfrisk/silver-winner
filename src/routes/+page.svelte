@@ -8,7 +8,7 @@
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { scriptUnits, totalGlyphs } from '$lib/data/script';
 	import { readerStarsKey } from '$lib/reader-session';
-	import { nextUp, primaryTrack, tracks } from '$lib/tracks';
+	import { nextUp } from '$lib/tracks';
 	import { ui } from '$lib/i18n.svelte';
 	import Mascot from '$lib/components/Mascot.svelte';
 	import StartChooser from '$lib/components/StartChooser.svelte';
@@ -16,9 +16,10 @@
 	import { customCards } from '$lib/custom-cards.svelte';
 	import { confusions } from '$lib/confusion.svelte';
 	import { combinedDue, deckSummaries, hasAnyDeck, type ReviewSnapshot } from '$lib/review';
+	import { overview } from '$lib/overview.svelte';
 	import { scriptSheet } from '$lib/script-sheet.svelte';
 	import {
-		GraduationCap, BookOpen, PenLine, Dumbbell, Layers, ArrowRight, Volume2, VolumeX
+		GraduationCap, BookOpen, PenLine, Dumbbell, ArrowRight, Volume2, VolumeX
 	} from '@lucide/svelte';
 
 	const totalLessons = course.reduce((n, u) => n + u.lessons.length, 0);
@@ -44,7 +45,6 @@
 	const reviewStarted = $derived(hasAnyDeck(reviewSnapshot));
 	const dueDecks = $derived(deckSummaries(reviewSnapshot).filter((d) => d.due > 0));
 
-	const primary = $derived(primaryTrack(progress.profile));
 	const courseNext = $derived(allLessons.find((l) => l.id === progress.currentLesson));
 	const readerNext = $derived(course.find((u) => !(readerStarsKey(u.id) in progress.stars)));
 	const scriptNext = $derived(scriptUnits.find((u) => !srs.isUnitDone(u.id)));
@@ -65,12 +65,6 @@
 	const NextIcon = $derived(
 		next.track === 'reader' ? BookOpen : next.track === 'script' ? PenLine : GraduationCap
 	);
-
-	function trackHref(id: string): string {
-		if (id === 'course') return '/learn';
-		return tracks.find((t) => t.id === id)!.href;
-	}
-	const trackIcon: Record<string, typeof BookOpen> = { reader: BookOpen, script: PenLine, course: GraduationCap };
 
 	const heroSub = $derived.by(() => {
 		if (progress.completedCount > 0) return null;
@@ -216,17 +210,18 @@
 		</a>
 	{/if}
 
+	<!-- Replaces "More ways to learn", which listed the two non-primary tracks
+	     with an audience blurb and no figures at all. Each bar shows where you
+	     actually are and links there, so it earns its space twice. -->
 	<section class="more">
-		<h2 class="more-title">More ways to learn</h2>
-		{#each tracks.filter((t) => t.id !== primary) as t (t.id)}
-			{@const Icon = trackIcon[t.id]}
-			<a class="tile" href={trackHref(t.id)}>
-				<span class="tile-icon plum"><Icon size={20} strokeWidth={2} /></span>
-				<span class="tile-text">
-					<span class="tile-title">{t.title}</span>
-					<span class="tile-sub">{t.audience}</span>
+		<h2 class="more-title">Your Burmese</h2>
+		{#each overview.tracks as t (t.id)}
+			<a class="bar-row" href={t.href}>
+				<span class="bar-name">{t.title}</span>
+				<span class="bar-track" aria-hidden="true">
+					<span class="bar-fill" style="--pct: {Math.round(t.pct * 100)}%"></span>
 				</span>
-				<ArrowRight size={18} strokeWidth={2} class="tile-arrow" />
+				<span class="bar-count">{t.done}/{t.total}</span>
 			</a>
 		{/each}
 	</section>
@@ -302,7 +297,6 @@
 	.tile-icon { width: 42px; height: 42px; border-radius: var(--radius-sm); display: grid; place-items: center; flex: 0 0 auto; }
 	.tile-icon.teal { background: var(--teal-soft); color: var(--teal-ink); }
 	.tile-icon.gold { background: var(--gold-wash); color: var(--gold-ink); }
-	.tile-icon.plum { background: var(--plum-soft); color: var(--plum-ink); }
 	.tile-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 	.tile-title { font-weight: 700; font-size: 0.98rem; color: var(--ink); }
 	.tile-sub { font-size: 0.82rem; color: var(--ink-soft); line-height: 1.35; }
@@ -315,4 +309,40 @@
 
 	.more { margin-top: var(--s3); display: flex; flex-direction: column; gap: var(--s3); }
 	.more-title { font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 800; color: var(--ink-soft); }
+
+	/* One row per track: name, fill, count. Compact enough that all four fit
+	   without pushing the day's actual work off the screen. */
+	.bar-row {
+		display: grid;
+		grid-template-columns: 4.5rem 1fr auto;
+		align-items: center;
+		gap: 10px;
+		padding: 9px 2px;
+		text-decoration: none;
+		color: var(--ink);
+	}
+	.bar-name {
+		font-size: 0.85rem;
+		font-weight: 800;
+	}
+	.bar-track {
+		height: 8px;
+		border-radius: 4px;
+		background: var(--line);
+		overflow: hidden;
+	}
+	.bar-fill {
+		display: block;
+		height: 100%;
+		width: var(--pct);
+		border-radius: 4px;
+		background: var(--gold);
+		transition: width 0.3s ease;
+	}
+	.bar-count {
+		font-size: 0.78rem;
+		font-weight: 800;
+		color: var(--ink-soft);
+		font-variant-numeric: tabular-nums;
+	}
 </style>
