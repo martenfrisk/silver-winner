@@ -1,6 +1,7 @@
 import { browser } from '$app/environment';
 import { lessonOrder } from '$lib/data/lesson-order';
 import { PROGRESS_KEY as STORAGE_KEY, sanitizeProgress, type ProgressSaved } from '$lib/backup';
+import { DEFAULT_VOICE, isVoiceId, type VoiceId } from '$lib/voices';
 
 export type Theme = 'system' | 'light' | 'dark';
 
@@ -50,6 +51,9 @@ class Progress {
 	theme = $state<Theme>('system');
 	// null = the home hero hasn't asked "where are you starting from?" yet.
 	profile = $state<Profile | null>(null);
+	// Preferred talker. Contrast drills override it per trial on purpose — see
+	// the note in $lib/voices about why one voice forever is a learning problem.
+	voice = $state<VoiceId>(DEFAULT_VOICE);
 	createdAt = $state(Date.now());
 	// Per-day XP history (drives the daily goal ring and the heatmap).
 	activity = $state<Record<string, number>>({});
@@ -84,6 +88,7 @@ class Progress {
 					this.immersion = s.immersion ?? false;
 					this.theme = s.theme === 'light' || s.theme === 'dark' ? s.theme : 'system';
 					this.profile = PROFILES.includes(s.profile as Profile) ? (s.profile ?? null) : null;
+					this.voice = isVoiceId(s.voice) ? s.voice : DEFAULT_VOICE;
 					this.createdAt = s.createdAt ?? Date.now();
 					this.activity = s.activity ?? {};
 					this.dailyGoal = s.dailyGoal ?? 20;
@@ -138,6 +143,7 @@ class Progress {
 			immersion: this.immersion,
 			theme: this.theme,
 			profile: this.profile,
+			voice: this.voice,
 			createdAt: this.createdAt,
 			activity: this.activity,
 			dailyGoal: this.dailyGoal,
@@ -299,6 +305,11 @@ class Progress {
 
 	setProfile(profile: Profile) {
 		this.profile = profile;
+		this.save();
+	}
+
+	setVoice(voice: VoiceId) {
+		this.voice = voice;
 		this.save();
 	}
 

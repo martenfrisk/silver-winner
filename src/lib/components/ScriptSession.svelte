@@ -262,6 +262,7 @@
 							questionKey={ex.questionKey}
 							promptBig={ex.promptBig}
 							promptSpeak={ex.promptSpeak}
+							speakVoice={ex.speakVoice}
 							speakAfter={ex.speakAfter}
 							options={ex.options}
 							correct={ex.correct}

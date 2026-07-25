@@ -20,6 +20,7 @@
 // Type-only, so this module stays free of the runes file at runtime and the
 // two can depend on each other without a cycle.
 import type { Profile, Theme } from '$lib/progress.svelte';
+import type { VoiceId } from '$lib/voices';
 
 /** Bumped only when the file layout changes in a way older readers can't handle. */
 export const BACKUP_VERSION = 1;
@@ -135,6 +136,7 @@ export interface ProgressSaved {
 	immersion: boolean;
 	theme: Theme;
 	profile: Profile | null;
+	voice: VoiceId; // preferred TTS talker — see $lib/voices
 	createdAt: number;
 	activity: Record<string, number>; // YYYY-MM-DD -> XP earned that day
 	dailyGoal: number;

@@ -4,6 +4,8 @@
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { customCards } from '$lib/custom-cards.svelte';
 	import { buildBackup, backupFilename, parseBackup, describeBackup } from '$lib/backup';
+	import { VOICES, VOICE_IDS } from '$lib/voices';
+	import { speak } from '$lib/audio';
 	import { course } from '$lib/data/course';
 	import { totalGlyphs } from '$lib/data/script';
 	import { ui, immersionTier } from '$lib/i18n.svelte';
@@ -256,6 +258,30 @@
 				onchange={() => progress.toggleTempMute()}
 			/>
 		</label>
+		<div class="setting">
+			<span class="setting-text">
+				<span class="setting-title">Voice</span>
+				<span class="setting-desc">
+					Who reads the Burmese. Listening drills that test similar sounds ignore this and
+					switch between voices on purpose, so you learn the sound and not the speaker.
+				</span>
+			</span>
+			<div class="theme-picker" role="radiogroup" aria-label="Voice">
+				{#each VOICE_IDS as id (id)}
+					<button
+						role="radio"
+						aria-checked={progress.voice === id}
+						class:active={progress.voice === id}
+						onclick={() => {
+							progress.setVoice(id);
+							speak('မင်္ဂလာပါ', id);
+						}}
+					>
+						{VOICES[id].label}
+					</button>
+				{/each}
+			</div>
+		</div>
 		<label class="setting">
 			<span class="setting-text">
 				<span class="setting-title">Romanization</span>

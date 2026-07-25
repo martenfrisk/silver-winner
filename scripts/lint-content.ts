@@ -13,8 +13,9 @@
 //   Script  — confusable/unit/chart glyph references, no glyph in two units,
 //             decodable word parts that exist, are already taught by that
 //             unit, and recompose the word's Burmese text.
-//   Audio   — every speakable string (collected exactly like
-//             scripts/generate-audio.ts) has a manifest entry and an mp3.
+//   Audio   — every speakable string (from scripts/speakables.ts, shared with
+//             scripts/generate-audio.ts) has a manifest entry and an mp3, in
+//             every voice the manifest claims for it.
 import { course } from '../src/lib/data/course';
 import { lineMy, stories } from '../src/lib/data/stories';
 import {
@@ -32,6 +33,8 @@ import {
 } from '../src/lib/data/script';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { DEFAULT_VOICE, VOICE_IDS } from '../src/lib/voices';
+import { collectSpeakables } from './speakables';
 
 const strictAudio = process.argv.includes('--strict-audio');
 
@@ -280,38 +283,42 @@ const warn = (category: string, msg: string) => add(warnings, category, msg);
 	const cat = 'Audio coverage';
 	const manifestPath = join(import.meta.dir, '../src/lib/audio-manifest.json');
 	const audioDir = join(import.meta.dir, '../static');
-	const manifest: Record<string, string> = JSON.parse(readFileSync(manifestPath, 'utf8'));
+	const manifest: Record<string, Record<string, string>> = JSON.parse(
+		readFileSync(manifestPath, 'utf8')
+	);
 
-	// Collect every speakable string exactly like scripts/generate-audio.ts.
-	const texts = new Set<string>();
-	for (const unit of course) {
-		for (const lesson of unit.lessons) {
-			for (const ex of lesson.exercises) {
-				if (ex.kind === 'learn') texts.add(ex.my);
-				else if (ex.kind === 'listen') texts.add(ex.my);
-				else if (ex.kind === 'choice' && ex.promptMy) texts.add(ex.promptMy);
-				else if (ex.kind === 'match') for (const p of ex.pairs) texts.add(p.l);
-				else if (ex.kind === 'assemble') texts.add(ex.my);
-			}
-		}
-	}
-	for (const g of glyphs) texts.add(g.speak);
-	for (const s of allAudioSyllables()) texts.add(s.text);
-	for (const words of Object.values(decodableWords)) for (const w of words) texts.add(w.my);
-	for (const sentences of Object.values(decodableSentences)) for (const s of sentences) texts.add(s.my);
-	for (const w of loanWords) texts.add(w.my);
-	for (const story of stories) for (const line of story.lines) texts.add(lineMy(line));
+	const texts = collectSpeakables();
 
 	const missing: string[] = [];
+	// Only the default voice is required. The extra voices exist for the
+	// contrast drills (see $lib/voices) and are worth a nudge when absent, but
+	// a string that can be spoken at all is not a coverage hole.
+	let partial = 0;
 	for (const text of texts) {
-		const file = manifest[text];
-		if (!file) missing.push(`"${text}" — no manifest entry`);
-		else if (!existsSync(join(audioDir, file)))
-			missing.push(`"${text}" — manifest points to missing file ${file}`);
+		const entry = manifest[text];
+		if (!entry || !entry[DEFAULT_VOICE]) {
+			missing.push(`"${text}" — no manifest entry for the default voice`);
+			continue;
+		}
+		for (const voice of VOICE_IDS) {
+			const stem = entry[voice];
+			if (!stem) {
+				if (voice !== DEFAULT_VOICE) partial++;
+				continue;
+			}
+			if (!existsSync(join(audioDir, 'audio', `${stem}.mp3`)))
+				missing.push(`"${text}" [${voice}] — manifest points to missing file ${stem}.mp3`);
+		}
 	}
 	if (missing.length > 0) {
 		for (const m of missing) warn(cat, m);
 		warn(cat, `${missing.length} speakable string(s) without audio — run \`bun run audio\` to regenerate`);
+	}
+	if (partial > 0) {
+		warn(
+			cat,
+			`${partial} string(s) exist in only one voice — the contrast drills fall back to a single talker. Run \`bun run audio\` to fill them in.`
+		);
 	}
 
 	for (const text of Object.keys(manifest))

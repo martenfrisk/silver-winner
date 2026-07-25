@@ -19,6 +19,19 @@ import {
 } from '$lib/data/script';
 import { srs, MAX_BOX } from '$lib/srs.svelte';
 import { sample, shuffle } from '$lib/shuffle';
+import { VOICE_IDS, type VoiceId } from '$lib/voices';
+
+/**
+ * A talker for one contrast trial, drawn fresh each time the drill is built.
+ *
+ * Varying the talker across trials is the point (see $lib/voices); holding it
+ * constant *within* a trial matters just as much, or replaying the prompt
+ * would change the question. The value is baked into the exercise at build
+ * time, so every replay of that card uses the same voice.
+ */
+function trialVoice(): VoiceId {
+	return VOICE_IDS[Math.floor(Math.random() * VOICE_IDS.length)];
+}
 
 export interface ChoiceOption {
 	label: string;
@@ -39,6 +52,13 @@ export type ScriptEx =
 			questionKey?: 'what-sound' | 'what-say' | 'which-hear';
 			promptBig?: string;
 			promptSpeak?: string;
+			/**
+			 * Talker for `promptSpeak`. Set only by the contrast drills, which
+			 * deliberately vary the voice across trials so the learner abstracts
+			 * the contrast instead of memorizing one speaker's rendering of it
+			 * (see $lib/voices). Everything else follows the learner's preference.
+			 */
+			speakVoice?: VoiceId;
 			/** Hold `promptSpeak` until after answering (decode-it-yourself drills). */
 			speakAfter?: boolean;
 			options: ChoiceOption[];
@@ -256,6 +276,7 @@ export function pairListen(glyph: Glyph): ScriptEx | null {
 		question: 'Which one did you hear?',
 		questionKey: 'which-hear',
 		promptSpeak: played.text,
+		speakVoice: trialVoice(),
 		options,
 		correct
 	};
@@ -285,6 +306,7 @@ export function toneListen(): ScriptEx | null {
 		question: 'Which one did you hear?',
 		questionKey: 'which-hear',
 		promptSpeak: played.text,
+		speakVoice: trialVoice(),
 		options,
 		correct
 	};

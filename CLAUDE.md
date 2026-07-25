@@ -43,11 +43,15 @@ After editing `course.ts` / `script.ts` / `stories.ts`:
 bun run lint:content && bun run audio
 ```
 
-`lint-content.ts` and `generate-audio.ts` collect speakable strings with *identical* logic. If you add a new exercise kind or a new speakable field, update the collection loop in **both** scripts or audio silently goes missing.
+Both scripts collect speakable strings from `scripts/speakables.ts`. Add a new exercise kind or speakable field there and both stay in step. (`bun run audio` regenerates only what's missing from disk, so it's cheap to re-run; `--voice m` limits it to one voice.)
 
 ### Audio pipeline
 
-Every Burmese string is pre-rendered to `static/audio/<djb2-hash>.mp3` by Edge neural TTS (`my-MM-NilarNeural`), indexed in `src/lib/audio-manifest.json`. `src/lib/audio.ts` looks a string up in that manifest, falls back to platform speech synthesis, and also synthesizes the Web Audio UI feedback sounds. Missing audio is a lint *warning* (fails only with `--strict-audio`); structural data errors always exit 1.
+Every Burmese string is pre-rendered to `static/audio/<djb2-hash>.mp3` by Edge neural TTS, **in each voice in `src/lib/voices.ts`** (`f` = `my-MM-NilarNeural`, `m` = `my-MM-ThihaNeural`), and indexed in `src/lib/audio-manifest.json` as `text -> { voiceId: hash }`. `src/lib/audio.ts` looks a string up there, falls back to platform speech synthesis, and also synthesizes the Web Audio UI feedback sounds. Missing audio is a lint *warning* (fails only with `--strict-audio`); structural data errors always exit 1.
+
+More than one voice exists for a learning reason (high-variability phonetic training — see the header of `voices.ts`): the aspiration and tone **contrast drills vary the talker across trials** and hold it constant within one, so a replay can't change the question. Everything else follows `progress.voice`. The default voice hashes the bare text, so adding a voice never orphans existing files.
+
+`scripts/speakables.ts` is the single collection of every speakable string, imported by **both** `generate-audio.ts` and `lint-content.ts`. A new exercise kind or speakable field goes there and nowhere else.
 
 ### Stores vs. pure modules
 
