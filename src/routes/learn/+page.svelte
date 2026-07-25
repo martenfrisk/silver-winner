@@ -157,7 +157,7 @@
 	.learn {
 		max-width: 620px;
 		margin: 0 auto;
-		padding: var(--s5) var(--s5) calc(96px + env(safe-area-inset-bottom));
+		padding: 0 var(--s5) calc(96px + env(safe-area-inset-bottom));
 	}
 	.unit { margin-bottom: var(--s6); position: relative; }
 	.uh {

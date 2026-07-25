@@ -26,9 +26,11 @@ export interface Voice {
 /** The voice whose files are named by the bare text hash — see audioHash. */
 export const DEFAULT_VOICE: VoiceId = 'f';
 
+// Labelled by what the learner can actually hear, not by the vendor's name for
+// the voice: "Nilar" and "Thiha" mean nothing to someone picking a speaker.
 export const VOICES: Record<VoiceId, Voice> = {
-	f: { tts: 'my-MM-NilarNeural', label: 'Nilar' },
-	m: { tts: 'my-MM-ThihaNeural', label: 'Thiha' }
+	f: { tts: 'my-MM-NilarNeural', label: 'Female' },
+	m: { tts: 'my-MM-ThihaNeural', label: 'Male' }
 };
 
 export const VOICE_IDS = Object.keys(VOICES) as VoiceId[];

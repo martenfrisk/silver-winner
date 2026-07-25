@@ -117,16 +117,19 @@
 	.cards {
 		max-width: 560px;
 		margin: 0 auto;
-		padding: var(--s4) var(--s5) calc(96px + env(safe-area-inset-bottom));
+		padding: 0 var(--s5) calc(96px + env(safe-area-inset-bottom));
 		display: flex;
 		flex-direction: column;
 		gap: var(--s4);
 	}
+	/* Review mode has its own header rather than HubHeader (the back arrow ends
+	   the review instead of navigating), so it has to match HubHeader's top
+	   spacing by hand now that the container no longer provides any. */
 	.head {
 		display: flex;
 		align-items: center;
 		gap: var(--s3);
-		padding: var(--s2) 0 0;
+		padding: var(--s4) 0 0;
 	}
 	.back {
 		width: 38px;

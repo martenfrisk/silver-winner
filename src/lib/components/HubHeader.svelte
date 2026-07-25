@@ -45,11 +45,17 @@
 </header>
 
 <style>
+	/* The header owns its own top spacing rather than leaning on the page
+	   container. Four hubs used to set `padding: 0` on top and rely on their
+	   own header's padding for the gap; when those headers were replaced by
+	   this component they went flush to the top of the viewport. Keeping the
+	   spacing here means a new hub gets it for free. */
 	.hub-head {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--s3);
+		padding-top: var(--s4);
 		margin-bottom: var(--s5);
 	}
 	/* The house style for a hub title: five of the six hubs already used this

@@ -107,7 +107,7 @@
 	.dict {
 		max-width: 620px;
 		margin: 0 auto;
-		padding: var(--s4) var(--s5) calc(96px + env(safe-area-inset-bottom));
+		padding: 0 var(--s5) calc(96px + env(safe-area-inset-bottom));
 	}
 
 	.searchbar {
