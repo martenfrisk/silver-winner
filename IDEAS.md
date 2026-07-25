@@ -1,7 +1,9 @@
 # MyanLingo — Ideas & Roadmap
 
 Backlog of improvements and next steps, roughly ordered by expected impact within
-each group. Everything fits the localStorage-only, no-backend setup.
+each group. Everything fits the localStorage-only, no-backend setup — the one
+exception is optional Supabase sync (Round 12), which is additive: a
+signed-out learner sees the same no-account app as always.
 
 Legend: ✅ = implemented · 💤 = backlog
 
@@ -267,6 +269,21 @@ training it. Tone joins once a native speaker has checked the clips (#24).
 
 Still to come, per the original design: minimal pairs in real sentences
 where the confusion changes meaning, as a graduation rung.
+
+## Round 12 — optional cross-device sync (2026-07-25)
+
+- ✅ **Supabase magic-link auth + sync** — a "Sync across devices" section on
+  `/account`, invisible with no `PUBLIC_SUPABASE_URL`/`PUBLIC_SUPABASE_ANON_KEY`
+  configured (see `docs/supabase.md`). Reuses `backup.ts`'s existing payload
+  shape and sanitizers wholesale rather than inventing a second serialization
+  format — a Supabase row gets the same untrusted-input treatment as an
+  uploaded backup file. The merge is per-key and, within the two SRS maps,
+  per-entry (`seen` primary, `due` tie-break) rather than "whole row, last
+  write wins" — see the header of `sync-merge.ts` for the full rule and why
+  it has to be idempotent (the payload is a snapshot, not a delta log, so
+  summing counters on merge would double-count on every repeat sync).
+  Sign-out only forgets this device's sync connection; the six learner-state
+  keys are untouched, same as before this existed.
 
 ## Highest impact next
 

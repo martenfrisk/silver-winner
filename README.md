@@ -8,7 +8,7 @@ Meet **Shwe** (ရွှေ, "gold") — a golden Burmese cat who guides you thr
 - **Pick your starting point** — on first visit Shwe asks what your Burmese is like: new to it (→ the course), read the script but know few words (→ the Reader track), or speak it but can't read (→ Script Studio). The answer reorders and frames the home screen — a big "Continue" card for your track, the others listed with who-they're-for one-liners — but never hides or locks anything. Changeable anytime in settings. Profiles also tune content: beginners get romanization on listening drills until they've learned some letters, script readers start practice at the production rung, and speakers can ⚡ **test out** of locked lessons with a perfect hard-mode run.
 - **Beginner course** — 7 units × 3 lessons (~180 exercises): Greetings, Numbers, The Script, Food & Drink, Family, Places & Directions, Time & Days. Real Burmese script with beginner-friendly romanization and cultural notes.
 - **5 exercise types** — new-word cards, multiple choice, tap-the-pairs matching, sentence building from syllable tiles, and listening comprehension ("tap what you hear" from audio alone, with the English meaning revealed after answering). Choice and listening answers check on a single tap — no Confirm step. Wrong answers show a prominent correct-answer card (script + meaning + replay button), auto-play its pronunciation, and re-queue at the end of the lesson, Duolingo-style.
-- **Progress in localStorage** — XP, day streak, per-lesson star ratings (1–3 based on mistakes), and sequential lesson unlocking. No accounts, no backend.
+- **Progress in localStorage** — XP, day streak, per-lesson star ratings (1–3 based on mistakes), and sequential lesson unlocking. No account needed; optional Supabase sign-in (see below) adds cross-device sync on top without changing any of that.
 - **Audio** — every word/phrase has a pre-generated pronunciation MP3 (Microsoft Edge neural TTS, voice `my-MM-NilarNeural`) in `static/audio/`, with platform speech synthesis as a fallback. New words auto-play. Plus Web Audio-synthesized feedback sounds (correct chime, wrong buzz, match pop, completion fanfare). Toggleable from the header.
 - **Romanization toggle** — off by default (audio carries pronunciation); flip it on with the `Aa` button in the header or during a lesson.
 - **Temporary no-audio mode** — for when you don't have headphones. Separate from the permanent Sound setting (account page): a "🎧 No headphones?" prompt appears once per session right where audio would play (lessons, practice, Script Studio, reader, stories), with a one-tap mute that resets automatically next time you open the app. Also settable directly from the account page. Crucially it changes *what gets asked*: listening drills become reading drills over the same options ("Which one says X?"), Script Studio's hear-the-difference drills step aside for visual ones, and dead speaker buttons disappear — so you never meet a question you can't answer, even if you mute mid-lesson.
@@ -31,7 +31,7 @@ Meet **Shwe** (ရွှေ, "gold") — a golden Burmese cat who guides you thr
 - **Crowns, combos & streak freezes** — completed lessons offer a 👑 hard mode (drills only; a perfect run earns the crown); consecutive correct answers build a combo with bonus XP at ×5; streak freezes (bought with XP on the profile page) silently cover missed days.
 - **Immersion mode** (off by default) — UI buttons and labels switch to Burmese in three tiers as your script knowledge grows, like gradually setting your phone to the target language.
 - **Install as an app / offline** — a web manifest + service worker precache the app shell and cache audio as it plays, so the app works offline after the first visit and can be added to a phone home screen.
-- **Profile page** (`/account`) — stats, settings and reset options; still 100% localStorage.
+- **Profile page** (`/account`) — stats, settings and reset options; 100% localStorage, plus an optional "Sync across devices" section (magic-link sign-in via Supabase) that's invisible unless a Supabase project is configured — see `docs/supabase.md`.
 - **Dark mode** — warm charcoal/plum dark theme with gold kept as the hero accent. Follows the OS by default; force light/dark from the profile page (System / Light / Dark). Applied pre-paint, so no flash of the wrong theme.
 
 ## Running
@@ -42,6 +42,10 @@ bun run dev
 ```
 
 Then open the printed URL (defaults to http://localhost:5173).
+
+No setup beyond that is required — the app runs fully offline-capable with no
+account. To try the optional cross-device sync feature, see `docs/supabase.md`
+for the (self-serve, five-minute) Supabase setup.
 
 ## Testing
 
