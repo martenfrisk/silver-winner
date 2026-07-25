@@ -1,7 +1,6 @@
 import { browser } from '$app/environment';
 import { lessonOrder } from '$lib/data/lesson-order';
-
-const STORAGE_KEY = 'myanlingo-progress-v1';
+import { PROGRESS_KEY as STORAGE_KEY, sanitizeProgress, type ProgressSaved } from '$lib/backup';
 
 export type Theme = 'system' | 'light' | 'dark';
 
@@ -14,25 +13,6 @@ export type Theme = 'system' | 'light' | 'dark';
 export type Profile = 'beginner' | 'script-reader' | 'speaker' | 'explorer';
 
 const PROFILES: readonly Profile[] = ['beginner', 'script-reader', 'speaker', 'explorer'];
-
-interface Saved {
-	xp: number;
-	streak: number;
-	lastStudy: string; // YYYY-MM-DD
-	stars: Record<string, number>; // lessonId -> 1..3
-	sound: boolean;
-	showRoman: boolean;
-	immersion: boolean;
-	theme: Theme;
-	profile: Profile | null;
-	createdAt: number;
-	activity: Record<string, number>; // YYYY-MM-DD -> XP earned that day
-	dailyGoal: number;
-	achievements: Record<string, number>; // achievement id -> epoch ms earned
-	freezes: number; // streak freezes held (bought with XP)
-	crowns: Record<string, number>; // lessonId -> epoch ms of the perfect hard-mode run
-	skipped: Record<string, number>; // lessonId -> epoch ms it was skipped
-}
 
 export const FREEZE_COST = 100;
 export const MAX_FREEZES = 2;
@@ -91,7 +71,10 @@ class Progress {
 			try {
 				const raw = localStorage.getItem(STORAGE_KEY);
 				if (raw) {
-					const s: Saved = JSON.parse(raw);
+					// The scalars are defaulted field by field below; sanitizeProgress
+					// rebuilds the five id->number maps, which `??` alone would happily
+					// let through as a string. Shared with the backup restore path.
+					const s = sanitizeProgress(JSON.parse(raw));
 					this.xp = s.xp ?? 0;
 					this.streak = s.streak ?? 0;
 					this.lastStudy = s.lastStudy ?? '';
@@ -100,7 +83,7 @@ class Progress {
 					this.showRoman = s.showRoman ?? false;
 					this.immersion = s.immersion ?? false;
 					this.theme = s.theme === 'light' || s.theme === 'dark' ? s.theme : 'system';
-					this.profile = PROFILES.includes(s.profile as Profile) ? s.profile : null;
+					this.profile = PROFILES.includes(s.profile as Profile) ? (s.profile ?? null) : null;
 					this.createdAt = s.createdAt ?? Date.now();
 					this.activity = s.activity ?? {};
 					this.dailyGoal = s.dailyGoal ?? 20;
@@ -145,7 +128,7 @@ class Progress {
 
 	private save() {
 		if (!browser) return;
-		const s: Saved = {
+		const s: ProgressSaved = {
 			xp: this.xp,
 			streak: this.streak,
 			lastStudy: this.lastStudy,

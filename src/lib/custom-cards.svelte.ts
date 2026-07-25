@@ -3,8 +3,7 @@
 // same 5-box Leitner ladder as the vocab and glyph SRS, reviewed by self-grade.
 // Everything is localStorage, like the rest of the app — no backend, no sync.
 import { browser } from '$app/environment';
-
-const STORAGE_KEY = 'myanlingo-custom-v1';
+import { CUSTOM_KEY as STORAGE_KEY, sanitizeCards } from '$lib/backup';
 
 /** Same interval ladder as srs.svelte.ts / vocab-srs.svelte.ts. */
 const INTERVALS = [0, 4 * 3600_000, 24 * 3600_000, 3 * 24 * 3600_000, 7 * 24 * 3600_000];
@@ -30,7 +29,10 @@ class CustomCards {
 		if (!browser) return;
 		try {
 			const raw = localStorage.getItem(STORAGE_KEY);
-			if (raw) this.cards = JSON.parse(raw);
+			// Sanitized rather than trusted — see the note in srs.svelte.ts. The
+			// payload is a bare array, so a stored `"null"` parses fine and then
+			// throws on the first `.filter` if taken at its word.
+			if (raw) this.cards = sanitizeCards(JSON.parse(raw), CUSTOM_MAX_BOX);
 		} catch {
 			/* corrupt storage — start empty */
 		}
@@ -83,6 +85,11 @@ class CustomCards {
 
 	private save(): void {
 		if (browser) localStorage.setItem(STORAGE_KEY, JSON.stringify(this.cards));
+	}
+
+	reset(): void {
+		this.cards = [];
+		this.save();
 	}
 }
 

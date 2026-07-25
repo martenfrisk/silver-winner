@@ -182,6 +182,44 @@ landed together; progress export/import (#20) was deliberately left out.
   side effect.
 - ✅ **Meta description + OpenGraph tags** — the app had no share preview.
 
+## Round 9 — learner-owned content (2026-07-24)
+
+Two features that let the learner act on the course rather than only move
+through it, plus the backup that makes owning anything meaningful.
+
+- ✅ **Dictionary** (`/dictionary`) — search every word the course teaches,
+  by Burmese, romanization or English. Derived entirely from `allVocab` +
+  the vocab SRS, so it persists nothing and shows each word's box heat.
+- ✅ **Custom review cards** (`/cards`, `custom-cards.svelte.ts`) — the
+  learner writes a front and a back; the card then rides the same 5-box
+  Leitner ladder as the vocab and glyph SRS, reviewed by self-grade.
+  Fourth localStorage key: `myanlingo-custom-v1`.
+- ✅ **Backup and restore** (#20) — see below.
+
+## Round 10 — backup, and hardening the storage layer (2026-07-25)
+
+- ✅ **Progress export/import** (#20) — a Backup section on the account page
+  downloads all four localStorage keys as one dated JSON file and restores
+  one back. Restore writes the keys and reloads rather than patching live
+  stores: the reload re-runs the pre-paint theme script, re-seeds the vocab
+  SRS from the restored progress, and removes any chance of two stores
+  disagreeing about which learner they belong to. A backup is a whole
+  snapshot, so restoring one always writes all four keys — a file exported
+  before Script Studio was opened clears script progress rather than
+  merging into it.
+- ✅ **The storage loaders trusted their own JSON** — three of the four
+  stores assigned `JSON.parse` output straight to a declared type, so a
+  corrupt key escaped the `try/catch` and threw later, in a component. The
+  worst was `custom-cards`, whose payload is a bare array: a stored `"null"`
+  parsed fine and then threw on `.filter`. Restore is the one path where
+  untrusted JSON reaches storage, so `backup.ts` owns the sanitizers and
+  **both** paths use them — a doctored file and a hand-corrupted key are the
+  same problem. Boxes are clamped to the ladder, because a box past the end
+  of `INTERVALS` schedules `now + undefined` = NaN, an item never due again.
+- ✅ **"Reset everything" left the custom cards behind** — `resetAll` never
+  touched the fourth key (and `customCards` had no `reset()` to call), so
+  the confirm text was lying.
+
 ## Highest impact next
 
 1. ✅ **Listening-only exercise type** — the audio pipeline exists but is never the
@@ -265,8 +303,8 @@ landed together; progress export/import (#20) was deliberately left out.
     UA default ring was invisible under it. Applied to the lesson player,
     /practice, /reader **and** `ScriptSession` (all four surfaces).
     The trace-skip path is moot while the pad is gated off (#6).
-20. 💤 **Progress export/import** — download/restore a JSON backup of the
-    localStorage keys from the profile page.
+20. ✅ **Progress export/import** — download/restore a JSON backup of the
+    localStorage keys from the profile page. See round 10.
 
 ## Engineering quality
 

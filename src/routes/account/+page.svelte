@@ -2,13 +2,15 @@
 	import { progress, FREEZE_COST, MAX_FREEZES, type Profile, type Theme } from '$lib/progress.svelte';
 	import { srs } from '$lib/srs.svelte';
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
+	import { customCards } from '$lib/custom-cards.svelte';
+	import { buildBackup, backupFilename, parseBackup, describeBackup } from '$lib/backup';
 	import { course } from '$lib/data/course';
 	import { totalGlyphs } from '$lib/data/script';
 	import { ui, immersionTier } from '$lib/i18n.svelte';
 	import { achievements } from '$lib/achievements';
 	import Mascot from '$lib/components/Mascot.svelte';
 	import Heatmap from '$lib/components/Heatmap.svelte';
-	import { Zap, Flame, GraduationCap, Trophy, Brain, ArrowLeft, Snowflake, Headphones } from '@lucide/svelte';
+	import { Zap, Flame, GraduationCap, Trophy, Brain, ArrowLeft, Snowflake, Headphones, Download, Upload } from '@lucide/svelte';
 
 	const totalLessons = course.reduce((n, u) => n + u.lessons.length, 0);
 
@@ -56,7 +58,53 @@
 			progress.reset();
 			srs.reset();
 			vocabSrs.reset();
+			customCards.reset();
 		}
+	}
+
+	// ── Backup ────────────────────────────────────────────────────────
+	// No backend means this browser's localStorage is the only copy of
+	// everything the learner has done. Export is the whole safety net.
+
+	let fileInput = $state<HTMLInputElement | null>(null);
+	let backupError = $state('');
+
+	function exportBackup() {
+		const file = buildBackup((key) => localStorage.getItem(key));
+		const url = URL.createObjectURL(
+			new Blob([JSON.stringify(file, null, 2)], { type: 'application/json' })
+		);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = backupFilename();
+		a.click();
+		URL.revokeObjectURL(url);
+		backupError = '';
+	}
+
+	async function onBackupFile(e: Event) {
+		const input = e.currentTarget as HTMLInputElement;
+		const file = input.files?.[0];
+		// Cleared so picking the same file again after an error still fires change.
+		input.value = '';
+		if (!file) return;
+
+		const res = parseBackup(await file.text());
+		if (!res.ok) {
+			backupError = res.error;
+			return;
+		}
+		backupError = '';
+		const ok = confirm(
+			`Restore this backup?\n\n${describeBackup(res.summary)}\n\n` +
+				'This replaces all progress currently in this browser.'
+		);
+		if (!ok) return;
+		for (const [key, value] of Object.entries(res.payloads)) localStorage.setItem(key, value);
+		// Reload rather than patch the live stores: it re-runs the pre-paint theme
+		// script, re-seeds the vocab SRS from the restored progress, and leaves no
+		// chance of two stores disagreeing about which learner they belong to.
+		location.reload();
 	}
 </script>
 
@@ -259,6 +307,43 @@
 		</label>
 	</section>
 
+	<section class="backup">
+		<h2>Backup</h2>
+		<div class="setting">
+			<span class="setting-text">
+				<span class="setting-title"><Download size={16} strokeWidth={2} /> Save a backup</span>
+				<span class="setting-desc">
+					Downloads everything (XP, streak, stars, both review decks and your own cards) as
+					one file. Keep it somewhere safe.
+				</span>
+			</span>
+			<button class="buy-btn" onclick={exportBackup}>Download</button>
+		</div>
+		<div class="setting">
+			<span class="setting-text">
+				<span class="setting-title"><Upload size={16} strokeWidth={2} /> Restore a backup</span>
+				<span class="setting-desc">
+					Loads a backup file into this browser, replacing everything currently here.
+				</span>
+			</span>
+			<button class="buy-btn" onclick={() => fileInput?.click()}>Choose file</button>
+		</div>
+		<input
+			bind:this={fileInput}
+			type="file"
+			accept="application/json,.json"
+			onchange={onBackupFile}
+			hidden
+		/>
+		{#if backupError}
+			<p class="backup-error" role="alert">{backupError}</p>
+		{/if}
+		<p class="note">
+			Clearing your browser data wipes your progress, and there's no account to restore it from.
+			A backup is the only copy that survives.
+		</p>
+	</section>
+
 	<section class="danger">
 		<h2>Danger zone</h2>
 		<div class="danger-row">
@@ -359,6 +444,7 @@
 	.settings h2,
 	.activity h2,
 	.badges h2,
+	.backup h2,
 	.danger h2 {
 		font-size: 1.1rem;
 		font-weight: 900;
@@ -509,6 +595,16 @@
 		background: var(--disabled-bg, var(--line));
 		box-shadow: none;
 		cursor: not-allowed;
+	}
+	/* The backup rows are informational, not clickable as a whole — the button is. */
+	.backup .setting {
+		cursor: default;
+	}
+	.backup-error {
+		margin: 2px 0 0;
+		font-size: 0.85rem;
+		font-weight: 800;
+		color: var(--coral-ink);
 	}
 	.danger-row {
 		display: flex;
