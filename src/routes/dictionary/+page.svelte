@@ -44,7 +44,7 @@
 
 <svelte:head><title>Dictionary · Shwe</title></svelte:head>
 
-<div class="dict">
+<div class="hub-page dict">
 	<HubHeader title="Dictionary" />
 
 	<div class="searchbar">
@@ -104,11 +104,6 @@
 </div>
 
 <style>
-	.dict {
-		max-width: 620px;
-		margin: 0 auto;
-		padding: 0 var(--s5) calc(96px + env(safe-area-inset-bottom));
-	}
 
 	.searchbar {
 		display: flex;

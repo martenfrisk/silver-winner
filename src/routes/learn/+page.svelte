@@ -51,7 +51,7 @@
 
 <svelte:head><title>Learn · Shwe</title></svelte:head>
 
-<div class="learn">
+<div class="hub-page learn">
 	<HubHeader title="Learn" />
 
 	{#each course as unit (unit.id)}
@@ -226,11 +226,6 @@
 {/snippet}
 
 <style>
-	.learn {
-		max-width: 620px;
-		margin: 0 auto;
-		padding: 0 var(--s5) calc(96px + env(safe-area-inset-bottom));
-	}
 	.unit { margin-bottom: var(--s6); position: relative; }
 	.uh {
 		display: flex;

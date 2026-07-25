@@ -49,7 +49,7 @@
 
 <svelte:head><title>Review · Shwe</title></svelte:head>
 
-<div class="review">
+<div class="hub-page review">
 	<HubHeader title="Review" />
 
 	{#if !started}
@@ -103,11 +103,6 @@
 </div>
 
 <style>
-	.review {
-		max-width: 560px;
-		margin: 0 auto;
-		padding: 0 var(--s5) calc(96px + env(safe-area-inset-bottom));
-	}
 	.lead-btn {
 		width: 100%;
 		font-size: 1.1rem;

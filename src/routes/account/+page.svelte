@@ -164,7 +164,7 @@
 	<title>Profile · Shwe</title>
 </svelte:head>
 
-<div class="account">
+<div class="hub-page account">
 	<HubHeader title={ui('profile').text} />
 
 	<section class="hero">
@@ -547,11 +547,6 @@
 </div>
 
 <style>
-	.account {
-		max-width: 560px;
-		margin: 0 auto;
-		padding: 0 20px calc(96px + env(safe-area-inset-bottom));
-	}
 	.hero {
 		display: flex;
 		align-items: center;

@@ -22,7 +22,7 @@
 	<title>Stories · Shwe</title>
 </svelte:head>
 
-<div class="stories-home">
+<div class="hub-page stories-home">
 	<HubHeader title="Stories" />
 
 	<div class="intro">
@@ -60,11 +60,6 @@
 </div>
 
 <style>
-	.stories-home {
-		max-width: 560px;
-		margin: 0 auto;
-		padding: 0 20px calc(96px + env(safe-area-inset-bottom));
-	}
 	.intro {
 		display: flex;
 		align-items: center;

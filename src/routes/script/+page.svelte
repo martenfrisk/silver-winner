@@ -36,7 +36,7 @@
 	<title>Script Studio · Shwe</title>
 </svelte:head>
 
-<div class="studio">
+<div class="hub-page studio">
 	<HubHeader title={ui('script-studio').text} />
 	<div class="subline">
 		<p class="my sub">အက္ခရာ</p>
@@ -173,11 +173,6 @@
 {/if}
 
 <style>
-	.studio {
-		max-width: 560px;
-		margin: 0 auto;
-		padding: 0 20px calc(96px + env(safe-area-inset-bottom));
-	}
 	.pill :global(svg) {
 		color: var(--gold-ink);
 	}

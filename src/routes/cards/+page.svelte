@@ -48,7 +48,7 @@
 
 <svelte:head><title>My cards · Shwe</title></svelte:head>
 
-<div class="cards">
+<div class="hub-page cards">
 	{#if mode === 'review' && current}
 		<header class="head">
 			<button class="back" onclick={() => (mode = 'manage')} aria-label="End review"><ArrowLeft size={22} strokeWidth={2} /></button>
@@ -115,9 +115,6 @@
 
 <style>
 	.cards {
-		max-width: 560px;
-		margin: 0 auto;
-		padding: 0 var(--s5) calc(96px + env(safe-area-inset-bottom));
 		display: flex;
 		flex-direction: column;
 		gap: var(--s4);

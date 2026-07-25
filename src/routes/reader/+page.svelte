@@ -12,7 +12,7 @@
 	<title>Reader track · Shwe</title>
 </svelte:head>
 
-<div class="reader-home">
+<div class="hub-page reader-home">
 	<HubHeader title="Reader track" />
 
 	<div class="intro">
@@ -52,11 +52,6 @@
 </div>
 
 <style>
-	.reader-home {
-		max-width: 560px;
-		margin: 0 auto;
-		padding: 0 20px calc(96px + env(safe-area-inset-bottom));
-	}
 	.warmup :global(svg) {
 		vertical-align: -3px;
 		color: var(--gold-ink);
