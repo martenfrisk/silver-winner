@@ -4,6 +4,7 @@
 	import { buildIntroQueue } from '$lib/script-session';
 	import { srs } from '$lib/srs.svelte';
 	import { progress } from '$lib/progress.svelte';
+	import { sessionXp } from '$lib/xp';
 	import ScriptSession from '$lib/components/ScriptSession.svelte';
 	import Mascot from '$lib/components/Mascot.svelte';
 
@@ -15,7 +16,7 @@
 		const firstTime = !srs.isUnitDone(unit!.id);
 		srs.introduce(unit!.glyphIds);
 		srs.markUnitDone(unit!.id);
-		const xp = (firstTime ? 20 : 10) + (stars === 3 ? 5 : 0);
+		const xp = sessionXp({ kind: 'teach', firstTime, stars });
 		progress.addXp(xp);
 		return xp;
 	}

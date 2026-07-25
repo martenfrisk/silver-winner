@@ -293,8 +293,11 @@
 			<span class="setting-text">
 				<span class="setting-title"><Snowflake size={16} strokeWidth={2} /> Streak freeze</span>
 				<span class="setting-desc">
-					Each one silently covers a missed day so your streak survives.
-					Holding {progress.freezes}/{MAX_FREEZES}.
+					Each one covers a missed day so your streak survives, and you'll be
+					told when one is used. Holding {progress.freezes}/{MAX_FREEZES}.
+					{#if progress.freezeNotice}
+						Last used {progress.freezeNotice.date}.
+					{/if}
 				</span>
 			</span>
 			<button

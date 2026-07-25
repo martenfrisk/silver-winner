@@ -80,7 +80,7 @@ export function primaryMode(profile: Profile | null): 'lessons' | 'read' {
 	return profile === 'script-reader' ? 'read' : 'lessons';
 }
 
-/** Live-state snapshot the suggestion logic needs (built by the home page). */
+/** Live-state snapshot nextUp needs (built by the home page). */
 export interface SuggestState {
 	vocabDue: number;
 	glyphsDue: number;
@@ -90,11 +90,6 @@ export interface SuggestState {
 	/** First Script Studio unit not yet done. */
 	nextScriptUnit?: { id: string; title: string };
 	uncrownedLesson?: { id: string; title: string };
-}
-
-export interface Suggestion {
-	href: string;
-	label: string;
 }
 
 /** The one hero action on Today. */
@@ -113,7 +108,7 @@ export interface NextUp {
  *
  * Today used to render two cards answering this same question: a "Continue
  * <primary track>" card driven by `primaryTrack`, and a separate suggestion
- * inside the goal dial driven by `suggestFor`. They regularly disagreed, and
+ * inside the goal dial driven by its own ordering. They regularly disagreed, and
  * the dial was hidden until `xp > 0`, so a brand new learner saw neither a
  * suggestion nor any reason to trust the one card that was left.
  *
@@ -196,45 +191,3 @@ export function nextUp(profile: Profile | null, s: SuggestState): NextUp {
 	return { href: '/review', title: 'Keep everything fresh', sub: 'A quick review round', track: 'course' };
 }
 
-/**
- * The single best "do this next" action for the daily nudge, ordered by what
- * the profile is actually here to learn: speakers put script first, script
- * readers put reading first, everyone else keeps the classic order.
- */
-export function suggestFor(profile: Profile | null, s: SuggestState): Suggestion {
-	const wordReview = s.vocabDue > 0 && {
-		href: '/practice',
-		label: `a word review (${s.vocabDue} due)`
-	};
-	const glyphDrill = s.glyphsDue > 0 && {
-		href: '/script/practice',
-		label: `a glyph drill (${s.glyphsDue} due)`
-	};
-	const lesson = s.nextLesson && {
-		href: `/lesson/${s.nextLesson.id}`,
-		label: `the next lesson: ${s.nextLesson.title}`
-	};
-	const readerUnit = s.nextReaderUnit && {
-		href: `/reader/${s.nextReaderUnit.id}`,
-		label: `reading ${s.nextReaderUnit.title}`
-	};
-	const scriptUnit = s.nextScriptUnit && {
-		href: '/script',
-		label: `the next letters: ${s.nextScriptUnit.title}`
-	};
-	const crown = s.uncrownedLesson && {
-		href: `/lesson/${s.uncrownedLesson.id}?mode=hard`,
-		label: `a 👑 crown run of ${s.uncrownedLesson.title}`
-	};
-	const fallback = { href: '/practice', label: 'a practice round' };
-
-	const order =
-		profile === 'speaker'
-			? [glyphDrill, scriptUnit, wordReview, lesson, crown]
-			: profile === 'script-reader'
-				? [wordReview, readerUnit, lesson, glyphDrill, crown]
-				: [wordReview, glyphDrill, lesson, crown];
-
-	for (const o of order) if (o) return o;
-	return fallback;
-}

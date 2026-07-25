@@ -12,6 +12,7 @@
 		type ReaderExercise
 	} from '$lib/reader-session';
 	import { progress } from '$lib/progress.svelte';
+	import { vocabByMy, vocabSrs } from '$lib/vocab-srs.svelte';
 	import { ui } from '$lib/i18n.svelte';
 	import { prefetch, sfx, speak, speakablesOf } from '$lib/audio';
 	import { scriptSheet } from '$lib/script-sheet.svelte';
@@ -83,10 +84,23 @@
 		return e.kind === 'choice' ? `choice:${e.question}:${e.promptMy ?? ''}` : `${e.kind}:${e.my}`;
 	}
 
+	/**
+	 * The vocab word an exercise is about, or null when it maps to none.
+	 * Same shape the lesson player uses for recordMistake.
+	 */
+	function targetWord(e: ReaderExercise): string | null {
+		const my = e.kind === 'listen' ? e.my : (e.promptMy ?? e.options[e.correct]?.text);
+		return my && vocabByMy.has(my) ? my : null;
+	}
+
 	function check() {
 		if (!ex || status !== 'answer') return;
 		noAudioPromptState.noteAnswer();
 		const ok = selected === ex.correct;
+		// Reading a word is a review of it. Without this the reader track fed
+		// nothing back into the SRS, so its words never came up again.
+		const word = targetWord(ex);
+		if (word) vocabSrs.grade(word, ok);
 		if (ok) {
 			status = 'correct';
 			sfx.correct();
@@ -120,6 +134,10 @@
 	function finish() {
 		auto.cancel();
 		stars = starsFor(mistakes);
+		// Seed the whole unit, not just the words this run happened to draw:
+		// finishing a reader unit means you have met all of them, the same as
+		// finishing its lessons would.
+		vocabSrs.introduceUnit(unit!.id);
 		xpEarned = progress.completeLesson(readerStarsKey(unit!.id), stars);
 		done = true;
 		sfx.fanfare();

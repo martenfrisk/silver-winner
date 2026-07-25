@@ -4,6 +4,7 @@
 	import { buildVocabPracticeQueue, starsFor, type VocabEx } from '$lib/practice-session';
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { progress } from '$lib/progress.svelte';
+	import { sessionXp } from '$lib/xp';
 	import { ui } from '$lib/i18n.svelte';
 	import { prefetch, sfx, speak } from '$lib/audio';
 	import { scriptSheet } from '$lib/script-sheet.svelte';
@@ -200,7 +201,7 @@
 	function finish() {
 		auto.cancel();
 		stars = starsFor(mistakes);
-		xpEarned = 10 + (stars === 3 ? 5 : 0) + (maxCombo >= 5 ? 5 : 0);
+		xpEarned = sessionXp({ kind: 'review', stars, maxCombo });
 		progress.addXp(xpEarned);
 		done = true;
 		sfx.fanfare();

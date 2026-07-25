@@ -11,6 +11,7 @@
 		type LessonStep
 	} from '$lib/data/course';
 	import { progress } from '$lib/progress.svelte';
+	import { sessionXp, COMBO_BONUS, COMBO_BONUS_AT, CROWN_BONUS } from '$lib/xp';
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { ui } from '$lib/i18n.svelte';
 	import { prefetch, sfx, speak, speakablesOf } from '$lib/audio';
@@ -199,7 +200,9 @@
 	function finish() {
 		auto.cancel();
 		stars = mistakes === 0 ? 3 : mistakes <= 2 ? 2 : 1;
-		const comboBonus = maxCombo >= 5 ? 5 : 0;
+		// completeLesson pays the teach base and the star bonus; the combo and
+		// crown bonuses go on top here, from the same table (see $lib/xp).
+		const comboBonus = maxCombo >= COMBO_BONUS_AT ? COMBO_BONUS : 0;
 		if (hard) {
 			crowned = mistakes === 0;
 			if (crowned) progress.awardCrown(found!.lesson.id);
@@ -209,10 +212,12 @@
 				// who already speak Burmese and shouldn't have to sit through
 				// vocabulary they know.
 				testedOut = true;
-				xpEarned = progress.completeLesson(found!.lesson.id, 3) + 10 + comboBonus;
-				progress.addXp(10 + comboBonus); // crown bonus on top of the completion XP
+				xpEarned = progress.completeLesson(found!.lesson.id, 3) + CROWN_BONUS + comboBonus;
+				progress.addXp(CROWN_BONUS + comboBonus); // on top of the completion XP
 			} else {
-				xpEarned = 15 + (crowned ? 10 : 0) + comboBonus;
+				// A hard replay of a lesson already done is maintenance, so it
+				// pays the replay rate plus the crown bonus if earned.
+				xpEarned = sessionXp({ kind: 'teach', firstTime: false, maxCombo, crowned });
 				progress.addXp(xpEarned);
 			}
 		} else {

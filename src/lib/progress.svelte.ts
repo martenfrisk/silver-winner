@@ -2,6 +2,7 @@ import { browser } from '$app/environment';
 import { lessonOrder } from '$lib/data/lesson-order';
 import { PROGRESS_KEY as STORAGE_KEY, sanitizeProgress, type ProgressSaved } from '$lib/backup';
 import { DEFAULT_VOICE, isVoiceId, type VoiceId } from '$lib/voices';
+import { sessionXp } from '$lib/xp';
 
 export type Theme = 'system' | 'light' | 'dark';
 
@@ -60,8 +61,15 @@ class Progress {
 	dailyGoal = $state(20);
 	// Earned achievements never un-earn, even if the underlying stat drops.
 	achievements = $state<Record<string, number>>({});
-	// Streak freezes: each one silently covers one missed day.
+	// Streak freezes: each one covers one missed day.
 	freezes = $state(0);
+	/**
+	 * Set when the constructor spends freezes to save a lapsing streak, so the
+	 * learner can be told. They used to be consumed in silence: you paid 100 XP
+	 * for something whose only evidence was a number quietly going down.
+	 * Cleared by acknowledgeFreeze() once shown.
+	 */
+	freezeNotice = $state<{ date: string; used: number; streak: number } | null>(null);
 	// Crowns: perfect hard-mode (drills-only) replays of completed lessons.
 	crowns = $state<Record<string, number>>({});
 	// Lessons waved through because the learner already knows the material
@@ -94,6 +102,7 @@ class Progress {
 					this.dailyGoal = s.dailyGoal ?? 20;
 					this.achievements = s.achievements ?? {};
 					this.freezes = s.freezes ?? 0;
+					this.freezeNotice = s.freezeNotice ?? null;
 					this.crowns = s.crowns ?? {};
 					this.skipped = s.skipped ?? {};
 				}
@@ -112,6 +121,7 @@ class Progress {
 				if (missed <= this.freezes) {
 					this.freezes -= missed;
 					this.lastStudy = yesterday();
+					this.freezeNotice = { date: today(), used: missed, streak: this.streak };
 				} else {
 					this.streak = 0;
 				}
@@ -149,6 +159,7 @@ class Progress {
 			dailyGoal: this.dailyGoal,
 			achievements: this.achievements,
 			freezes: this.freezes,
+			freezeNotice: this.freezeNotice,
 			crowns: this.crowns,
 			skipped: this.skipped
 		};
@@ -160,7 +171,9 @@ class Progress {
 		// Doing a lesson you'd skipped supersedes the skip.
 		this.unskipLesson(lessonId);
 		const isFirstTime = !(lessonId in this.stars);
-		const xpEarned = (isFirstTime ? 20 : 10) + (earnedStars === 3 ? 5 : 0);
+		// The award table lives in $lib/xp so every session kind agrees; this
+		// one covers lessons, reader units and stories, which all route here.
+		const xpEarned = sessionXp({ kind: 'teach', firstTime: isFirstTime, stars: earnedStars });
 		this.stars = {
 			...this.stars,
 			[lessonId]: Math.max(this.stars[lessonId] ?? 0, earnedStars)
@@ -305,6 +318,13 @@ class Progress {
 
 	setProfile(profile: Profile) {
 		this.profile = profile;
+		this.save();
+	}
+
+	/** Dismisses the freeze banner once the learner has seen it. */
+	acknowledgeFreeze() {
+		if (!this.freezeNotice) return;
+		this.freezeNotice = null;
 		this.save();
 	}
 

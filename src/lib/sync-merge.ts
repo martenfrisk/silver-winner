@@ -154,6 +154,7 @@ export function defaultProgress(u: unknown): ProgressSaved {
 		dailyGoal: s.dailyGoal ?? 20,
 		achievements: s.achievements ?? {},
 		freezes: s.freezes ?? 0,
+		freezeNotice: s.freezeNotice ?? null,
 		crowns: s.crowns ?? {},
 		skipped: s.skipped ?? {}
 	};
@@ -301,6 +302,16 @@ function mergeConfusions(a: ConfusionSaved, b: ConfusionSaved): ConfusionSaved {
  * whichever side is more recently active. Everything else is a preference
  * and follows `preferRemote`.
  */
+/** The later of two freeze notices by date; null when neither is live. */
+function laterNotice(
+	a: ProgressSaved['freezeNotice'],
+	b: ProgressSaved['freezeNotice']
+): ProgressSaved['freezeNotice'] {
+	if (!a) return b;
+	if (!b) return a;
+	return b.date > a.date ? b : a;
+}
+
 function mergeProgress(
 	local: ProgressSaved,
 	remote: ProgressSaved,
@@ -319,6 +330,11 @@ function mergeProgress(
 		crowns: numberMapMin(local.crowns, remote.crowns),
 		skipped: numberMapMin(local.skipped, remote.skipped),
 		freezes: Math.max(local.freezes, remote.freezes),
+		// The most recent unacknowledged notice, so a streak saved on one device
+		// is still reported on another. An acknowledged one is null and loses to
+		// any live notice, which is right: dismissing it here shouldn't re-show
+		// it there, but a *newer* save should still be announced.
+		freezeNotice: laterNotice(local.freezeNotice, remote.freezeNotice),
 		createdAt: Math.min(local.createdAt || Date.now(), remote.createdAt || Date.now())
 	};
 }

@@ -19,6 +19,7 @@ function progress(overrides: Partial<ProgressSaved> = {}): ProgressSaved {
 		dailyGoal: 20,
 		achievements: {},
 		freezes: 0,
+		freezeNotice: null,
 		crowns: {},
 		skipped: {},
 		...overrides

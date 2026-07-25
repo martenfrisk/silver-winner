@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { allLessons, stepExercises, type LessonStep } from '$lib/data/course';
+import { allLessons, course, stepExercises, type LessonStep } from '$lib/data/course';
 import { vocabSrs, vocabByMy, VOCAB_MAX_BOX } from './vocab-srs.svelte';
 
 const T0 = new Date('2026-01-01T12:00:00Z').getTime();
@@ -105,5 +105,46 @@ describe('recordMistake', () => {
 		expect(words.length).toBeGreaterThan(20);
 		for (const w of words) vocabSrs.recordMistake(w);
 		expect(vocabSrs.mistakes).toHaveLength(20);
+	});
+});
+
+describe('introduceUnit (the reader track)', () => {
+	// The reader track reads a whole course unit, but used to introduce none of
+	// its words — so a learner who only ever read ended up with an empty review
+	// deck and no reason to come back.
+	const unit = course[0];
+	const unitWords = unit.lessons.flatMap((l) =>
+		stepExercises(l, 1).filter((ex) => ex.kind === 'learn').map((ex) => ex.my)
+	);
+
+	it('seeds every step-1 word in the unit, across all its lessons', () => {
+		vocabSrs.reset();
+		expect(vocabSrs.introducedCount).toBe(0);
+		vocabSrs.introduceUnit(unit.id);
+		for (const my of unitWords) expect(vocabSrs.isIntroduced(my), my).toBe(true);
+		expect(unitWords.length).toBeGreaterThan(1);
+	});
+
+	it('leaves other units alone', () => {
+		vocabSrs.reset();
+		vocabSrs.introduceUnit(unit.id);
+		const otherWord = stepExercises(course[1].lessons[0], 1).find((ex) => ex.kind === 'learn');
+		if (otherWord) expect(vocabSrs.isIntroduced(otherWord.my)).toBe(false);
+	});
+
+	it('does not disturb a word already being reviewed', () => {
+		vocabSrs.reset();
+		vocabSrs.introduceUnit(unit.id);
+		const [first] = unitWords;
+		vocabSrs.grade(first, true);
+		const box = vocabSrs.box(first);
+		vocabSrs.introduceUnit(unit.id); // re-reading the unit
+		expect(vocabSrs.box(first)).toBe(box);
+	});
+
+	it('ignores an unknown unit rather than throwing', () => {
+		vocabSrs.reset();
+		expect(() => vocabSrs.introduceUnit('no-such-unit')).not.toThrow();
+		expect(vocabSrs.introducedCount).toBe(0);
 	});
 });

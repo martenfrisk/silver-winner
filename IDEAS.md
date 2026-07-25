@@ -285,6 +285,97 @@ where the confusion changes meaning, as a graduation rung.
   Sign-out only forgets this device's sync connection; the six learner-state
   keys are untouched, same as before this existed.
 
+## Round 13 — the nasal ending, and corpus-mined content (2026-07-25)
+
+- ✅ **သေးသေးတင် (ံ) is taught** — it closes a syllable through the nose
+  (ကံ reads like ကန်) and turned up in **58% of utterances** across two open
+  Burmese speech corpora, yet had no glyph entry, so the SRS never scheduled
+  it. Added to the `killer-stroke` unit alongside asat, which is the same
+  job by a different route, with five decodable words and an explainer card.
+  A second card introduces ၊ and ။, which stay out of the glyph inventory on
+  purpose: they are silent, so a `speak` string for them would be a lie.
+  (The tall ါ was checked and is *not* a gap: `TALL_AA` + `buildSyllable`
+  generate it and the ာ mnemonic teaches it as a positional variant.)
+- ✅ **`bun run mine:corpus`** — proposes new `decodableWords` from OpenSLR
+  SLR80 + Google FLEURS, as a TSV worksheet with `roman`/`en` left blank.
+  It emits only tokens whose `parts` recompose the word under
+  `lint-content.ts`'s own rule, so a glossed row survives the lint; 955
+  candidates at ≥5 occurrences and ≥2 talkers, against the 27 decodable
+  words that exist today. Corpus files are gitignored and downloaded on
+  demand: SLR80 is CC BY-SA 4.0, FLEURS CC BY 4.0, and neither is ours to
+  redistribute.
+  - **No corpus audio is used, or even downloaded.** The miner reads
+    transcripts only; the 904 MB SLR80 zip and the FLEURS audio were never
+    fetched. Every MP3 in `static/audio/` is still Edge TTS. What the corpora
+    supply is *evidence that human recordings exist*, not the recordings.
+  - Talker counts are asymmetric and the column names say so. SLR80 has 20
+    real speaker ids; FLEURS exposes only a gender label, so its contribution
+    is a floor (two genders are two people) and can never be a count.
+    `slr80_talkers` is the only real one: 466 of the 955 candidates clear 3
+    distinct talkers, 345 clear 5, and all of them are female, since SLR80 is.
+  - The per-token `slr80`/`fleurs` split is the column that matters most.
+    SLR80 is 76% colloquial-marker utterances, FLEURS 98% literary: a word
+    only FLEURS attests is written Burmese and probably does not belong in
+    a spoken-language course.
+  - Mining also found the parts model's blind spot: the virama is invisible
+    to it, so ကိစ္စ looks readable as soon as က ိ စ are known, long before
+    anyone is shown that letters stack. The miner gates stacked words behind
+    the `stacked` unit; **`lint-content.ts` has the same hole and does not**.
+- 💤 **Gloss the worksheet** — the bottleneck is a Burmese speaker, not the
+  data. Same person as #24.
+- 💤 **What the corpora cannot do** — measured, so it does not get proposed
+  again: **0 of 595** speakable strings appear as a standalone clip, and the
+  beginner phrasebook (မင်္ဂလာပါ, နေကောင်းလား) is absent from both corpora
+  entirely, because both are read prose. Edge TTS stays for course
+  vocabulary. A beginner graded reader is out too: after adding the top 500
+  corpus tokens, exactly **one** utterance has no unknown words.
+- 💤 **Advanced "written Burmese" track** — FLEURS is 17.6 h of the register
+  the course never teaches (သည် ၏ တွင် ၎င်း), both genders, CC BY 4.0,
+  transcribed. A learner who finishes the course and opens a news site meets
+  it cold. Whole clips need no forced alignment, so this is curation and
+  vetting, not a pipeline.
+- 💤 **Tone drill on real words** — 20 real-word tone minimal pairs with both
+  members attested ≥3× (တောင်/ထောင်, စိတ်/ဆိတ်). Cutting at token boundaries
+  avoids the sub-word alignment risk that kept tone out of the Confusion Lab.
+  Aspiration gets only ~5 pairs and stays a syllable-level problem.
+
+## Round 12 — the IA restructure (2026-07-25)
+
+The app had grown to 17 routes across three "tracks" and stopped explaining
+itself. The cause was a mismatch between the model and the navigation, not
+missing links. Five phases, each shipped on its own.
+
+- ✅ **One review surface** (`/review`) over what were four separate
+  destinations (`/practice`, `/script/practice`, `/cards`,
+  `/script/confusions`). The runners keep their URLs and become decks. The
+  combined due count is the tab bar's only badge; confusions are excluded
+  from it deliberately, since they have no schedule.
+- ✅ **A tab bar that tells the truth.** Two invariants now enforced by
+  tests in `nav.ts`: a tab's `href` must satisfy its own predicate (Practice
+  used to light on `/cards` while linking to `/practice`), and every hub must
+  light exactly one tab (`/reader` and `/stories` lit none).
+- ✅ **Shared hub chrome.** `HubHeader` took the dictionary from one entry
+  point to six. The **root layout** owns the shell, so the header is created
+  once and survives navigation between hubs rather than being rebuilt.
+- ✅ **One hero action.** `nextUp()` replaced two cards that answered the
+  same question and could disagree; the start chooser stopped replacing the
+  page body, so a new learner's first screen went from zero links to four.
+- ✅ **One cross-track progress model.** `overview.ts` adds `starKind()`, the
+  missing inverse of the three star-key builders, so `progress.stars` can be
+  read as a whole for the first time. `/account` went from 6 stats to 12.
+- ✅ **The course unit is the spine.** Reading and stories are modes inside
+  each unit, not parallel tracks — which is what the data already said, since
+  `readerStarsKey()` keys on course unit ids and `stories.requires` is a list
+  of course lesson ids.
+- ✅ **Progression honesty**: the reader track now seeds and grades the vocab
+  SRS (a reader-only learner had an empty review deck forever); one XP table
+  in `xp.ts` replaces nine ad-hoc formulas and closes the syllable builder's
+  uncapped 2-XP-per-build faucet; streak freezes announce themselves instead
+  of being spent in silence.
+- ✅ **Optional Supabase sync**, built as an additive layer: localStorage
+  stays the source of truth and nothing is login-gated. Reuses `backup.ts` as
+  the sync payload. The merge rule is documented and idempotent by design.
+
 ## Highest impact next
 
 1. ✅ **Listening-only exercise type** — the audio pipeline exists but is never the
