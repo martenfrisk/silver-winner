@@ -37,17 +37,31 @@ const SYNC_META_KEY = 'myanlingo-sync-v1';
 
 interface SyncMeta {
 	lastSyncedAt: number;
+	/**
+	 * The account this device last completed a sync for.
+	 *
+	 * This is what tells a genuine sign-in apart from a session restore.
+	 * Supabase re-emits `SIGNED_IN` every time it restores a session — on each
+	 * page load, and on token refresh — not only when someone actually signs
+	 * in. Since a sync ends in `location.reload()`, syncing on every
+	 * `SIGNED_IN` is an infinite reload loop, which shows up as the account box
+	 * flickering between signed-in and signed-out forever.
+	 */
+	lastUserId: string | null;
 }
 
 function readMeta(): SyncMeta {
+	const empty: SyncMeta = { lastSyncedAt: 0, lastUserId: null };
 	try {
 		const raw = localStorage.getItem(SYNC_META_KEY);
-		if (!raw) return { lastSyncedAt: 0 };
+		if (!raw) return empty;
 		const parsed = JSON.parse(raw);
-		const n = typeof parsed?.lastSyncedAt === 'number' ? parsed.lastSyncedAt : 0;
-		return { lastSyncedAt: n };
+		return {
+			lastSyncedAt: typeof parsed?.lastSyncedAt === 'number' ? parsed.lastSyncedAt : 0,
+			lastUserId: typeof parsed?.lastUserId === 'string' ? parsed.lastUserId : null
+		};
 	} catch {
-		return { lastSyncedAt: 0 };
+		return empty;
 	}
 }
 
@@ -99,12 +113,25 @@ class Sync {
 
 		supabase.auth.onAuthStateChange((event, session) => {
 			this.user = session?.user ?? null;
-			// See the header comment: only a *fresh* sign-in triggers a sync.
-			if (event === 'SIGNED_IN') this.runSync();
+
 			if (event === 'SIGNED_OUT') {
 				this.status = 'idle';
 				this.lastSyncedAt = null;
+				return;
 			}
+
+			// Only a sign-in this device has not already synced starts a sync.
+			//
+			// `SIGNED_IN` does not mean "someone just signed in": Supabase
+			// re-emits it whenever it restores a session, so it fires on every
+			// page load and on every token refresh. `runSync()` finishes with a
+			// reload, so treating each one as fresh means load -> sync -> reload
+			// -> load, forever. Comparing the account against the last one this
+			// device synced breaks that: the first sign-in syncs, the reload it
+			// causes does not, and `INITIAL_SESSION` / `TOKEN_REFRESHED` never do.
+			if (event !== 'SIGNED_IN' || !session?.user) return;
+			if (readMeta().lastUserId === session.user.id) return;
+			this.runSync();
 		});
 	}
 
@@ -184,7 +211,9 @@ class Sync {
 			if (upsertError) throw upsertError;
 
 			writeLocalState(merged);
-			writeMeta({ lastSyncedAt: now });
+			// Recording the account is what stops the reload this causes from
+			// starting another sync — see the note in the auth listener.
+			writeMeta({ lastSyncedAt: now, lastUserId: this.user.id });
 			this.status = 'synced';
 			this.lastSyncedAt = now;
 			location.reload();

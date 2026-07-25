@@ -822,23 +822,53 @@
 		font-weight: 800;
 		color: var(--coral-ink);
 	}
+	/* A .setting row puts its control beside the text, which works for a toggle
+	   or a picker but not for a text field: sharing the row with a full
+	   paragraph of description squeezed the email input to 52px, far too narrow
+	   to type an address into. Stack instead, and give the field the whole
+	   width below the text. */
 	.sync-form {
-		flex-wrap: wrap;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 12px;
 	}
 	.sync-form form {
 		display: flex;
+		flex-wrap: wrap;
+		align-items: stretch;
 		gap: 8px;
-		flex-shrink: 0;
 	}
+	/* Wraps the button onto its own line once the field would drop below ~13rem,
+	   which is what keeps this usable on a narrow phone. */
 	.sync-form input {
+		flex: 1 1 13rem;
 		min-width: 0;
+		border: none;
 		padding: 10px 14px;
 		border-radius: 12px;
 		background: var(--bg);
 		box-shadow: inset 0 0 0 2px var(--line);
+		/* An input inherits neither the UI font nor its metrics, so without
+		   these it sat 9px shorter than the button beside it. */
+		font-family: var(--font-ui);
 		font-size: 0.85rem;
 		font-weight: 700;
+		line-height: 1.4;
 		color: var(--ink);
+	}
+	.sync-form input:focus {
+		outline: none;
+		box-shadow: inset 0 0 0 2px var(--teal);
+	}
+	/* An <input> does not stretch to a flex line's height the way a <button>
+	   does (its intrinsic height wins), so the two sat 6px apart. Pin both
+	   rather than relying on align-items. */
+	.sync-form form input,
+	.sync-form form button {
+		min-height: 40px;
+	}
+	.sync-form form button {
+		flex: 0 1 auto;
 	}
 	.sync-form input::placeholder {
 		color: var(--ink-soft);
