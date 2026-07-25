@@ -48,6 +48,9 @@
 			</span>
 		{/if}
 		{#if tip}<span class="reveal-tip"><Lightbulb size={15} strokeWidth={2} /> {tip}</span>{/if}
+		<!-- Missing a word is the moment someone actually wants the dictionary,
+		     and it used to be reachable only from a magnifier on /learn. -->
+		<a class="reveal-look" href="/dictionary?q={encodeURIComponent(my)}">Look it up</a>
 	</div>
 </div>
 
@@ -116,6 +119,14 @@
 	}
 	.reveal-plus {
 		font-weight: 900;
+	}
+	.reveal-look {
+		align-self: flex-start;
+		margin-top: 6px;
+		font-family: var(--font-ui);
+		font-size: 0.78rem;
+		font-weight: 800;
+		color: var(--teal-ink);
 	}
 	.reveal-tip {
 		margin-top: 4px;

@@ -20,6 +20,7 @@ export const shellPages = [
 	'/learn',
 	'/practice',
 	'/reader',
+	'/review',
 	'/script',
 	'/script/builder',
 	'/script/confusions',

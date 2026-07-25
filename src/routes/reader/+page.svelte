@@ -4,7 +4,8 @@
 	import { progress } from '$lib/progress.svelte';
 	import { srs } from '$lib/srs.svelte';
 	import Mascot from '$lib/components/Mascot.svelte';
-	import { BookOpenText, Lightbulb, ArrowLeft } from '@lucide/svelte';
+	import HubHeader from '$lib/components/HubHeader.svelte';
+	import { Lightbulb } from '@lucide/svelte';
 </script>
 
 <svelte:head>
@@ -12,10 +13,7 @@
 </svelte:head>
 
 <div class="reader-home">
-	<header>
-		<a class="back" href="/" aria-label="Back home"><ArrowLeft size={22} strokeWidth={2} /></a>
-		<h1><BookOpenText size={24} strokeWidth={2} /> Reader track</h1>
-	</header>
+	<HubHeader title="Reader track" />
 
 	<div class="intro">
 		<Mascot mood="idle" size={84} />
@@ -58,39 +56,6 @@
 		max-width: 560px;
 		margin: 0 auto;
 		padding: 0 20px calc(96px + env(safe-area-inset-bottom));
-	}
-	header {
-		display: flex;
-		align-items: center;
-		gap: 14px;
-		padding: 18px 0 6px;
-	}
-	.back {
-		font-size: 1.3rem;
-		font-weight: 900;
-		color: var(--ink-soft);
-		text-decoration: none;
-		width: 36px;
-		height: 36px;
-		display: grid;
-		place-items: center;
-		border-radius: 10px;
-	}
-	.back:hover {
-		background: var(--line);
-	}
-	h1 {
-		display: inline-flex;
-		align-items: center;
-		gap: 9px;
-		font-family: var(--font-display);
-		font-style: italic;
-		font-weight: 400;
-		font-size: 1.6rem;
-		color: var(--ink);
-	}
-	h1 :global(svg) {
-		color: var(--teal-ink);
 	}
 	.warmup :global(svg) {
 		vertical-align: -3px;

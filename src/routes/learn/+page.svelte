@@ -6,10 +6,10 @@
 	import { course, lessonSteps, stepStarsKey, type Lesson } from '$lib/data/course';
 	import { progress } from '$lib/progress.svelte';
 	import { canSkipUnit } from '$lib/tracks';
-	import { scriptSheet } from '$lib/script-sheet.svelte';
 	import { sfx } from '$lib/audio';
 	import { goto } from '$app/navigation';
-	import { Lock, Crown, Zap, Search } from '@lucide/svelte';
+	import HubHeader from '$lib/components/HubHeader.svelte';
+	import { Lock, Crown, Zap } from '@lucide/svelte';
 
 	const MY_DIGITS = ['၀', '၁', '၂', '၃', '၄', '၅', '၆', '၇', '၈', '၉'];
 	const myDigit = (n: number) => String(n).split('').map((d) => MY_DIGITS[+d]).join('');
@@ -41,19 +41,7 @@
 <svelte:head><title>Learn · Shwe</title></svelte:head>
 
 <div class="learn">
-	<header class="head">
-		<h1>Learn</h1>
-		<div class="tools">
-			<a class="tool" href="/dictionary" aria-label="Dictionary: look up any word"><Search size={19} strokeWidth={2} /></a>
-			<button
-				class="tool"
-				class:off={!progress.showRoman}
-				onclick={() => progress.toggleRoman()}
-				aria-pressed={progress.showRoman}
-				title={progress.showRoman ? 'Hide romanization' : 'Show romanization'}>Aa</button>
-			<button class="tool my" onclick={() => scriptSheet.show()} aria-label="Open the script table">က</button>
-		</div>
-	</header>
+	<HubHeader title="Learn" />
 
 	{#each course as unit (unit.id)}
 		{@const pending = unit.lessons.filter((l) => !progress.isCompleted(l.id))}
@@ -169,38 +157,8 @@
 	.learn {
 		max-width: 620px;
 		margin: 0 auto;
-		padding: var(--s5) var(--s5) calc(96px + env(safe-area-inset-bottom));
+		padding: 0 var(--s5) calc(96px + env(safe-area-inset-bottom));
 	}
-	.head {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		margin-bottom: var(--s5);
-	}
-	.head h1 {
-		font-family: var(--font-display);
-		font-style: italic;
-		font-weight: 400;
-		font-size: 2rem;
-		color: var(--ink);
-	}
-	.tools { display: flex; gap: var(--s2); }
-	.tool {
-		width: 40px;
-		height: 40px;
-		display: grid;
-		place-items: center;
-		border-radius: var(--radius-sm);
-		background: var(--card);
-		box-shadow: inset 0 0 0 1px var(--line);
-		color: var(--ink);
-		font-weight: 700;
-		font-size: 0.9rem;
-		text-decoration: none;
-	}
-	.tool.my { font-size: 1.1rem; color: var(--teal-ink); }
-	.tool.off { color: var(--ink-soft); }
-
 	.unit { margin-bottom: var(--s6); position: relative; }
 	.uh {
 		display: flex;

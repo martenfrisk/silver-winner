@@ -3,35 +3,49 @@
 	// tap away. Shown only on hub screens — inside a lesson or a drill it would
 	// be a distraction and an escape hatch out of the flow, so it hides there.
 	import { page } from '$app/state';
+	import { vocabSrs } from '$lib/vocab-srs.svelte';
+	import { srs } from '$lib/srs.svelte';
+	import { customCards } from '$lib/custom-cards.svelte';
+	import { TABS, showBar } from '$lib/nav';
 	import { House, GraduationCap, Dumbbell, User } from '@lucide/svelte';
 
 	const path = $derived(page.url.pathname);
+	const show = $derived(showBar(path));
 
-	// Hubs get the bar; players (lesson, practice run, script drills, a story)
-	// do not. An exact-match allowlist is easier to reason about than trying to
-	// enumerate every immersive route.
-	const HUBS = ['/', '/learn', '/reader', '/script', '/account', '/stories', '/dictionary', '/cards'];
-	const show = $derived(HUBS.includes(path));
+	// The routing table lives in $lib/nav so its two invariants can be tested
+	// rather than maintained by care. Only the presentation is here.
+	const ICONS: Record<string, typeof House | undefined> = {
+		'/': House,
+		'/learn': GraduationCap,
+		'/review': Dumbbell,
+		'/account': User
+	};
+	const tabs = TABS.map((t) => ({
+		...t,
+		icon: ICONS[t.href],
+		glyph: t.href === '/script' ? 'က' : undefined
+	}));
 
-	const tabs = [
-		{ href: '/', label: 'Today', icon: House, on: (p: string) => p === '/' },
-		{ href: '/learn', label: 'Learn', icon: GraduationCap, on: (p: string) => p === '/learn' || p.startsWith('/lesson') || p === '/dictionary' },
-		{ href: '/practice', label: 'Practice', icon: Dumbbell, on: (p: string) => p.startsWith('/practice') || p === '/cards' },
-		{ href: '/script', label: 'Script', glyph: 'က', on: (p: string) => p.startsWith('/script') },
-		{ href: '/account', label: 'You', icon: User, on: (p: string) => p.startsWith('/account') }
-	];
+	// The one badge in the bar. Everything schedulable rolls up here, which is
+	// the point of the Review hub — see $lib/review.
+	const due = $derived(vocabSrs.dueCount + srs.dueCount + customCards.dueCount);
 </script>
 
 {#if show}
 	<nav class="bottomnav" aria-label="Primary">
 		{#each tabs as t (t.href)}
 			<a href={t.href} class="tab" class:on={t.on(path)} aria-current={t.on(path) ? 'page' : undefined}>
-				{#if t.glyph}
-					<span class="glyph my" aria-hidden="true">{t.glyph}</span>
-				{:else if t.icon}
-					{@const Icon = t.icon}
-					<Icon size={22} strokeWidth={1.9} aria-hidden="true" />
-				{/if}
+				<span class="icon-slot">
+					{#if t.glyph}
+						<span class="glyph my" aria-hidden="true">{t.glyph}</span>
+					{:else if t.icon}
+						{@const Icon = t.icon}
+						<Icon size={22} strokeWidth={1.9} aria-hidden="true" />
+					{/if}
+					{#if t.href === '/review' && due > 0}
+						<span class="badge" aria-label="{due} due">{due > 99 ? '99+' : due}</span>
+					{/if}
+				</span>
 				<span class="lab">{t.label}</span>
 			</a>
 		{/each}
@@ -70,6 +84,28 @@
 	}
 	.tab.on {
 		color: var(--teal-ink);
+	}
+	/* Positioning context for the badge, and a fixed height so a tab with one
+	   doesn't sit taller than its neighbours. */
+	.icon-slot {
+		position: relative;
+		display: grid;
+		place-items: center;
+		height: 22px;
+	}
+	.badge {
+		position: absolute;
+		top: -6px;
+		left: 60%;
+		min-width: 16px;
+		padding: 0 4px;
+		border-radius: 999px;
+		background: var(--coral);
+		color: #fff;
+		font-size: 0.6rem;
+		font-weight: 800;
+		line-height: 16px;
+		text-align: center;
 	}
 	.glyph {
 		font-size: 1.35rem;

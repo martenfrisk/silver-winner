@@ -15,9 +15,14 @@
 	import { achievements } from '$lib/achievements';
 	import Mascot from '$lib/components/Mascot.svelte';
 	import Heatmap from '$lib/components/Heatmap.svelte';
-	import { Zap, Flame, GraduationCap, Trophy, Brain, ArrowLeft, Snowflake, Headphones, Download, Upload } from '@lucide/svelte';
+	import HubHeader from '$lib/components/HubHeader.svelte';
+	import { overview } from '$lib/overview.svelte';
+	import { Zap, Flame, GraduationCap, Trophy, Brain, Snowflake, Headphones, Download, Upload, Layers, Crown, BookOpen, BookOpenText, MessageSquare, PenLine } from '@lucide/svelte';
 
-	const totalLessons = course.reduce((n, u) => n + u.lessons.length, 0);
+	const courseTrack = $derived(overview.track('course'));
+	const readerTrack = $derived(overview.track('reader'));
+	const scriptTrack = $derived(overview.track('script'));
+	const storyTrack = $derived(overview.track('stories'));
 
 	const since = $derived(
 		new Date(progress.createdAt).toLocaleDateString(undefined, {
@@ -125,10 +130,7 @@
 </svelte:head>
 
 <div class="account">
-	<header class="topbar">
-		<a class="back" href="/" aria-label="Back home"><ArrowLeft size={22} strokeWidth={2} /></a>
-		<h1>{ui('profile').text}</h1>
-	</header>
+	<HubHeader title={ui('profile').text} />
 
 	<section class="hero">
 		<Mascot mood="happy" size={110} />
@@ -138,6 +140,10 @@
 		</div>
 	</section>
 
+	<!-- Every track, not just the course and the glyphs. Reader units, stories,
+	     deeper rounds, crowns and the vocabulary deck all existed and none of
+	     them appeared here; the old "reviews due" tile showed the glyph deck
+	     alone, which read as if it were every deck. -->
 	<section class="stats-grid">
 		<div class="stat">
 			<span class="stat-value"><Zap size={18} strokeWidth={2} /> {progress.xp}</span>
@@ -148,8 +154,32 @@
 			<span class="stat-label">day {ui('streak').text.toLowerCase()}</span>
 		</div>
 		<div class="stat">
-			<span class="stat-value"><GraduationCap size={18} strokeWidth={2} /> {progress.completedCount}/{totalLessons}</span>
+			<span class="stat-value"><Brain size={18} strokeWidth={2} /> {overview.combinedDue}</span>
+			<span class="stat-label">reviews due, all decks</span>
+		</div>
+		<div class="stat">
+			<span class="stat-value"><GraduationCap size={18} strokeWidth={2} /> {courseTrack.done}/{courseTrack.total}</span>
 			<span class="stat-label">course lessons</span>
+		</div>
+		<div class="stat">
+			<span class="stat-value"><Layers size={18} strokeWidth={2} /> {overview.rounds.done}/{overview.rounds.total}</span>
+			<span class="stat-label">deeper rounds</span>
+		</div>
+		<div class="stat">
+			<span class="stat-value"><Crown size={18} strokeWidth={2} /> {overview.crownCount}</span>
+			<span class="stat-label">{overview.crownCount === 1 ? 'crown' : 'crowns'}</span>
+		</div>
+		<div class="stat">
+			<span class="stat-value"><BookOpenText size={18} strokeWidth={2} /> {readerTrack.done}/{readerTrack.total}</span>
+			<span class="stat-label">units read in script</span>
+		</div>
+		<div class="stat">
+			<span class="stat-value"><BookOpen size={18} strokeWidth={2} /> {storyTrack.done}/{storyTrack.total}</span>
+			<span class="stat-label">stories finished</span>
+		</div>
+		<div class="stat">
+			<span class="stat-value"><MessageSquare size={18} strokeWidth={2} /> {vocabSrs.introducedCount}</span>
+			<span class="stat-label">words learned</span>
 		</div>
 		<div class="stat">
 			<span class="stat-value"><span class="my-accent my">က</span> {srs.introducedCount}/{totalGlyphs}</span>
@@ -160,8 +190,8 @@
 			<span class="stat-label">glyphs mastered</span>
 		</div>
 		<div class="stat">
-			<span class="stat-value"><Brain size={18} strokeWidth={2} /> {srs.dueCount}</span>
-			<span class="stat-label">reviews due</span>
+			<span class="stat-value"><PenLine size={18} strokeWidth={2} /> {scriptTrack.done}/{scriptTrack.total}</span>
+			<span class="stat-label">alphabet units</span>
 		</div>
 	</section>
 
@@ -425,29 +455,6 @@
 		max-width: 560px;
 		margin: 0 auto;
 		padding: 0 20px calc(96px + env(safe-area-inset-bottom));
-	}
-	.topbar {
-		display: flex;
-		align-items: center;
-		gap: 14px;
-		padding: 14px 0;
-	}
-	.back {
-		width: 36px;
-		height: 36px;
-		display: grid;
-		place-items: center;
-		border-radius: 10px;
-		text-decoration: none;
-		color: var(--ink-soft);
-		font-size: 1.3rem;
-		font-weight: 900;
-		box-shadow: inset 0 0 0 2px var(--line);
-		background: var(--card);
-	}
-	.topbar h1 {
-		font-size: 1.35rem;
-		font-weight: 900;
 	}
 	.hero {
 		display: flex;

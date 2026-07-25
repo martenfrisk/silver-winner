@@ -28,3 +28,6 @@ vite.config.ts.timestamp-*
 # Playwright
 /test-results
 /playwright-report
+
+# Subagent worktrees (transient, each is its own git repo)
+.claude/worktrees/

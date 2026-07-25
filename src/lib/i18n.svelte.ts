@@ -21,6 +21,7 @@ const STRINGS = {
 	'got-it': { en: 'Got it', my: 'ရပြီ', tier: 1 },
 	start: { en: 'START', my: 'စ!', tier: 1 },
 	practice: { en: 'Practice', my: 'လေ့ကျင့်', tier: 1 },
+	review: { en: 'Review', my: 'ပြန်လေ့လာ', tier: 1 },
 	'not-quite': { en: 'Not quite…', my: 'မမှန်ဘူး…', tier: 2 },
 	answer: { en: 'Answer', my: 'အဖြေ', tier: 2 },
 	'lesson-complete': { en: 'Lesson complete!', my: 'သင်ခန်းစာ ပြီးပြီ!', tier: 2 },

@@ -3,6 +3,7 @@
 	// self-grading on the shared Leitner ladder. The hybrid-SRS prototype.
 	import { customCards, type CustomCard } from '$lib/custom-cards.svelte';
 	import { sfx } from '$lib/audio';
+	import HubHeader from '$lib/components/HubHeader.svelte';
 	import { ArrowLeft, Plus, Trash2, Check, RotateCcw } from '@lucide/svelte';
 
 	let mode = $state<'manage' | 'review'>('manage');
@@ -75,11 +76,7 @@
 			{/if}
 		</footer>
 	{:else}
-		<header class="head">
-			<a class="back" href="/" aria-label="Back to Today"><ArrowLeft size={22} strokeWidth={2} /></a>
-			<h1>My cards</h1>
-			<span class="count">{customCards.count}</span>
-		</header>
+		<HubHeader title="My cards" />
 
 		{#if customCards.dueCount > 0}
 			<button class="review-cta" onclick={startReview}>
@@ -120,16 +117,19 @@
 	.cards {
 		max-width: 560px;
 		margin: 0 auto;
-		padding: var(--s4) var(--s5) calc(96px + env(safe-area-inset-bottom));
+		padding: 0 var(--s5) calc(96px + env(safe-area-inset-bottom));
 		display: flex;
 		flex-direction: column;
 		gap: var(--s4);
 	}
+	/* Review mode has its own header rather than HubHeader (the back arrow ends
+	   the review instead of navigating), so it has to match HubHeader's top
+	   spacing by hand now that the container no longer provides any. */
 	.head {
 		display: flex;
 		align-items: center;
 		gap: var(--s3);
-		padding: var(--s2) 0 0;
+		padding: var(--s4) 0 0;
 	}
 	.back {
 		width: 38px;
