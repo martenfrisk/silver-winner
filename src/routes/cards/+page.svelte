@@ -3,6 +3,7 @@
 	// self-grading on the shared Leitner ladder. The hybrid-SRS prototype.
 	import { customCards, type CustomCard } from '$lib/custom-cards.svelte';
 	import { sfx } from '$lib/audio';
+	import HubHeader from '$lib/components/HubHeader.svelte';
 	import { ArrowLeft, Plus, Trash2, Check, RotateCcw } from '@lucide/svelte';
 
 	let mode = $state<'manage' | 'review'>('manage');
@@ -75,11 +76,7 @@
 			{/if}
 		</footer>
 	{:else}
-		<header class="head">
-			<a class="back" href="/" aria-label="Back to Today"><ArrowLeft size={22} strokeWidth={2} /></a>
-			<h1>My cards</h1>
-			<span class="count">{customCards.count}</span>
-		</header>
+		<HubHeader title="My cards" />
 
 		{#if customCards.dueCount > 0}
 			<button class="review-cta" onclick={startReview}>

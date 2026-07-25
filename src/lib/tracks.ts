@@ -84,6 +84,105 @@ export interface Suggestion {
 	label: string;
 }
 
+/** The one hero action on Today. */
+export interface NextUp {
+	href: string;
+	/** Button text, e.g. "Continue the course". */
+	title: string;
+	/** One line of context under it. */
+	sub: string;
+	/** Which track it belongs to, for the icon. */
+	track: TrackId;
+}
+
+/**
+ * The single best thing to do right now.
+ *
+ * Today used to render two cards answering this same question: a "Continue
+ * <primary track>" card driven by `primaryTrack`, and a separate suggestion
+ * inside the goal dial driven by `suggestFor`. They regularly disagreed, and
+ * the dial was hidden until `xp > 0`, so a brand new learner saw neither a
+ * suggestion nor any reason to trust the one card that was left.
+ *
+ * One answer instead: whatever is genuinely most useful, falling back to the
+ * profile's home track when nothing is pressing. Always rendered.
+ */
+export function nextUp(profile: Profile | null, s: SuggestState): NextUp {
+	const primary = primaryTrack(profile);
+
+	// Due work first, but only when there is enough of it to be worth
+	// interrupting a learner who has somewhere else to be.
+	if (s.vocabDue > 0 && (primary !== 'script' || s.glyphsDue === 0)) {
+		return {
+			href: '/review',
+			title: 'Review your words',
+			sub: `${s.vocabDue} word${s.vocabDue === 1 ? '' : 's'} ready`,
+			track: 'course'
+		};
+	}
+	if (s.glyphsDue > 0) {
+		return {
+			href: '/review',
+			title: 'Review your letters',
+			sub: `${s.glyphsDue} letter${s.glyphsDue === 1 ? '' : 's'} ready`,
+			track: 'script'
+		};
+	}
+
+	// Nothing due: carry on down the profile's own track.
+	if (primary === 'reader' && s.nextReaderUnit) {
+		return {
+			href: `/reader/${s.nextReaderUnit.id}`,
+			title: 'Continue reading',
+			sub: `Next: ${s.nextReaderUnit.title}`,
+			track: 'reader'
+		};
+	}
+	if (primary === 'script' && s.nextScriptUnit) {
+		return {
+			href: '/script',
+			title: 'Continue the script',
+			sub: `Next: ${s.nextScriptUnit.title}`,
+			track: 'script'
+		};
+	}
+	if (s.nextLesson) {
+		return {
+			href: `/lesson/${s.nextLesson.id}`,
+			title: 'Continue the course',
+			sub: `Next: ${s.nextLesson.title}`,
+			track: 'course'
+		};
+	}
+
+	// The learner's own track is exhausted; offer the others before crowns.
+	if (s.nextReaderUnit) {
+		return {
+			href: `/reader/${s.nextReaderUnit.id}`,
+			title: 'Read a unit in script',
+			sub: s.nextReaderUnit.title,
+			track: 'reader'
+		};
+	}
+	if (s.nextScriptUnit) {
+		return {
+			href: '/script',
+			title: 'Learn the next letters',
+			sub: s.nextScriptUnit.title,
+			track: 'script'
+		};
+	}
+	if (s.uncrownedLesson) {
+		return {
+			href: `/lesson/${s.uncrownedLesson.id}?mode=hard`,
+			title: 'Go for a crown',
+			sub: `Hard mode: ${s.uncrownedLesson.title}`,
+			track: 'course'
+		};
+	}
+	return { href: '/review', title: 'Keep everything fresh', sub: 'A quick review round', track: 'course' };
+}
+
 /**
  * The single best "do this next" action for the daily nudge, ordered by what
  * the profile is actually here to learn: speakers put script first, script

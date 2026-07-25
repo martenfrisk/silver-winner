@@ -7,7 +7,8 @@
 	import Mascot from '$lib/components/Mascot.svelte';
 	import { sfx } from '$lib/audio';
 	import { goto } from '$app/navigation';
-	import { Flame, Zap, Coffee, Lock, ArrowLeft, ArrowRight } from '@lucide/svelte';
+	import HubHeader from '$lib/components/HubHeader.svelte';
+	import { Flame, Zap, Coffee, Lock, ArrowRight } from '@lucide/svelte';
 
 	const unitIds = scriptUnits.map((u) => u.id);
 	let profileGlyph = $state<Glyph | null>(null);
@@ -36,17 +37,14 @@
 </svelte:head>
 
 <div class="studio">
-	<header class="topbar">
-		<a class="back" href="/" aria-label="Back home"><ArrowLeft size={22} strokeWidth={2} /></a>
-		<div class="title">
-			<h1>{ui('script-studio').text}</h1>
-			<p class="my sub">အက္ခရာ</p>
-		</div>
+	<HubHeader title={ui('script-studio').text} />
+	<div class="subline">
+		<p class="my sub">အက္ခရာ</p>
 		<div class="pills">
 			<span class="pill" title="Day streak"><Flame size={15} strokeWidth={2} /> {progress.streak}</span>
 			<span class="pill" title="Total XP"><Zap size={15} strokeWidth={2} /> {progress.xp}</span>
 		</div>
-	</header>
+	</div>
 
 	<!-- Reviewing letters lives in Review with every other deck, not here. A
 	     second review economy inside Script Studio is exactly what made "do I
@@ -179,35 +177,6 @@
 		max-width: 560px;
 		margin: 0 auto;
 		padding: 0 20px calc(96px + env(safe-area-inset-bottom));
-	}
-	.topbar {
-		display: flex;
-		align-items: center;
-		gap: 14px;
-		padding: 14px 0;
-	}
-	.back {
-		width: 36px;
-		height: 36px;
-		display: grid;
-		place-items: center;
-		border-radius: 10px;
-		text-decoration: none;
-		color: var(--ink-soft);
-		font-size: 1.3rem;
-		font-weight: 900;
-		box-shadow: inset 0 0 0 2px var(--line);
-		background: var(--card);
-	}
-	.title {
-		flex: 1;
-	}
-	.title h1 {
-		font-family: var(--font-display);
-		font-style: italic;
-		font-size: 1.5rem;
-		font-weight: 400;
-		color: var(--ink);
 	}
 	.pill :global(svg) {
 		color: var(--gold-ink);

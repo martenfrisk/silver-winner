@@ -43,8 +43,14 @@
 			{:then { default: Table }}
 				<Table />
 			{/await}
+			<!-- This overlay is reachable from every hub and every player, which
+			     makes it the app's most-available surface. Three links rather
+			     than one, so the builder and the dictionary get an entry point
+			     that doesn't depend on already being in the right section. -->
 			<footer>
-				<a href="/script" onclick={() => scriptSheet.hide()}>Open Script Studio →</a>
+				<a href="/script" onclick={() => scriptSheet.hide()}>Script Studio</a>
+				<a href="/script/builder" onclick={() => scriptSheet.hide()}>Syllable builder</a>
+				<a href="/dictionary" onclick={() => scriptSheet.hide()}>Dictionary</a>
 			</footer>
 		</div>
 	</div>
@@ -109,9 +115,12 @@
 		color: var(--ink-soft);
 	}
 	footer {
+		display: flex;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 6px 18px;
 		padding: 10px 20px calc(12px + env(safe-area-inset-bottom));
 		border-top: 2px solid var(--line);
-		text-align: center;
 	}
 	footer a {
 		font-size: 0.9rem;

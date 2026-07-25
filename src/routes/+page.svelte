@@ -8,7 +8,7 @@
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { scriptUnits, totalGlyphs } from '$lib/data/script';
 	import { readerStarsKey } from '$lib/reader-session';
-	import { primaryTrack, suggestFor, tracks } from '$lib/tracks';
+	import { nextUp, primaryTrack, tracks } from '$lib/tracks';
 	import { ui } from '$lib/i18n.svelte';
 	import Mascot from '$lib/components/Mascot.svelte';
 	import StartChooser from '$lib/components/StartChooser.svelte';
@@ -50,8 +50,8 @@
 	const scriptNext = $derived(scriptUnits.find((u) => !srs.isUnitDone(u.id)));
 	const uncrowned = $derived(allLessons.find((l) => !progress.isCrowned(l.id)));
 
-	const suggestion = $derived(
-		suggestFor(progress.profile, {
+	const next = $derived(
+		nextUp(progress.profile, {
 			vocabDue: vocabSrs.dueCount,
 			glyphsDue: srs.dueCount,
 			nextLesson: courseNext,
@@ -61,25 +61,10 @@
 		})
 	);
 
-	// Icon for the primary track's continue card (capitalised so it can render
-	// as <PrimaryIcon /> directly).
-	const PrimaryIcon = $derived(primary === 'reader' ? BookOpen : primary === 'script' ? PenLine : GraduationCap);
-
-	const primaryCard = $derived.by(() => {
-		if (primary === 'reader') {
-			return readerNext
-				? { href: `/reader/${readerNext.id}`, title: 'Continue reading', sub: `Next: ${readerNext.title}` }
-				: { href: '/reader', title: 'Reader track', sub: 'All units read. Keep them fresh' };
-		}
-		if (primary === 'script') {
-			return scriptNext
-				? { href: '/script', title: 'Continue the script', sub: `Next: ${scriptNext.title} · ${srs.introducedCount}/${totalGlyphs} glyphs` }
-				: { href: '/script', title: 'Script Studio', sub: 'All letters learned. Keep them sharp' };
-		}
-		return courseNext
-			? { href: `/lesson/${courseNext.id}`, title: 'Continue the course', sub: `Next: ${courseNext.title}` }
-			: { href: uncrowned ? `/lesson/${uncrowned.id}?mode=hard` : '/practice', title: 'Course complete!', sub: uncrowned ? `Go for crowns, next: ${uncrowned.title}` : 'Keep everything fresh in Practice' };
-	});
+	// Capitalised so it can render as <NextIcon /> directly.
+	const NextIcon = $derived(
+		next.track === 'reader' ? BookOpen : next.track === 'script' ? PenLine : GraduationCap
+	);
 
 	function trackHref(id: string): string {
 		if (id === 'course') return '/learn';
@@ -124,9 +109,19 @@
 		</div>
 	</header>
 
+	<!-- The chooser sits above Today rather than replacing it. It used to be the
+	     entire page body, so a brand new learner's first screen had no links at
+	     all. Showing the real app underneath also means picking a profile
+	     visibly reorders what's already on screen, which teaches what a profile
+	     does far better than a gate would. -->
 	{#if progress.profile === null}
 		<StartChooser />
-	{:else}
+	{/if}
+
+	<!-- While the chooser is up it is the hero: it already has the mascot and
+	     the greeting, so rendering both put two cats and two မင်္ဂလာပါ on one
+	     screen. -->
+	{#if progress.profile !== null}
 		<section class="hero">
 			<Mascot mood={progress.completedCount === totalLessons ? 'celebrate' : 'idle'} size={84} />
 			<div class="greet">
@@ -150,85 +145,91 @@
 				</p>
 			</div>
 		</section>
+	{/if}
 
-		{#if progress.xp > 0}
-			<a class="dial" class:reached={goalRemaining === 0} href={suggestion.href}>
-				<span class="ring" aria-hidden="true">
-					<svg viewBox="0 0 92 92">
-						<circle class="bg" cx="46" cy="46" r="40" />
-						<circle class="fill" cx="46" cy="46" r="40" stroke-dasharray={C} stroke-dashoffset={C * (1 - goalPct)} transform="rotate(-90 46 46)" />
-					</svg>
-					<span class="mid"><span class="n">{progress.streak}</span><span class="u">streak</span></span>
-				</span>
-				<span class="dtext">
-					<span class="lab">Today’s goal</span>
-					<span class="big">{progress.xpToday} / {progress.dailyGoal} XP</span>
-					<span class="sm">
-						{#if goalRemaining === 0}Reached! On a roll, try {suggestion.label}.
-						{:else if progress.xpToday === 0}Keep the streak alive, try {suggestion.label}.
-						{:else}{goalRemaining} to go, try {suggestion.label}.{/if}
-					</span>
-				</span>
-			</a>
-		{/if}
+	<!-- One hero action. There used to be two cards answering the same
+	     question (this one, and a suggestion inside the dial) which could
+	     disagree with each other. See nextUp in $lib/tracks. -->
+	<a class="primary-card" href={next.href}>
+		<span class="pc-icon"><NextIcon size={24} strokeWidth={2} /></span>
+		<span class="pc-text">
+			<span class="pc-title">{next.title}</span>
+			<span class="pc-sub">{next.sub}</span>
+		</span>
+		<ArrowRight size={22} strokeWidth={2} class="pc-arrow" />
+	</a>
 
-		<a class="primary-card" href={primaryCard.href}>
-			<span class="pc-icon"><PrimaryIcon size={24} strokeWidth={2} /></span>
-			<span class="pc-text">
-				<span class="pc-title">{primaryCard.title}</span>
-				<span class="pc-sub">{primaryCard.sub}</span>
+	<!-- The dial is now just the streak and goal readout: no link, no
+	     competing suggestion. Still hidden until there's a number worth
+	     showing. -->
+	{#if progress.xp > 0}
+		<div class="dial" class:reached={goalRemaining === 0}>
+			<span class="ring" aria-hidden="true">
+				<svg viewBox="0 0 92 92">
+					<circle class="bg" cx="46" cy="46" r="40" />
+					<circle class="fill" cx="46" cy="46" r="40" stroke-dasharray={C} stroke-dashoffset={C * (1 - goalPct)} transform="rotate(-90 46 46)" />
+				</svg>
+				<span class="mid"><span class="n">{progress.streak}</span><span class="u">streak</span></span>
 			</span>
-			<ArrowRight size={22} strokeWidth={2} class="pc-arrow" />
-		</a>
-
-		<!-- One tile for every deck. This used to be three (practice, cards, and
-		     a second cards tile in the list below when the count was zero), which
-		     meant "have I got anything to review?" had three answers on one
-		     screen. See $lib/review. -->
-		{#if reviewStarted}
-			<a class="tile" href="/review">
-				<span class="tile-icon teal"><Dumbbell size={20} strokeWidth={2} /></span>
-				<span class="tile-text">
-					<span class="tile-title">{ui('review').text}</span>
-					<span class="tile-sub">
-						{#if reviewDue > 0}
-							{#each dueDecks as d, i (d.id)}{i > 0 ? ' · ' : ''}{d.due}
-							{d.due === 1 ? d.noun.replace(/s$/, '') : d.noun}{/each}
-						{:else}
-							All caught up
-						{/if}
-					</span>
+			<span class="dtext">
+				<span class="lab">Today’s goal</span>
+				<span class="big">{progress.xpToday} / {progress.dailyGoal} XP</span>
+				<span class="sm">
+					{#if goalRemaining === 0}Reached for today.
+					{:else if progress.xpToday === 0}Nothing yet today.
+					{:else}{goalRemaining} XP to go.{/if}
 				</span>
-				{#if reviewDue > 0}<span class="due">{reviewDue}</span>{:else}<ArrowRight size={18} strokeWidth={2} class="tile-arrow" />{/if}
-			</a>
-		{/if}
+			</span>
+		</div>
+	{/if}
 
-		{#if unlockedStories > 0}
-			<a class="tile" href="/stories">
-				<span class="tile-icon gold"><BookOpen size={20} strokeWidth={2} /></span>
+	<!-- One tile for every deck. This used to be three (practice, cards, and
+	     a second cards tile in the list below when the count was zero), which
+	     meant "have I got anything to review?" had three answers on one
+	     screen. See $lib/review. -->
+	{#if reviewStarted}
+		<a class="tile" href="/review">
+			<span class="tile-icon teal"><Dumbbell size={20} strokeWidth={2} /></span>
+			<span class="tile-text">
+				<span class="tile-title">{ui('review').text}</span>
+				<span class="tile-sub">
+					{#if reviewDue > 0}
+						{#each dueDecks as d, i (d.id)}{i > 0 ? ' · ' : ''}{d.due}
+						{d.due === 1 ? d.noun.replace(/s$/, '') : d.noun}{/each}
+					{:else}
+						All caught up
+					{/if}
+				</span>
+			</span>
+			{#if reviewDue > 0}<span class="due">{reviewDue}</span>{:else}<ArrowRight size={18} strokeWidth={2} class="tile-arrow" />{/if}
+		</a>
+	{/if}
+
+	{#if unlockedStories > 0}
+		<a class="tile" href="/stories">
+			<span class="tile-icon gold"><BookOpen size={20} strokeWidth={2} /></span>
+			<span class="tile-text">
+				<span class="tile-title">Stories</span>
+				<span class="tile-sub">{unlockedStories} tiny conversation{unlockedStories > 1 ? 's' : ''} you can already understand</span>
+			</span>
+			<ArrowRight size={18} strokeWidth={2} class="tile-arrow" />
+		</a>
+	{/if}
+
+	<section class="more">
+		<h2 class="more-title">More ways to learn</h2>
+		{#each tracks.filter((t) => t.id !== primary) as t (t.id)}
+			{@const Icon = trackIcon[t.id]}
+			<a class="tile" href={trackHref(t.id)}>
+				<span class="tile-icon plum"><Icon size={20} strokeWidth={2} /></span>
 				<span class="tile-text">
-					<span class="tile-title">Stories</span>
-					<span class="tile-sub">{unlockedStories} tiny conversation{unlockedStories > 1 ? 's' : ''} you can already understand</span>
+					<span class="tile-title">{t.title}</span>
+					<span class="tile-sub">{t.audience}</span>
 				</span>
 				<ArrowRight size={18} strokeWidth={2} class="tile-arrow" />
 			</a>
-		{/if}
-
-		<section class="more">
-			<h2 class="more-title">More ways to learn</h2>
-			{#each tracks.filter((t) => t.id !== primary) as t (t.id)}
-				{@const Icon = trackIcon[t.id]}
-				<a class="tile" href={trackHref(t.id)}>
-					<span class="tile-icon plum"><Icon size={20} strokeWidth={2} /></span>
-					<span class="tile-text">
-						<span class="tile-title">{t.title}</span>
-						<span class="tile-sub">{t.audience}</span>
-					</span>
-					<ArrowRight size={18} strokeWidth={2} class="tile-arrow" />
-				</a>
-			{/each}
-		</section>
-	{/if}
+		{/each}
+	</section>
 </div>
 
 <style>

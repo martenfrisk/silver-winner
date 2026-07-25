@@ -3,7 +3,8 @@
 	import { allLessons } from '$lib/data/course';
 	import { progress } from '$lib/progress.svelte';
 	import Mascot from '$lib/components/Mascot.svelte';
-	import { BookOpen, Lock, ArrowLeft } from '@lucide/svelte';
+	import HubHeader from '$lib/components/HubHeader.svelte';
+	import { BookOpen, Lock } from '@lucide/svelte';
 
 	const lessonTitle = (id: string) =>
 		allLessons.find((l) => l.lesson.id === id)?.lesson.title ?? id;
@@ -22,10 +23,7 @@
 </svelte:head>
 
 <div class="stories-home">
-	<header>
-		<a class="back" href="/" aria-label="Back home"><ArrowLeft size={22} strokeWidth={2} /></a>
-		<h1><BookOpen size={24} strokeWidth={2} /> Stories</h1>
-	</header>
+	<HubHeader title="Stories" />
 
 	<div class="intro">
 		<Mascot mood="idle" size={84} />
@@ -66,39 +64,6 @@
 		max-width: 560px;
 		margin: 0 auto;
 		padding: 0 20px calc(96px + env(safe-area-inset-bottom));
-	}
-	header {
-		display: flex;
-		align-items: center;
-		gap: 14px;
-		padding: 18px 0 6px;
-	}
-	.back {
-		font-size: 1.3rem;
-		font-weight: 900;
-		color: var(--ink-soft);
-		text-decoration: none;
-		width: 36px;
-		height: 36px;
-		display: grid;
-		place-items: center;
-		border-radius: 10px;
-	}
-	.back:hover {
-		background: var(--line);
-	}
-	h1 {
-		display: inline-flex;
-		align-items: center;
-		gap: 9px;
-		font-family: var(--font-display);
-		font-style: italic;
-		font-weight: 400;
-		font-size: 1.6rem;
-		color: var(--ink);
-	}
-	h1 :global(svg) {
-		color: var(--coral-ink);
 	}
 	.intro {
 		display: flex;

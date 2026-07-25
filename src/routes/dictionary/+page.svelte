@@ -3,14 +3,18 @@
 	// the word for water, what was it again?" moments, offline, no Google. Built
 	// straight from allVocab (the deduped course vocabulary); each row plays its
 	// audio and shows whether you've met it yet.
+	import { page } from '$app/state';
 	import { allVocab } from '$lib/vocab-srs.svelte';
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { progress } from '$lib/progress.svelte';
 	import { morphology } from '$lib/data/morphology';
 	import SpeakButton from '$lib/components/SpeakButton.svelte';
-	import { Search, ArrowLeft, X } from '@lucide/svelte';
+	import HubHeader from '$lib/components/HubHeader.svelte';
+	import { Search, X } from '@lucide/svelte';
 
-	let query = $state('');
+	// Prefilled when arriving from a wrong-answer reveal's "Look it up", so the
+	// word you just missed is already the search.
+	let query = $state(page.url.searchParams.get('q') ?? '');
 
 	// Searching a part should surface the words built from it: type "ten" and
 	// get ဆယ့်တစ် and နှစ်ဆယ်, which is where compounding stops being trivia
@@ -41,11 +45,7 @@
 <svelte:head><title>Dictionary · Shwe</title></svelte:head>
 
 <div class="dict">
-	<header class="head">
-		<a class="back" href="/learn" aria-label="Back to Learn"><ArrowLeft size={22} strokeWidth={2} /></a>
-		<h1>Dictionary</h1>
-		<span class="count">{allVocab.length} words</span>
-	</header>
+	<HubHeader title="Dictionary" />
 
 	<div class="searchbar">
 		<Search size={18} strokeWidth={2} />
@@ -62,6 +62,13 @@
 			<button class="clear" onclick={() => (query = '')} aria-label="Clear search"><X size={16} strokeWidth={2.5} /></button>
 		{/if}
 	</div>
+	<p class="scope">
+		{#if query}
+			{results.length} of {allVocab.length} words
+		{:else}
+			Every one of the {allVocab.length} words the course teaches
+		{/if}
+	</p>
 
 	{#if results.length === 0}
 		<p class="empty">No word matches “{query}”. Try its meaning, like “water”.</p>
@@ -101,37 +108,6 @@
 		max-width: 620px;
 		margin: 0 auto;
 		padding: var(--s4) var(--s5) calc(96px + env(safe-area-inset-bottom));
-	}
-	.head {
-		display: flex;
-		align-items: center;
-		gap: var(--s3);
-		padding: var(--s2) 0 var(--s4);
-	}
-	.back {
-		width: 38px;
-		height: 38px;
-		display: grid;
-		place-items: center;
-		border-radius: var(--radius-sm);
-		color: var(--ink-soft);
-		background: var(--card);
-		box-shadow: inset 0 0 0 1px var(--line);
-		text-decoration: none;
-	}
-	.head h1 {
-		flex: 1;
-		font-family: var(--font-display);
-		font-style: italic;
-		font-weight: 400;
-		font-size: 1.7rem;
-		color: var(--ink);
-	}
-	.count {
-		font-size: 0.78rem;
-		font-weight: 800;
-		color: var(--ink-soft);
-		font-variant-numeric: tabular-nums;
 	}
 
 	.searchbar {

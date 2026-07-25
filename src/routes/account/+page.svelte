@@ -15,7 +15,8 @@
 	import { achievements } from '$lib/achievements';
 	import Mascot from '$lib/components/Mascot.svelte';
 	import Heatmap from '$lib/components/Heatmap.svelte';
-	import { Zap, Flame, GraduationCap, Trophy, Brain, ArrowLeft, Snowflake, Headphones, Download, Upload } from '@lucide/svelte';
+	import HubHeader from '$lib/components/HubHeader.svelte';
+	import { Zap, Flame, GraduationCap, Trophy, Brain, Snowflake, Headphones, Download, Upload } from '@lucide/svelte';
 
 	const totalLessons = course.reduce((n, u) => n + u.lessons.length, 0);
 
@@ -125,10 +126,7 @@
 </svelte:head>
 
 <div class="account">
-	<header class="topbar">
-		<a class="back" href="/" aria-label="Back home"><ArrowLeft size={22} strokeWidth={2} /></a>
-		<h1>{ui('profile').text}</h1>
-	</header>
+	<HubHeader title={ui('profile').text} />
 
 	<section class="hero">
 		<Mascot mood="happy" size={110} />
@@ -425,29 +423,6 @@
 		max-width: 560px;
 		margin: 0 auto;
 		padding: 0 20px calc(96px + env(safe-area-inset-bottom));
-	}
-	.topbar {
-		display: flex;
-		align-items: center;
-		gap: 14px;
-		padding: 14px 0;
-	}
-	.back {
-		width: 36px;
-		height: 36px;
-		display: grid;
-		place-items: center;
-		border-radius: 10px;
-		text-decoration: none;
-		color: var(--ink-soft);
-		font-size: 1.3rem;
-		font-weight: 900;
-		box-shadow: inset 0 0 0 2px var(--line);
-		background: var(--card);
-	}
-	.topbar h1 {
-		font-size: 1.35rem;
-		font-weight: 900;
 	}
 	.hero {
 		display: flex;
