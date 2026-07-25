@@ -3,6 +3,7 @@ import {
 	BACKUP_KEYS,
 	BACKUP_VERSION,
 	CALIBRATION_KEY,
+	CONFUSION_KEY,
 	CUSTOM_KEY,
 	PROGRESS_KEY,
 	SCRIPT_KEY,
@@ -42,7 +43,8 @@ const fullBackup = () =>
 			[CALIBRATION_KEY]: JSON.stringify({
 				pending: [{ id: 'မင်္ဂလာပါ', said: true, at: 400, box: 2 }],
 				history: [{ said: true, ok: false, at: 350 }]
-			})
+			}),
+			[CONFUSION_KEY]: JSON.stringify({ kha: { ga: 3, ka: 1 } })
 		}),
 		T0
 	);
@@ -85,6 +87,7 @@ describe('parseBackup round trip', () => {
 		});
 		expect(JSON.parse(res.payloads[VOCAB_KEY]).mistakes).toEqual(['မင်္ဂလာပါ']);
 		expect(JSON.parse(res.payloads[CUSTOM_KEY])).toHaveLength(1);
+		expect(JSON.parse(res.payloads[CONFUSION_KEY])).toEqual({ kha: { ga: 3, ka: 1 } });
 
 		expect(res.summary).toMatchObject({ xp: 340, lessons: 2, glyphs: 1, words: 1, cards: 1 });
 	});

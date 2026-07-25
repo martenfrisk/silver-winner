@@ -7,10 +7,16 @@
 	import Mascot from '$lib/components/Mascot.svelte';
 	import { sfx } from '$lib/audio';
 	import { goto } from '$app/navigation';
-	import { Flame, Zap, Brain, Coffee, Lock, ArrowLeft } from '@lucide/svelte';
+	import { Flame, Zap, Brain, Coffee, Lock, ArrowLeft, Shuffle } from '@lucide/svelte';
+	import { confusions } from '$lib/confusion.svelte';
+	import { availablePairs } from '$lib/confusion-session';
 
 	const unitIds = scriptUnits.map((u) => u.id);
 	let profileGlyph = $state<Glyph | null>(null);
+
+	// The lab needs both halves of at least one contrast pair introduced.
+	const confusionPairs = $derived(availablePairs((id) => srs.isIntroduced(id)));
+	const charOf = (id: string) => glyphById.get(id)?.char ?? id;
 
 	const anyIntroduced = $derived(srs.introducedCount > 0);
 	const nextUnit = $derived(scriptUnits.find((u) => !srs.isUnitDone(u.id)));
@@ -97,6 +103,26 @@
 				{srs.isUnitDone('first-letters')
 					? 'Decode words you already know'
 					: 'Unlocks after unit 1'}
+			</span>
+		</button>
+		<button
+			class="card confusion-card"
+			disabled={confusionPairs.length === 0}
+			onclick={() => {
+				sfx.tap();
+				goto('/script/confusions');
+			}}
+		>
+			<span class="card-emoji"><Shuffle size={28} strokeWidth={1.8} /></span>
+			<span class="card-title">Confusion Lab</span>
+			<span class="card-sub">
+				{#if confusionPairs.length === 0}
+					Learn both halves of a sound pair
+				{:else if confusions.worst.length > 0}
+					You mix up {charOf(confusions.worst[0].target)} and {charOf(confusions.worst[0].picked)}
+				{:else}
+					Sort the sounds you'll confuse
+				{/if}
 			</span>
 		</button>
 	</section>

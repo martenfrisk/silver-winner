@@ -38,6 +38,12 @@ export interface ChoiceOption {
 	sub?: string;
 	/** Render in the Burmese font at glyph size. */
 	my?: boolean;
+	/**
+	 * Which glyph this option stands for. Set on the distractors so a wrong
+	 * answer records *what* was reached for, not just that it was wrong — see
+	 * $lib/confusion.
+	 */
+	glyphId?: string;
 }
 
 export type ScriptEx =
@@ -129,9 +135,9 @@ export function g2s(glyph: Glyph, timed?: number, audioOn = true): ScriptEx {
 			hint: glyph.sound
 		};
 	}
-	const target: ChoiceOption = { label: glyph.sound };
+	const target: ChoiceOption = { label: glyph.sound, glyphId: glyph.id };
 	const { options, correct } = withCorrect(
-		distractors(glyph, 2).map((d) => ({ label: d.sound })),
+		distractors(glyph, 2).map((d) => ({ label: d.sound, glyphId: d.id })),
 		target
 	);
 	return {
@@ -154,9 +160,9 @@ export function g2s(glyph: Glyph, timed?: number, audioOn = true): ScriptEx {
  * audio is off, since an unheard prompt is no prompt at all.
  */
 export function s2g(glyph: Glyph, audioOn = true): ScriptEx {
-	const target: ChoiceOption = { label: glyph.char, my: true };
+	const target: ChoiceOption = { label: glyph.char, my: true, glyphId: glyph.id };
 	const { options, correct } = withCorrect(
-		distractors(glyph, 2).map((d) => ({ label: d.char, my: true })),
+		distractors(glyph, 2).map((d) => ({ label: d.char, my: true, glyphId: d.id })),
 		target
 	);
 	if (glyph.type === 'digit' || !audioOn) {
@@ -265,10 +271,13 @@ export function pairListen(glyph: Glyph): ScriptEx | null {
 	const v = pick(vowels, 1)[0];
 	const a = buildSyllable(glyph.id, v);
 	const b = buildSyllable(mateId, v);
-	const [played, other] = Math.random() < 0.5 ? [a, b] : [b, a];
+	const playedIsTarget = Math.random() < 0.5;
+	const [played, other] = playedIsTarget ? [a, b] : [b, a];
+	// The bins are the two consonants, so a miss here is exactly an aspiration
+	// confusion — the most useful thing the matrix can learn.
 	const { options, correct } = withCorrect(
-		[{ label: other.text, my: true }],
-		{ label: played.text, my: true }
+		[{ label: other.text, my: true, glyphId: playedIsTarget ? mateId : glyph.id }],
+		{ label: played.text, my: true, glyphId: playedIsTarget ? glyph.id : mateId }
 	);
 	return {
 		kind: 'choice',

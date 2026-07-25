@@ -30,7 +30,8 @@
 		options: ChoiceOption[];
 		correct: number;
 		timed?: number;
-		onanswer: (ok: boolean) => void;
+		/** `picked` is the chosen option's glyph, when it has one — see $lib/confusion. */
+		onanswer: (ok: boolean, picked?: string) => void;
 	} = $props();
 
 	let answered = $state<number | null>(null); // -1 = timed out
@@ -74,7 +75,7 @@
 			// Hear what was asked while the correct option is highlighted.
 			if (promptSpeak) setTimeout(() => speak(promptSpeak!, speakVoice), 500);
 		}
-		onanswer(ok);
+		onanswer(ok, options[i]?.glyphId);
 	}
 
 	function cls(i: number): string {

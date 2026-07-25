@@ -4,6 +4,7 @@
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { customCards } from '$lib/custom-cards.svelte';
 	import { calibration } from '$lib/calibration.svelte';
+	import { confusions } from '$lib/confusion.svelte';
 	import { describeLean } from '$lib/calibration';
 	import { buildBackup, backupFilename, parseBackup, describeBackup } from '$lib/backup';
 	import { VOICES, VOICE_IDS } from '$lib/voices';
@@ -57,6 +58,8 @@
 	function resetScript() {
 		if (confirm('Reset all Script Studio progress? This cannot be undone.')) {
 			srs.reset();
+			// The map is entirely about glyphs, so it goes with them.
+			confusions.reset();
 		}
 	}
 
@@ -67,6 +70,7 @@
 			vocabSrs.reset();
 			customCards.reset();
 			calibration.reset();
+			confusions.reset();
 		}
 	}
 

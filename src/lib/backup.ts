@@ -30,6 +30,7 @@ export const SCRIPT_KEY = 'myanlingo-script-v1';
 export const VOCAB_KEY = 'myanlingo-vocab-v1';
 export const CUSTOM_KEY = 'myanlingo-custom-v1';
 export const CALIBRATION_KEY = 'myanlingo-calibration-v1';
+export const CONFUSION_KEY = 'myanlingo-confusions-v1';
 
 /** Every key a backup covers. A new persisted key belongs in this list. */
 export const BACKUP_KEYS = [
@@ -37,7 +38,8 @@ export const BACKUP_KEYS = [
 	SCRIPT_KEY,
 	VOCAB_KEY,
 	CUSTOM_KEY,
-	CALIBRATION_KEY
+	CALIBRATION_KEY,
+	CONFUSION_KEY
 ] as const;
 
 /** Both SRS ladders and the custom cards share this 5-box shape. */
@@ -233,6 +235,24 @@ export function sanitizeCalibration(u: unknown): {
 	return { pending, history };
 }
 
+/** Confusion matrix: target id -> picked id -> count. */
+export function sanitizeConfusions(u: unknown): Record<string, Record<string, number>> {
+	if (!isRecord(u)) return {};
+	const out: Record<string, Record<string, number>> = {};
+	for (const [target, row] of Object.entries(u)) {
+		if (!isRecord(row)) continue;
+		const clean: Record<string, number> = {};
+		for (const [picked, count] of Object.entries(row)) {
+			// A self-confusion is a correct answer; a non-positive count is noise.
+			if (picked === target) continue;
+			const n = Math.round(num(count, 0));
+			if (n > 0) clean[picked] = n;
+		}
+		if (Object.keys(clean).length > 0) out[target] = clean;
+	}
+	return out;
+}
+
 // ── Export ────────────────────────────────────────────────────────────
 
 /**
@@ -303,6 +323,7 @@ export function parseBackup(text: string, maxBox = 4): ParseResult {
 	};
 	const cards = sanitizeCards(d[CUSTOM_KEY], maxBox);
 	const calibration = sanitizeCalibration(d[CALIBRATION_KEY]);
+	const confusions = sanitizeConfusions(d[CONFUSION_KEY]);
 
 	return {
 		ok: true,
@@ -311,7 +332,8 @@ export function parseBackup(text: string, maxBox = 4): ParseResult {
 			[SCRIPT_KEY]: JSON.stringify(script),
 			[VOCAB_KEY]: JSON.stringify(vocab),
 			[CUSTOM_KEY]: JSON.stringify(cards),
-			[CALIBRATION_KEY]: JSON.stringify(calibration)
+			[CALIBRATION_KEY]: JSON.stringify(calibration),
+			[CONFUSION_KEY]: JSON.stringify(confusions)
 		},
 		summary: {
 			exportedAt: num(file.exportedAt, 0),
