@@ -7,16 +7,10 @@
 	import Mascot from '$lib/components/Mascot.svelte';
 	import { sfx } from '$lib/audio';
 	import { goto } from '$app/navigation';
-	import { Flame, Zap, Brain, Coffee, Lock, ArrowLeft, Shuffle } from '@lucide/svelte';
-	import { confusions } from '$lib/confusion.svelte';
-	import { availablePairs } from '$lib/confusion-session';
+	import { Flame, Zap, Coffee, Lock, ArrowLeft, ArrowRight } from '@lucide/svelte';
 
 	const unitIds = scriptUnits.map((u) => u.id);
 	let profileGlyph = $state<Glyph | null>(null);
-
-	// The lab needs both halves of at least one contrast pair introduced.
-	const confusionPairs = $derived(availablePairs((id) => srs.isIntroduced(id)));
-	const charOf = (id: string) => glyphById.get(id)?.char ?? id;
 
 	const anyIntroduced = $derived(srs.introducedCount > 0);
 	const nextUnit = $derived(scriptUnits.find((u) => !srs.isUnitDone(u.id)));
@@ -54,27 +48,21 @@
 		</div>
 	</header>
 
+	<!-- Reviewing letters lives in Review with every other deck, not here. A
+	     second review economy inside Script Studio is exactly what made "do I
+	     have anything to review?" a four-screen question. -->
+	{#if anyIntroduced}
+		<a class="review-line" href="/review">
+			{#if srs.dueCount > 0}
+				<strong>{srs.dueCount} letter{srs.dueCount === 1 ? '' : 's'}</strong> due in Review
+			{:else}
+				Letters you've learned stay sharp in Review
+			{/if}
+			<ArrowRight size={16} strokeWidth={2.2} />
+		</a>
+	{/if}
+
 	<section class="hero-cards">
-		<button
-			class="card practice-card"
-			disabled={!anyIntroduced}
-			onclick={() => {
-				sfx.tap();
-				goto('/script/practice');
-			}}
-		>
-			<span class="card-emoji"><Brain size={28} strokeWidth={1.8} /></span>
-			<span class="card-title">{ui('practice').text}</span>
-			<span class="card-sub">
-				{#if !anyIntroduced}
-					Finish a lesson first
-				{:else if srs.dueCount > 0}
-					<span class="due-badge">{srs.dueCount}</span> {ui('to-review').text}
-				{:else}
-					All caught up, keep it sharp
-				{/if}
-			</span>
-		</button>
 		<button
 			class="card builder-card"
 			disabled={!srs.isUnitDone('first-letters')}
@@ -103,26 +91,6 @@
 				{srs.isUnitDone('first-letters')
 					? 'Decode words you already know'
 					: 'Unlocks after unit 1'}
-			</span>
-		</button>
-		<button
-			class="card confusion-card"
-			disabled={confusionPairs.length === 0}
-			onclick={() => {
-				sfx.tap();
-				goto('/script/confusions');
-			}}
-		>
-			<span class="card-emoji"><Shuffle size={28} strokeWidth={1.8} /></span>
-			<span class="card-title">Confusion Lab</span>
-			<span class="card-sub">
-				{#if confusionPairs.length === 0}
-					Learn both halves of a sound pair
-				{:else if confusions.worst.length > 0}
-					You mix up {charOf(confusions.worst[0].target)} and {charOf(confusions.worst[0].picked)}
-				{:else}
-					Sort the sounds you'll confuse
-				{/if}
 			</span>
 		</button>
 	</section>
@@ -321,16 +289,29 @@
 		font-weight: 700;
 		color: var(--ink-soft);
 	}
-	.due-badge {
-		display: inline-grid;
-		place-items: center;
-		min-width: 22px;
-		height: 22px;
-		padding: 0 6px;
-		border-radius: 99px;
-		background: var(--coral);
-		color: #fff;
+	/* Points at Review rather than owning a review card, so the studio reads as
+	   one ladder with labs and not as a second app with its own deck. */
+	.review-line {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		margin-bottom: 14px;
+		padding: 10px 14px;
+		border-radius: var(--radius);
+		background: var(--card);
+		box-shadow: inset 0 0 0 2px var(--line);
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--ink-soft);
+		text-decoration: none;
+	}
+	.review-line strong {
+		color: var(--ink);
 		font-weight: 900;
+	}
+	.review-line :global(svg) {
+		margin-left: auto;
+		flex-shrink: 0;
 	}
 
 	.section-title {

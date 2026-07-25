@@ -14,6 +14,8 @@
 	import StartChooser from '$lib/components/StartChooser.svelte';
 	import { stories } from '$lib/data/stories';
 	import { customCards } from '$lib/custom-cards.svelte';
+	import { confusions } from '$lib/confusion.svelte';
+	import { combinedDue, deckSummaries, hasAnyDeck, type ReviewSnapshot } from '$lib/review';
 	import { scriptSheet } from '$lib/script-sheet.svelte';
 	import {
 		GraduationCap, BookOpen, PenLine, Dumbbell, Layers, ArrowRight, Volume2, VolumeX
@@ -27,6 +29,20 @@
 	const unlockedStories = $derived(
 		stories.filter((s) => s.requires.every((id) => progress.isCompleted(id))).length
 	);
+
+	const reviewSnapshot = $derived<ReviewSnapshot>({
+		vocab: {
+			due: vocabSrs.dueCount,
+			known: vocabSrs.introducedCount,
+			mastered: vocabSrs.masteredCount
+		},
+		glyphs: { due: srs.dueCount, known: srs.introducedCount, total: totalGlyphs },
+		cards: { due: customCards.dueCount, count: customCards.count },
+		pairs: { total: confusions.total }
+	});
+	const reviewDue = $derived(combinedDue(reviewSnapshot));
+	const reviewStarted = $derived(hasAnyDeck(reviewSnapshot));
+	const dueDecks = $derived(deckSummaries(reviewSnapshot).filter((d) => d.due > 0));
 
 	const primary = $derived(primaryTrack(progress.profile));
 	const courseNext = $derived(allLessons.find((l) => l.id === progress.currentLesson));
@@ -165,29 +181,25 @@
 			<ArrowRight size={22} strokeWidth={2} class="pc-arrow" />
 		</a>
 
-		{#if vocabSrs.introducedCount > 0}
-			<a class="tile" href="/practice">
+		<!-- One tile for every deck. This used to be three (practice, cards, and
+		     a second cards tile in the list below when the count was zero), which
+		     meant "have I got anything to review?" had three answers on one
+		     screen. See $lib/review. -->
+		{#if reviewStarted}
+			<a class="tile" href="/review">
 				<span class="tile-icon teal"><Dumbbell size={20} strokeWidth={2} /></span>
 				<span class="tile-text">
-					<span class="tile-title">{ui('practice').text}</span>
+					<span class="tile-title">{ui('review').text}</span>
 					<span class="tile-sub">
-						{#if vocabSrs.dueCount > 0}{vocabSrs.dueCount} {ui('to-review').text}{:else}Keep your {vocabSrs.introducedCount} words fresh{/if}
+						{#if reviewDue > 0}
+							{#each dueDecks as d, i (d.id)}{i > 0 ? ' · ' : ''}{d.due}
+							{d.due === 1 ? d.noun.replace(/s$/, '') : d.noun}{/each}
+						{:else}
+							All caught up
+						{/if}
 					</span>
 				</span>
-				{#if vocabSrs.dueCount > 0}<span class="due">{vocabSrs.dueCount}</span>{:else}<ArrowRight size={18} strokeWidth={2} class="tile-arrow" />{/if}
-			</a>
-		{/if}
-
-		{#if customCards.count > 0}
-			<a class="tile" href="/cards">
-				<span class="tile-icon plum"><Layers size={20} strokeWidth={2} /></span>
-				<span class="tile-text">
-					<span class="tile-title">My cards</span>
-					<span class="tile-sub">
-						{#if customCards.dueCount > 0}{customCards.dueCount} ready to review{:else}{customCards.count} card{customCards.count > 1 ? 's' : ''} · all caught up{/if}
-					</span>
-				</span>
-				{#if customCards.dueCount > 0}<span class="due">{customCards.dueCount}</span>{:else}<ArrowRight size={18} strokeWidth={2} class="tile-arrow" />{/if}
+				{#if reviewDue > 0}<span class="due">{reviewDue}</span>{:else}<ArrowRight size={18} strokeWidth={2} class="tile-arrow" />{/if}
 			</a>
 		{/if}
 
@@ -212,19 +224,9 @@
 						<span class="tile-title">{t.title}</span>
 						<span class="tile-sub">{t.audience}</span>
 					</span>
-					{#if t.id === 'script' && srs.dueCount > 0}<span class="due">{srs.dueCount}</span>{:else}<ArrowRight size={18} strokeWidth={2} class="tile-arrow" />{/if}
-				</a>
-			{/each}
-			{#if customCards.count === 0}
-				<a class="tile" href="/cards">
-					<span class="tile-icon plum"><Layers size={20} strokeWidth={2} /></span>
-					<span class="tile-text">
-						<span class="tile-title">My cards</span>
-						<span class="tile-sub">Make your own review cards for anything you want to remember</span>
-					</span>
 					<ArrowRight size={18} strokeWidth={2} class="tile-arrow" />
 				</a>
-			{/if}
+			{/each}
 		</section>
 	{/if}
 </div>
