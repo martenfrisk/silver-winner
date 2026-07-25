@@ -18,6 +18,7 @@
 //             every voice the manifest claims for it.
 import { course } from '../src/lib/data/course';
 import { lineMy, stories } from '../src/lib/data/stories';
+import { morphology } from '../src/lib/data/morphology';
 import {
 	allAudioSyllables,
 	aspirationPairs,
@@ -323,6 +324,36 @@ const warn = (category: string, msg: string) => add(warnings, category, msg);
 
 	for (const text of Object.keys(manifest))
 		if (!texts.has(text)) warn(cat, `stale manifest entry "${text}" (no longer speakable)`);
+}
+
+// ── Morphology ────────────────────────────────────────────────────────
+// Decompositions are only useful if they're true, and the failure is silent:
+// a typo'd part still renders, it just teaches the learner a word that isn't
+// there. So the parts must rebuild the word exactly, and the word must be
+// something the course actually teaches.
+{
+	const cat = 'Morphology';
+	const taught = new Set<string>();
+	for (const unit of course)
+		for (const lesson of unit.lessons)
+			for (const ex of lesson.exercises) if (ex.kind === 'learn') taught.add(ex.my);
+
+	for (const [word, parts] of Object.entries(morphology)) {
+		if (!taught.has(word)) err(cat, `"${word}" is decomposed but no lesson teaches it`);
+		if (parts.length < 2) {
+			err(cat, `"${word}" has ${parts.length} part(s) — a decomposition needs at least two`);
+			continue;
+		}
+		const rebuilt = parts.map((p) => p.my).join('');
+		if (rebuilt !== word) err(cat, `"${word}" parts rebuild to "${rebuilt}"`);
+		for (const p of parts) {
+			if (!p.my) err(cat, `"${word}" has an empty part`);
+			// `base` exists to point the cross-link somewhere real; if it isn't a
+			// taught word it's just noise the learner can't follow up.
+			if (p.base && !taught.has(p.base))
+				warn(cat, `"${word}" part "${p.my}" bases on "${p.base}", which no lesson teaches`);
+		}
+	}
 }
 
 // ── One word, one meaning ─────────────────────────────────────────────
