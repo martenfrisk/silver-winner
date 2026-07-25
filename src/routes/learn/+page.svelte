@@ -3,13 +3,23 @@
 	// not a winding map. Every feature from the old path is here: locking,
 	// stars, unit skip, test-out, crowns, and the optional deeper rounds (now
 	// full labelled rows instead of tiny +2/+3 chips).
-	import { course, lessonSteps, stepStarsKey, type Lesson } from '$lib/data/course';
+	import { course, lessonSteps, stepStarsKey, type Lesson, type Unit } from '$lib/data/course';
+	import { lessonOrder } from '$lib/data/lesson-order';
+	import { storiesForUnit, storyStarsKey } from '$lib/data/stories';
+	import { readerStarsKey, unitVocab } from '$lib/reader-session';
 	import { progress } from '$lib/progress.svelte';
-	import { canSkipUnit } from '$lib/tracks';
+	import { vocabSrs } from '$lib/vocab-srs.svelte';
+	import { canSkipUnit, primaryMode } from '$lib/tracks';
 	import { sfx } from '$lib/audio';
 	import { goto } from '$app/navigation';
-	import HubHeader from '$lib/components/HubHeader.svelte';
-	import { Lock, Crown, Zap } from '@lucide/svelte';
+	import { Lock, Crown, Zap, BookOpen, BookOpenText } from '@lucide/svelte';
+
+	const mode = $derived(primaryMode(progress.profile));
+
+	const UNIT_OF_LESSON = new Map(
+		course.flatMap((u) => u.lessons.map((l) => [l.id, u.id] as const))
+	);
+	const unitOfLesson = (id: string) => UNIT_OF_LESSON.get(id);
 
 	const MY_DIGITS = ['၀', '၁', '၂', '၃', '၄', '၅', '၆', '၇', '၈', '၉'];
 	const myDigit = (n: number) => String(n).split('').map((d) => MY_DIGITS[+d]).join('');
@@ -41,7 +51,6 @@
 <svelte:head><title>Learn · Shwe</title></svelte:head>
 
 <div class="learn">
-	<HubHeader title="Learn" />
 
 	{#each course as unit (unit.id)}
 		{@const pending = unit.lessons.filter((l) => !progress.isCompleted(l.id))}
@@ -61,6 +70,13 @@
 					title={unitSkipped ? 'Put these lessons back on the path' : 'Unlock what comes after without doing these lessons'}>
 					{unitSkipped ? 'Un-skip' : 'I know this'}
 				</button>
+			{/if}
+
+			<!-- Reading is not a separate track: readerStarsKey() is keyed on
+			     course unit ids, so it is this unit in script. Profiles reorder
+			     which comes first; neither is ever hidden or locked. -->
+			{#if mode === 'read'}
+				{@render readRow(unit)}
 			{/if}
 
 			<div class="spine">
@@ -149,16 +165,65 @@
 					</div>
 				{/each}
 			</div>
+
+			{#if mode === 'lessons'}
+				{@render readRow(unit)}
+			{/if}
+
+			<!-- Stories sit under the unit whose lesson unlocks them, so they read
+			     as the payoff for finishing it rather than a locked curiosity on
+			     a page of their own. -->
+			{#each storiesForUnit(unit.id, unitOfLesson, lessonOrder) as story (story.id)}
+				{@const open = story.requires.every((id) => progress.isCompleted(id))}
+				{@const stars = progress.stars[storyStarsKey(story.id)] ?? 0}
+				<svelte:element
+					this={open ? 'a' : 'div'}
+					class="side-row story"
+					class:locked={!open}
+					href={open ? `/stories/${story.id}` : undefined}
+				>
+					<span class="side-icon"><BookOpen size={18} strokeWidth={2} /></span>
+					<span class="side-text">
+						<span class="side-title">Story: {story.title}</span>
+						<span class="side-sub">
+							{#if stars > 0}
+								{'★'.repeat(stars)}<span class="dim">{'★'.repeat(3 - stars)}</span>
+							{:else if open}
+								A tiny conversation you can already follow
+							{:else}
+								Finish this unit's lessons to open it
+							{/if}
+						</span>
+					</span>
+				</svelte:element>
+			{/each}
 		</section>
 	{/each}
 </div>
 
+<!-- One unit read in Burmese script, no romanization. Never gated: a soft
+     label warns when the words are unfamiliar, but the row stays tappable. -->
+{#snippet readRow(unit: Unit)}
+	{@const stars = progress.stars[readerStarsKey(unit.id)] ?? 0}
+	{@const met = unitVocab(unit).some((v) => vocabSrs.isIntroduced(v.my))}
+	<a class="side-row" href="/reader/{unit.id}">
+		<span class="side-icon"><BookOpenText size={18} strokeWidth={2} /></span>
+		<span class="side-text">
+			<span class="side-title">Read this unit in script</span>
+			<span class="side-sub">
+				{#if stars > 0}
+					{'★'.repeat(stars)}<span class="dim">{'★'.repeat(3 - stars)}</span>
+				{:else if met}
+					The words you know, in Burmese letters only
+				{:else}
+					You have not learned these words yet
+				{/if}
+			</span>
+		</span>
+	</a>
+{/snippet}
+
 <style>
-	.learn {
-		max-width: 620px;
-		margin: 0 auto;
-		padding: 0 var(--s5) calc(96px + env(safe-area-inset-bottom));
-	}
 	.unit { margin-bottom: var(--s6); position: relative; }
 	.uh {
 		display: flex;
@@ -186,6 +251,56 @@
 		background: var(--teal-soft);
 	}
 	.skip.active { color: var(--ink-soft); background: var(--sink); }
+
+	/* Reading and story rows. Deliberately quieter than a lesson node: they are
+	   other ways through the same unit, not extra steps on the ladder. */
+	.side-row {
+		display: flex;
+		align-items: center;
+		gap: var(--s3);
+		margin: var(--s2) 0;
+		padding: 10px 14px;
+		border-radius: var(--radius);
+		background: var(--card);
+		box-shadow: inset 0 0 0 1.5px var(--line);
+		color: var(--ink);
+		text-decoration: none;
+	}
+	.side-row.locked {
+		opacity: 0.55;
+	}
+	.side-icon {
+		display: grid;
+		place-items: center;
+		width: 34px;
+		height: 34px;
+		flex: 0 0 auto;
+		border-radius: 10px;
+		color: var(--teal-ink);
+		background: var(--teal-soft);
+	}
+	.side-row.story .side-icon {
+		color: var(--gold-ink);
+		background: var(--gold-soft, var(--sink));
+	}
+	.side-text {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+		min-width: 0;
+	}
+	.side-title {
+		font-weight: 800;
+		font-size: 0.92rem;
+	}
+	.side-sub {
+		font-size: 0.78rem;
+		font-weight: 700;
+		color: var(--ink-soft);
+	}
+	.side-sub .dim {
+		color: var(--star-dim);
+	}
 
 	/* Beaded gold spine down the nodes. */
 	.spine { position: relative; }

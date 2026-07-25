@@ -2,6 +2,7 @@
 	import { buildPracticeQueue } from '$lib/script-session';
 	import { srs } from '$lib/srs.svelte';
 	import { progress } from '$lib/progress.svelte';
+	import { sessionXp } from '$lib/xp';
 	import ScriptSession from '$lib/components/ScriptSession.svelte';
 	import Mascot from '$lib/components/Mascot.svelte';
 
@@ -9,7 +10,7 @@
 	const { queue } = buildPracticeQueue(progress.audioOn);
 
 	function onfinish({ stars }: { stars: number }) {
-		const xp = 10 + (stars === 3 ? 5 : 0);
+		const xp = sessionXp({ kind: 'review', stars });
 		progress.addXp(xp);
 		return xp;
 	}

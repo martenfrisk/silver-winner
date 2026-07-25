@@ -297,6 +297,20 @@ button:disabled {
    Flat, calm, sentence-case. Deep teal is the default primary (gold has left
    the buttons entirely — it only rings, threads and rewards now). The press
    is a small settle, not a chunky 3D drop. */
+/* ── Hub page shell ──────────────────────────────────────────────────── */
+/* Every tab-root page shares this geometry. Each hub used to set its own:
+   max-width was 620px on two of them and 560px on the rest, and horizontal
+   padding was var(--s5) on half and a literal 20px on the other half. The
+   content column therefore changed width and offset on every navigation, so
+   the shared header appeared to jump around. One rule, one source of truth,
+   the same reason $lib/nav owns the tab predicates. */
+.hub-page {
+	max-width: 560px;
+	margin: 0 auto;
+	/* Top spacing belongs to HubHeader so pages without one still sit right. */
+	padding: 0 var(--s5) calc(96px + env(safe-area-inset-bottom));
+}
+
 .btn {
 	display: inline-flex;
 	align-items: center;

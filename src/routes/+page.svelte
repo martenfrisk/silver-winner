@@ -19,7 +19,7 @@
 	import { overview } from '$lib/overview.svelte';
 	import { scriptSheet } from '$lib/script-sheet.svelte';
 	import {
-		GraduationCap, BookOpen, PenLine, Dumbbell, ArrowRight, Volume2, VolumeX
+		GraduationCap, BookOpen, PenLine, Dumbbell, ArrowRight, Volume2, VolumeX, Snowflake
 	} from '@lucide/svelte';
 
 	const totalLessons = course.reduce((n, u) => n + u.lessons.length, 0);
@@ -139,6 +139,23 @@
 				</p>
 			</div>
 		</section>
+	{/if}
+
+	<!-- A freeze used to be spent in silence: you paid 100 XP and the only
+	     evidence was a number going down. Say so, once, then forget it. -->
+	{#if progress.freezeNotice}
+		<div class="freeze-note" role="status">
+			<Snowflake size={18} strokeWidth={2} />
+			<span>
+				A streak freeze kept your {progress.freezeNotice.streak} day streak alive.
+				{#if progress.freezes > 0}
+					You have {progress.freezes} left.
+				{:else}
+					That was your last one.
+				{/if}
+			</span>
+			<button onclick={() => progress.acknowledgeFreeze()} aria-label="Dismiss">✕</button>
+		</div>
 	{/if}
 
 	<!-- One hero action. There used to be two cards answering the same
@@ -308,6 +325,32 @@
 	}
 
 	.more { margin-top: var(--s3); display: flex; flex-direction: column; gap: var(--s3); }
+	/* Transient and dismissible: it reports one event, then goes away. */
+	.freeze-note {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin-bottom: var(--s4);
+		padding: 12px 14px;
+		border-radius: var(--radius);
+		background: var(--teal-soft);
+		box-shadow: inset 0 0 0 1.5px var(--teal-line, var(--line));
+		font-size: 0.88rem;
+		font-weight: 700;
+		color: var(--ink);
+	}
+	.freeze-note :global(svg) {
+		flex-shrink: 0;
+		color: var(--teal-ink);
+	}
+	.freeze-note span {
+		flex: 1;
+	}
+	.freeze-note button {
+		flex-shrink: 0;
+		color: var(--ink-soft);
+		font-weight: 900;
+	}
 	.more-title { font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 800; color: var(--ink-soft); }
 
 	/* One row per track: name, fill, count. Compact enough that all four fit

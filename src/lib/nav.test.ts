@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { HUBS, TABS, showBar, tabsFor } from './nav';
+import { HUBS, HUB_TITLES, TABS, isHubShell, showBar, tabsFor } from './nav';
 import { shellPages } from './shell-pages';
 
 describe('the two tab-bar invariants', () => {
@@ -65,6 +65,35 @@ describe('who owns what', () => {
 	it('keeps Today to itself', () => {
 		expect(owner('/')).toBe('Today');
 		expect(owner('/account')).toBe('You');
+	});
+});
+
+describe('the hub shell', () => {
+	it('covers exactly the routes that get the tab bar', () => {
+		// The root layout wraps these, so the shell and the bar must agree or a
+		// page gets one without the other.
+		for (const path of HUBS) expect(isHubShell(path), path).toBe(true);
+		expect(isHubShell('/lesson/first-words')).toBe(false);
+		expect(isHubShell('/practice')).toBe(false);
+	});
+
+	it('only titles routes that actually have the shell', () => {
+		for (const path of Object.keys(HUB_TITLES)) {
+			expect(isHubShell(path), path).toBe(true);
+		}
+	});
+
+	it('leaves the pages that own their header untitled', () => {
+		// /cards swaps its header during a review run and /script/builder has a
+		// back arrow that exits to the studio, so both render their own.
+		expect(HUB_TITLES['/cards']).toBeUndefined();
+		expect(HUB_TITLES['/script/builder']).toBeUndefined();
+	});
+
+	it('gives every titled hub a non-empty title', () => {
+		for (const [path, meta] of Object.entries(HUB_TITLES)) {
+			expect(meta.title.trim(), path).not.toBe('');
+		}
 	});
 });
 

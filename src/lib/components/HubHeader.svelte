@@ -57,6 +57,12 @@
 		gap: var(--s3);
 		padding-top: var(--s4);
 		margin-bottom: var(--s5);
+		/* Pinned to the tool row's height so the header occupies exactly the
+		   same box on every hub. Without this the height follows the title's
+		   line box, which varies with the text, with wrapping, and with when
+		   the display font finishes loading — all of which show up as the
+		   header shifting a couple of pixels between pages. */
+		min-height: 40px;
 	}
 	/* The house style for a hub title: five of the six hubs already used this
 	   display italic; /account was the lone holdout at 1.35rem/900. */
@@ -65,8 +71,15 @@
 		font-style: italic;
 		font-weight: 400;
 		font-size: 1.7rem;
+		/* Explicit, so the line box does not depend on the font's own metrics
+		   (which differ between the fallback and the loaded display face). */
+		line-height: 1.2;
 		color: var(--ink);
 		min-width: 0;
+		/* A long title shrinks rather than wrapping the header onto two rows. */
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 	h1.my {
 		font-style: normal;

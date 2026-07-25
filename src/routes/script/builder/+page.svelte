@@ -2,6 +2,7 @@
 	import { AUDIO_VOWELS, buildSyllable, glyphById, glyphs } from '$lib/data/script';
 	import { srs } from '$lib/srs.svelte';
 	import { progress } from '$lib/progress.svelte';
+	import { sessionXp, BUILDER_RUN } from '$lib/xp';
 	import { sfx, speak } from '$lib/audio';
 	import Mascot from '$lib/components/Mascot.svelte';
 
@@ -13,6 +14,8 @@
 	// Challenge mode: build the syllable that matches a target sound.
 	let target = $state<{ roman: string; consId: string; vowelId: string } | null>(null);
 	let challengeWins = $state(0);
+	/** One payout per visit, so the sandbox can't be farmed. */
+	let paidOut = $state(false);
 
 	const syl = $derived(
 		vowel ? buildSyllable(base, vowel, highTone) : { text: glyphById.get(base)!.char, roman: glyphById.get(base)!.sound === '(glottal) a' ? 'a' : glyphById.get(base)!.sound + 'a', highTone: false }
@@ -63,7 +66,14 @@
 		if (!target || !vowel) return;
 		if (buildSyllable(base, vowel).roman === target.roman) {
 			challengeWins++;
-			progress.addXp(2);
+			// The builder is a sandbox with no end, so it cannot pay per action:
+			// it used to give 2 XP per correct build, uncapped, which made it the
+			// cheapest XP in the app by a wide margin. One award per visit, once
+			// a run of builds is done, worth the same as any other lab session.
+			if (challengeWins === BUILDER_RUN) {
+				paidOut = true;
+				progress.addXp(sessionXp({ kind: 'lab' }));
+			}
 			sfx.fanfare();
 			setTimeout(newChallenge, 900);
 		}
@@ -94,7 +104,13 @@
 	{#if target}
 		<div class="challenge">
 			🎯 Build: <strong>{target.roman}</strong>
-			<span class="wins">{challengeWins} solved</span>
+			<span class="wins">
+				{#if paidOut}
+					Nice run, {challengeWins} solved
+				{:else}
+					{challengeWins}/{BUILDER_RUN} solved
+				{/if}
+			</span>
 			<button class="mini" onclick={() => (target = null)}>stop</button>
 		</div>
 	{:else}
@@ -164,11 +180,6 @@
 </div>
 
 <style>
-	.builder {
-		max-width: 560px;
-		margin: 0 auto;
-		padding: 0 20px 60px;
-	}
 	.topbar {
 		display: flex;
 		align-items: center;

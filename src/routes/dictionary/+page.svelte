@@ -9,7 +9,6 @@
 	import { progress } from '$lib/progress.svelte';
 	import { morphology } from '$lib/data/morphology';
 	import SpeakButton from '$lib/components/SpeakButton.svelte';
-	import HubHeader from '$lib/components/HubHeader.svelte';
 	import { Search, X } from '@lucide/svelte';
 
 	// Prefilled when arriving from a wrong-answer reveal's "Look it up", so the
@@ -45,7 +44,6 @@
 <svelte:head><title>Dictionary · Shwe</title></svelte:head>
 
 <div class="dict">
-	<HubHeader title="Dictionary" />
 
 	<div class="searchbar">
 		<Search size={18} strokeWidth={2} />
@@ -104,11 +102,6 @@
 </div>
 
 <style>
-	.dict {
-		max-width: 620px;
-		margin: 0 auto;
-		padding: 0 var(--s5) calc(96px + env(safe-area-inset-bottom));
-	}
 
 	.searchbar {
 		display: flex;

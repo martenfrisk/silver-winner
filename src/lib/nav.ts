@@ -78,6 +78,41 @@ export function showBar(path: string): boolean {
 	return HUBS.includes(path);
 }
 
+/**
+ * The title the shared header shows on each hub.
+ *
+ * Lives here rather than in each page because the root layout renders the
+ * header, and it renders it *once* for the whole hub section: navigating
+ * between hubs swaps only the page below it, so the header element is never
+ * torn down and rebuilt. That is what stops it shifting between pages, and it
+ * is a stronger guarantee than making eight pages agree on their geometry.
+ *
+ * `i18nKey` marks the two titles that are translated in immersion mode; the
+ * layout resolves those through `ui()`, which this pure module can't call.
+ *
+ * A hub with no entry still gets the shell, just no shared header — /cards
+ * swaps its own header out during a review run, so it owns that itself.
+ */
+export interface HubTitle {
+	title: string;
+	i18nKey?: 'profile' | 'script-studio';
+}
+
+export const HUB_TITLES: Record<string, HubTitle> = {
+	'/learn': { title: 'Learn' },
+	'/review': { title: 'Review' },
+	'/script': { title: 'Script Studio', i18nKey: 'script-studio' },
+	'/account': { title: 'Profile', i18nKey: 'profile' },
+	'/reader': { title: 'Reader track' },
+	'/stories': { title: 'Stories' },
+	'/dictionary': { title: 'Dictionary' }
+};
+
+/** Whether this route gets the shared page shell (max width, padding). */
+export function isHubShell(path: string): boolean {
+	return HUBS.includes(path);
+}
+
 /** Which tabs claim this path. Should always be exactly one for a hub. */
 export function tabsFor(path: string): TabSpec[] {
 	return TABS.filter((t) => t.on(path));

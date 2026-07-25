@@ -76,6 +76,9 @@
 			{/if}
 		</footer>
 	{:else}
+		<!-- Owned here rather than by the layout: a review run replaces this
+		     header with its own (the back arrow ends the run instead of
+		     navigating), so /cards is deliberately absent from HUB_TITLES. -->
 		<HubHeader title="My cards" />
 
 		{#if customCards.dueCount > 0}
@@ -115,9 +118,6 @@
 
 <style>
 	.cards {
-		max-width: 560px;
-		margin: 0 auto;
-		padding: 0 var(--s5) calc(96px + env(safe-area-inset-bottom));
 		display: flex;
 		flex-direction: column;
 		gap: var(--s4);

@@ -134,6 +134,16 @@ export function sanitizeNumberMap(u: unknown): Record<string, number> {
 	return out;
 }
 
+/** A half-written notice is worse than none, so it's all-or-nothing. */
+function sanitizeFreezeNotice(u: unknown): ProgressSaved['freezeNotice'] {
+	if (!isRecord(u) || typeof u.date !== 'string' || !u.date) return null;
+	return {
+		date: u.date,
+		used: Math.max(1, Math.round(num(u.used, 1))),
+		streak: Math.max(0, Math.round(num(u.streak, 0)))
+	};
+}
+
 /** The progress payload, as persisted. Owned here so export, restore and the store's own loader can't drift apart. */
 export interface ProgressSaved {
 	xp: number;
@@ -151,6 +161,8 @@ export interface ProgressSaved {
 	dailyGoal: number;
 	achievements: Record<string, number>; // achievement id -> epoch ms earned
 	freezes: number; // streak freezes held (bought with XP)
+	/** Pending "a freeze saved your streak" notice, until acknowledged. */
+	freezeNotice: { date: string; used: number; streak: number } | null;
 	crowns: Record<string, number>; // lessonId -> epoch ms of the perfect hard-mode run
 	skipped: Record<string, number>; // lessonId -> epoch ms it was skipped
 }
@@ -164,6 +176,7 @@ export function sanitizeProgress(u: unknown): Partial<ProgressSaved> {
 	const src = (isRecord(u) ? u : {}) as Partial<ProgressSaved>;
 	return {
 		...src,
+		freezeNotice: sanitizeFreezeNotice(src.freezeNotice),
 		stars: sanitizeNumberMap(src.stars),
 		activity: sanitizeNumberMap(src.activity),
 		achievements: sanitizeNumberMap(src.achievements),

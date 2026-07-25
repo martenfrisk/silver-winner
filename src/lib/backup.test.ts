@@ -157,7 +157,8 @@ describe('parseBackup sanitizing', () => {
 			activity: {},
 			achievements: {},
 			crowns: {},
-			skipped: {}
+			skipped: {},
+			freezeNotice: null
 		});
 		expect(JSON.parse(res.payloads[CUSTOM_KEY])).toEqual([]);
 		expect(res.summary).toMatchObject({ xp: 0, lessons: 0, glyphs: 0, words: 0, cards: 0 });
@@ -263,5 +264,44 @@ describe('presentation helpers', () => {
 			cards: 3
 		});
 		expect(withCards).toMatch(/2 lessons · 0 glyphs · 0 words · 3 cards$/);
+	});
+});
+
+describe('freeze notice', () => {
+	const parseProgress = (freezeNotice: unknown) => {
+		const res = parseBackup(
+			JSON.stringify({
+				app: 'myanlingo',
+				version: 1,
+				data: { [PROGRESS_KEY]: { freezeNotice } }
+			})
+		);
+		if (!res.ok) throw new Error(res.error);
+		return JSON.parse(res.payloads[PROGRESS_KEY]).freezeNotice;
+	};
+
+	it('keeps a well-formed notice', () => {
+		expect(parseProgress({ date: '2026-07-25', used: 2, streak: 11 })).toEqual({
+			date: '2026-07-25',
+			used: 2,
+			streak: 11
+		});
+	});
+
+	it('drops a notice with no date, rather than showing a half-written one', () => {
+		expect(parseProgress({ used: 2, streak: 11 })).toBeNull();
+		expect(parseProgress({ date: '', used: 1, streak: 1 })).toBeNull();
+		expect(parseProgress('a freeze was used')).toBeNull();
+		expect(parseProgress(null)).toBeNull();
+	});
+
+	it('repairs implausible counts instead of rejecting the whole notice', () => {
+		// A freeze that covered zero days is not a thing worth announcing, but
+		// the date is the part that makes the notice meaningful.
+		expect(parseProgress({ date: '2026-07-25', used: 0, streak: -4 })).toEqual({
+			date: '2026-07-25',
+			used: 1,
+			streak: 0
+		});
 	});
 });

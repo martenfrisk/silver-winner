@@ -7,7 +7,6 @@
 	import Mascot from '$lib/components/Mascot.svelte';
 	import { sfx } from '$lib/audio';
 	import { goto } from '$app/navigation';
-	import HubHeader from '$lib/components/HubHeader.svelte';
 	import { Flame, Zap, Coffee, Lock, ArrowRight } from '@lucide/svelte';
 
 	const unitIds = scriptUnits.map((u) => u.id);
@@ -37,7 +36,6 @@
 </svelte:head>
 
 <div class="studio">
-	<HubHeader title={ui('script-studio').text} />
 	<div class="subline">
 		<p class="my sub">အက္ခရာ</p>
 		<div class="pills">
@@ -173,11 +171,6 @@
 {/if}
 
 <style>
-	.studio {
-		max-width: 560px;
-		margin: 0 auto;
-		padding: 0 20px calc(96px + env(safe-area-inset-bottom));
-	}
 	.pill :global(svg) {
 		color: var(--gold-ink);
 	}

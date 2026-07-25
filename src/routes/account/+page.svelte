@@ -13,11 +13,11 @@
 	import { totalGlyphs } from '$lib/data/script';
 	import { ui, immersionTier } from '$lib/i18n.svelte';
 	import { achievements } from '$lib/achievements';
+	import { sync } from '$lib/sync.svelte';
 	import Mascot from '$lib/components/Mascot.svelte';
 	import Heatmap from '$lib/components/Heatmap.svelte';
-	import HubHeader from '$lib/components/HubHeader.svelte';
 	import { overview } from '$lib/overview.svelte';
-	import { Zap, Flame, GraduationCap, Trophy, Brain, Snowflake, Headphones, Download, Upload, Layers, Crown, BookOpen, BookOpenText, MessageSquare, PenLine } from '@lucide/svelte';
+	import { Zap, Flame, GraduationCap, Trophy, Brain, Snowflake, Headphones, Download, Upload, Layers, Crown, BookOpen, BookOpenText, MessageSquare, PenLine, Cloud, CloudOff, RefreshCw, LogOut, Mail } from '@lucide/svelte';
 
 	const courseTrack = $derived(overview.track('course'));
 	const readerTrack = $derived(overview.track('reader'));
@@ -123,6 +123,40 @@
 		// chance of two stores disagreeing about which learner they belong to.
 		location.reload();
 	}
+
+	// ── Sync ──────────────────────────────────────────────────────────
+	// Entirely optional and additive: with no Supabase project configured,
+	// `sync.enabled` is false and this whole section renders nothing, same as
+	// the app before this existed. See $lib/sync.svelte.ts and $lib/sync-merge
+	// for the sign-in flow and the merge rule.
+
+	let syncEmail = $state('');
+
+	function sendMagicLink(e: Event) {
+		e.preventDefault();
+		if (!syncEmail.trim()) return;
+		sync.sendMagicLink(syncEmail.trim());
+	}
+
+	/** Coarse "3 minutes ago" phrasing — precision doesn't matter here. */
+	function timeAgo(at: number): string {
+		const seconds = Math.max(0, Math.round((Date.now() - at) / 1000));
+		if (seconds < 60) return 'just now';
+		const minutes = Math.round(seconds / 60);
+		if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+		const hours = Math.round(minutes / 60);
+		if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+		const days = Math.round(hours / 24);
+		return `${days} day${days === 1 ? '' : 's'} ago`;
+	}
+
+	const syncStatusText = $derived.by(() => {
+		if (sync.status === 'syncing') return 'Syncing…';
+		if (sync.status === 'offline') return "Offline — will sync next time you're online.";
+		if (sync.status === 'error') return sync.message || 'Sync failed — will try again later.';
+		if (sync.lastSyncedAt) return `Last synced ${timeAgo(sync.lastSyncedAt)}.`;
+		return 'Not synced yet.';
+	});
 </script>
 
 <svelte:head>
@@ -130,7 +164,6 @@
 </svelte:head>
 
 <div class="account">
-	<HubHeader title={ui('profile').text} />
 
 	<section class="hero">
 		<Mascot mood="happy" size={110} />
@@ -260,8 +293,11 @@
 			<span class="setting-text">
 				<span class="setting-title"><Snowflake size={16} strokeWidth={2} /> Streak freeze</span>
 				<span class="setting-desc">
-					Each one silently covers a missed day so your streak survives.
-					Holding {progress.freezes}/{MAX_FREEZES}.
+					Each one covers a missed day so your streak survives, and you'll be
+					told when one is used. Holding {progress.freezes}/{MAX_FREEZES}.
+					{#if progress.freezeNotice}
+						Last used {progress.freezeNotice.date}.
+					{/if}
 				</span>
 			</span>
 			<button
@@ -402,6 +438,67 @@
 		</section>
 	{/if}
 
+	{#if sync.enabled}
+		<section class="sync">
+			<h2>Sync</h2>
+			{#if sync.user}
+				<div class="setting">
+					<span class="setting-text">
+						<span class="setting-title"><Cloud size={16} strokeWidth={2} /> {sync.user.email}</span>
+						<span class="setting-desc">{syncStatusText}</span>
+					</span>
+					<button
+						class="buy-btn"
+						disabled={sync.status === 'syncing'}
+						onclick={() => sync.syncNow()}
+					>
+						<RefreshCw size={14} strokeWidth={2} /> Sync now
+					</button>
+				</div>
+				<div class="setting">
+					<span class="setting-text">
+						<span class="setting-title">Signed in on this device</span>
+						<span class="setting-desc">
+							Signing out only forgets this device's sync connection. Everything already saved
+							here stays right where it is.
+						</span>
+					</span>
+					<button class="buy-btn" onclick={() => sync.signOut()}>
+						<LogOut size={14} strokeWidth={2} /> Sign out
+					</button>
+				</div>
+			{:else}
+				<div class="setting sync-form">
+					<span class="setting-text">
+						<span class="setting-title"><CloudOff size={16} strokeWidth={2} /> Sync across devices</span>
+						<span class="setting-desc">
+							Optional. Sign in with an email link to back up your progress and settings to your
+							account, and pick them up on another device. Nothing changes if you skip this.
+						</span>
+					</span>
+					<form onsubmit={sendMagicLink}>
+						<input
+							type="email"
+							placeholder="you@example.com"
+							bind:value={syncEmail}
+							required
+							disabled={sync.status === 'sending-link'}
+						/>
+						<button class="buy-btn" type="submit" disabled={sync.status === 'sending-link'}>
+							<Mail size={14} strokeWidth={2} />
+							{sync.status === 'sending-link' ? 'Sending…' : 'Send magic link'}
+						</button>
+					</form>
+				</div>
+				{#if sync.status === 'link-sent'}
+					<p class="note">Check {syncEmail} for a sign-in link.</p>
+				{:else if sync.status === 'error'}
+					<p class="backup-error" role="alert">{sync.message}</p>
+				{/if}
+			{/if}
+		</section>
+	{/if}
+
 	<section class="backup">
 		<h2>Backup</h2>
 		<div class="setting">
@@ -451,11 +548,6 @@
 </div>
 
 <style>
-	.account {
-		max-width: 560px;
-		margin: 0 auto;
-		padding: 0 20px calc(96px + env(safe-area-inset-bottom));
-	}
 	.hero {
 		display: flex;
 		align-items: center;
@@ -517,6 +609,7 @@
 	.activity h2,
 	.badges h2,
 	.calibration h2,
+	.sync h2,
 	.backup h2,
 	.danger h2 {
 		font-size: 1.1rem;
@@ -654,6 +747,9 @@
 		background: var(--teal-deep);
 	}
 	.buy-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
 		padding: 10px 16px;
 		border-radius: 12px;
 		font-weight: 700;
@@ -716,7 +812,8 @@
 		margin-top: 10px;
 	}
 	/* The backup rows are informational, not clickable as a whole — the button is. */
-	.backup .setting {
+	.backup .setting,
+	.sync .setting {
 		cursor: default;
 	}
 	.backup-error {
@@ -724,6 +821,57 @@
 		font-size: 0.85rem;
 		font-weight: 800;
 		color: var(--coral-ink);
+	}
+	/* A .setting row puts its control beside the text, which works for a toggle
+	   or a picker but not for a text field: sharing the row with a full
+	   paragraph of description squeezed the email input to 52px, far too narrow
+	   to type an address into. Stack instead, and give the field the whole
+	   width below the text. */
+	.sync-form {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 12px;
+	}
+	.sync-form form {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: stretch;
+		gap: 8px;
+	}
+	/* Wraps the button onto its own line once the field would drop below ~13rem,
+	   which is what keeps this usable on a narrow phone. */
+	.sync-form input {
+		flex: 1 1 13rem;
+		min-width: 0;
+		border: none;
+		padding: 10px 14px;
+		border-radius: 12px;
+		background: var(--bg);
+		box-shadow: inset 0 0 0 2px var(--line);
+		/* An input inherits neither the UI font nor its metrics, so without
+		   these it sat 9px shorter than the button beside it. */
+		font-family: var(--font-ui);
+		font-size: 0.85rem;
+		font-weight: 700;
+		line-height: 1.4;
+		color: var(--ink);
+	}
+	.sync-form input:focus {
+		outline: none;
+		box-shadow: inset 0 0 0 2px var(--teal);
+	}
+	/* An <input> does not stretch to a flex line's height the way a <button>
+	   does (its intrinsic height wins), so the two sat 6px apart. Pin both
+	   rather than relying on align-items. */
+	.sync-form form input,
+	.sync-form form button {
+		min-height: 40px;
+	}
+	.sync-form form button {
+		flex: 0 1 auto;
+	}
+	.sync-form input::placeholder {
+		color: var(--ink-soft);
 	}
 	.danger-row {
 		display: flex;

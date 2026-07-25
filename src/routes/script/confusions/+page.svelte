@@ -7,6 +7,7 @@
 	import { fly } from 'svelte/transition';
 	import { srs } from '$lib/srs.svelte';
 	import { progress } from '$lib/progress.svelte';
+	import { sessionXp } from '$lib/xp';
 	import { confusions } from '$lib/confusion.svelte';
 	import { scoreSort } from '$lib/confusion';
 	import { buildLabSession, availablePairs, type LabTrial } from '$lib/confusion-session';
@@ -106,8 +107,10 @@
 	function next() {
 		if (idx + 1 >= trials.length) {
 			done = true;
-			// A lab session is short and diagnostic, so the XP is a nod, not a wage.
-			progress.addXp(10);
+			// A lab session is short and diagnostic, so the XP is a nod, not a
+			// wage. A clean sweep earns the same perfect-run bonus as anything
+			// else (see $lib/xp).
+			progress.addXp(sessionXp({ kind: 'lab', stars: totalRight === totalChips ? 3 : 0 }));
 			return;
 		}
 		idx++;

@@ -137,6 +137,25 @@ class VocabSrs {
 		if (items && items.length > 0) this.introduce(items.map((v) => v.my));
 	}
 
+	/**
+	 * Seeds a whole course unit's step-1 vocabulary, for the reader track.
+	 *
+	 * Reading a unit teaches exactly the words its lessons teach, but the
+	 * reader run never introduced any of them — so a learner who worked only
+	 * through the reader ended up with an empty review deck forever, and no
+	 * Review tile on Today. Whichever way you meet a word, it should end up in
+	 * the same deck.
+	 */
+	introduceUnit(unitId: string) {
+		const unit = course.find((u) => u.id === unitId);
+		if (!unit) return;
+		const missing: string[] = [];
+		for (const lesson of unit.lessons) {
+			for (const item of byLesson.get(stepKey(lesson.id, 1)) ?? []) missing.push(item.my);
+		}
+		if (missing.length > 0) this.introduce(missing);
+	}
+
 	private introduce(myTexts: string[]) {
 		const now = Date.now();
 		const next = { ...this.entries };
