@@ -328,12 +328,6 @@ button:disabled {
 	box-shadow: 0 4px 12px -8px rgba(15, 63, 58, 0.5);
 }
 
-.btn:disabled {
-	background: var(--disabled-bg);
-	box-shadow: none;
-	color: var(--disabled-ink);
-}
-
 .btn.green {
 	background: var(--green);
 	box-shadow: 0 8px 20px -10px rgba(38, 128, 71, 0.5);
@@ -356,6 +350,17 @@ button:disabled {
 .btn.ghost:active:not(:disabled) {
 	background: var(--card-hover);
 	box-shadow: inset 0 0 0 1.5px var(--line);
+}
+
+/* Last, so it wins. The colour variants above match `.btn:disabled` on
+   specificity, so while this rule sat before them a disabled `.btn.green`
+   kept its full-strength green and read as tappable — on the assemble
+   exercise's Check button among others. */
+.btn:disabled {
+	background: var(--disabled-bg);
+	box-shadow: none;
+	color: var(--disabled-ink);
+	cursor: not-allowed;
 }
 
 /* ── Answer cards ────────────────────────────────────────────────────── */

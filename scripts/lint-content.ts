@@ -13,10 +13,12 @@
 //   Script  — confusable/unit/chart glyph references, no glyph in two units,
 //             decodable word parts that exist, are already taught by that
 //             unit, and recompose the word's Burmese text.
-//   Audio   — every speakable string (collected exactly like
-//             scripts/generate-audio.ts) has a manifest entry and an mp3.
+//   Audio   — every speakable string (from scripts/speakables.ts, shared with
+//             scripts/generate-audio.ts) has a manifest entry and an mp3, in
+//             every voice the manifest claims for it.
 import { course } from '../src/lib/data/course';
 import { lineMy, stories } from '../src/lib/data/stories';
+import { morphology } from '../src/lib/data/morphology';
 import {
 	allAudioSyllables,
 	aspirationPairs,
@@ -32,6 +34,8 @@ import {
 } from '../src/lib/data/script';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { DEFAULT_VOICE, VOICE_IDS } from '../src/lib/voices';
+import { collectSpeakables } from './speakables';
 
 const strictAudio = process.argv.includes('--strict-audio');
 
@@ -280,42 +284,76 @@ const warn = (category: string, msg: string) => add(warnings, category, msg);
 	const cat = 'Audio coverage';
 	const manifestPath = join(import.meta.dir, '../src/lib/audio-manifest.json');
 	const audioDir = join(import.meta.dir, '../static');
-	const manifest: Record<string, string> = JSON.parse(readFileSync(manifestPath, 'utf8'));
+	const manifest: Record<string, Record<string, string>> = JSON.parse(
+		readFileSync(manifestPath, 'utf8')
+	);
 
-	// Collect every speakable string exactly like scripts/generate-audio.ts.
-	const texts = new Set<string>();
-	for (const unit of course) {
-		for (const lesson of unit.lessons) {
-			for (const ex of lesson.exercises) {
-				if (ex.kind === 'learn') texts.add(ex.my);
-				else if (ex.kind === 'listen') texts.add(ex.my);
-				else if (ex.kind === 'choice' && ex.promptMy) texts.add(ex.promptMy);
-				else if (ex.kind === 'match') for (const p of ex.pairs) texts.add(p.l);
-				else if (ex.kind === 'assemble') texts.add(ex.my);
-			}
-		}
-	}
-	for (const g of glyphs) texts.add(g.speak);
-	for (const s of allAudioSyllables()) texts.add(s.text);
-	for (const words of Object.values(decodableWords)) for (const w of words) texts.add(w.my);
-	for (const sentences of Object.values(decodableSentences)) for (const s of sentences) texts.add(s.my);
-	for (const w of loanWords) texts.add(w.my);
-	for (const story of stories) for (const line of story.lines) texts.add(lineMy(line));
+	const texts = collectSpeakables();
 
 	const missing: string[] = [];
+	// Only the default voice is required. The extra voices exist for the
+	// contrast drills (see $lib/voices) and are worth a nudge when absent, but
+	// a string that can be spoken at all is not a coverage hole.
+	let partial = 0;
 	for (const text of texts) {
-		const file = manifest[text];
-		if (!file) missing.push(`"${text}" — no manifest entry`);
-		else if (!existsSync(join(audioDir, file)))
-			missing.push(`"${text}" — manifest points to missing file ${file}`);
+		const entry = manifest[text];
+		if (!entry || !entry[DEFAULT_VOICE]) {
+			missing.push(`"${text}" — no manifest entry for the default voice`);
+			continue;
+		}
+		for (const voice of VOICE_IDS) {
+			const stem = entry[voice];
+			if (!stem) {
+				if (voice !== DEFAULT_VOICE) partial++;
+				continue;
+			}
+			if (!existsSync(join(audioDir, 'audio', `${stem}.mp3`)))
+				missing.push(`"${text}" [${voice}] — manifest points to missing file ${stem}.mp3`);
+		}
 	}
 	if (missing.length > 0) {
 		for (const m of missing) warn(cat, m);
 		warn(cat, `${missing.length} speakable string(s) without audio — run \`bun run audio\` to regenerate`);
 	}
+	if (partial > 0) {
+		warn(
+			cat,
+			`${partial} string(s) exist in only one voice — the contrast drills fall back to a single talker. Run \`bun run audio\` to fill them in.`
+		);
+	}
 
 	for (const text of Object.keys(manifest))
 		if (!texts.has(text)) warn(cat, `stale manifest entry "${text}" (no longer speakable)`);
+}
+
+// ── Morphology ────────────────────────────────────────────────────────
+// Decompositions are only useful if they're true, and the failure is silent:
+// a typo'd part still renders, it just teaches the learner a word that isn't
+// there. So the parts must rebuild the word exactly, and the word must be
+// something the course actually teaches.
+{
+	const cat = 'Morphology';
+	const taught = new Set<string>();
+	for (const unit of course)
+		for (const lesson of unit.lessons)
+			for (const ex of lesson.exercises) if (ex.kind === 'learn') taught.add(ex.my);
+
+	for (const [word, parts] of Object.entries(morphology)) {
+		if (!taught.has(word)) err(cat, `"${word}" is decomposed but no lesson teaches it`);
+		if (parts.length < 2) {
+			err(cat, `"${word}" has ${parts.length} part(s) — a decomposition needs at least two`);
+			continue;
+		}
+		const rebuilt = parts.map((p) => p.my).join('');
+		if (rebuilt !== word) err(cat, `"${word}" parts rebuild to "${rebuilt}"`);
+		for (const p of parts) {
+			if (!p.my) err(cat, `"${word}" has an empty part`);
+			// `base` exists to point the cross-link somewhere real; if it isn't a
+			// taught word it's just noise the learner can't follow up.
+			if (p.base && !taught.has(p.base))
+				warn(cat, `"${word}" part "${p.my}" bases on "${p.base}", which no lesson teaches`);
+		}
+	}
 }
 
 // ── One word, one meaning ─────────────────────────────────────────────

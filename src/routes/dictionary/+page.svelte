@@ -6,10 +6,20 @@
 	import { allVocab } from '$lib/vocab-srs.svelte';
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { progress } from '$lib/progress.svelte';
+	import { morphology } from '$lib/data/morphology';
 	import SpeakButton from '$lib/components/SpeakButton.svelte';
 	import { Search, ArrowLeft, X } from '@lucide/svelte';
 
 	let query = $state('');
+
+	// Searching a part should surface the words built from it: type "ten" and
+	// get ဆယ့်တစ် and နှစ်ဆယ်, which is where compounding stops being trivia
+	// and starts being a way to find things.
+	function partsMatch(my: string, q: string): boolean {
+		const parts = morphology[my];
+		if (!parts) return false;
+		return parts.some((p) => p.gloss.toLowerCase().includes(q) || p.my.includes(q));
+	}
 
 	// Sorted A–Z by meaning so it reads like a dictionary; search matches the
 	// meaning, the romanization, or the Burmese itself.
@@ -22,7 +32,8 @@
 			(v) =>
 				v.en.toLowerCase().includes(q) ||
 				v.roman.toLowerCase().includes(q) ||
-				v.my.includes(query.trim())
+				v.my.includes(query.trim()) ||
+				partsMatch(v.my, q)
 		);
 	});
 </script>
@@ -58,11 +69,25 @@
 		<ul class="list">
 			{#each results as v (v.my)}
 				{@const learned = vocabSrs.isIntroduced(v.my)}
+				{@const parts = morphology[v.my]}
 				<li class="row" class:new={!learned}>
 					<span class="dot" class:on={learned} title={learned ? 'Learned' : 'Not learned yet'}></span>
 					<div class="text">
 						<span class="my word">{v.my}</span>
 						<span class="meaning">{v.en}{#if progress.showRoman}<span class="roman"> · {v.roman}</span>{/if}</span>
+						{#if parts}
+							<!-- The word taken apart: each piece is one you can learn once
+							     and then recognise everywhere else it turns up. -->
+							<span class="parts">
+								{#each parts.filter((p) => p.my.trim()) as p, i (i)}
+									{#if i > 0}<span class="plus" aria-hidden="true">+</span>{/if}
+									<span class="part">
+										<span class="my part-my">{p.my}</span>
+										<span class="part-gloss">{p.gloss}</span>
+									</span>
+								{/each}
+							</span>
+						{/if}
 					</div>
 					<SpeakButton text={v.my} />
 				</li>
@@ -205,6 +230,37 @@
 	}
 	.roman {
 		color: var(--teal-ink);
+	}
+	/* The breakdown sits under the meaning, quieter than it: useful when you
+	   look for it, never competing with the word itself. */
+	.parts {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 4px 6px;
+		margin-top: 6px;
+	}
+	.part {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 4px;
+		padding: 2px 7px;
+		border-radius: 8px;
+		background: var(--card-sunken, var(--line));
+	}
+	.part-my {
+		font-size: 0.9rem;
+		font-weight: 700;
+	}
+	.part-gloss {
+		font-size: 0.72rem;
+		font-weight: 700;
+		color: var(--ink-soft);
+	}
+	.plus {
+		font-size: 0.72rem;
+		font-weight: 900;
+		color: var(--ink-soft);
 	}
 	.row.new .word {
 		color: var(--ink);

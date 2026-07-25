@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import manifest from '$lib/audio-manifest.json';
+import { DEFAULT_VOICE } from '$lib/voices';
 import {
 	allAudioSyllables,
 	aspirationMate,
@@ -49,8 +50,8 @@ describe('allAudioSyllables', () => {
 	});
 
 	it('every syllable has a pre-generated audio file', () => {
-		const spoken = manifest as Record<string, string>;
-		for (const s of all) expect(spoken[s.text], s.text).toBeDefined();
+		const spoken = manifest as Record<string, Record<string, string>>;
+		for (const s of all) expect(spoken[s.text]?.[DEFAULT_VOICE], s.text).toBeDefined();
 	});
 });
 

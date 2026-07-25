@@ -182,6 +182,92 @@ landed together; progress export/import (#20) was deliberately left out.
   side effect.
 - ✅ **Meta description + OpenGraph tags** — the app had no share preview.
 
+## Round 9 — learner-owned content (2026-07-24)
+
+Two features that let the learner act on the course rather than only move
+through it, plus the backup that makes owning anything meaningful.
+
+- ✅ **Dictionary** (`/dictionary`) — search every word the course teaches,
+  by Burmese, romanization or English. Derived entirely from `allVocab` +
+  the vocab SRS, so it persists nothing and shows each word's box heat.
+- ✅ **Custom review cards** (`/cards`, `custom-cards.svelte.ts`) — the
+  learner writes a front and a back; the card then rides the same 5-box
+  Leitner ladder as the vocab and glyph SRS, reviewed by self-grade.
+  Fourth localStorage key: `myanlingo-custom-v1`.
+- ✅ **Backup and restore** (#20) — see below.
+
+## Round 10 — backup, and hardening the storage layer (2026-07-25)
+
+- ✅ **Progress export/import** (#20) — a Backup section on the account page
+  downloads all four localStorage keys as one dated JSON file and restores
+  one back. Restore writes the keys and reloads rather than patching live
+  stores: the reload re-runs the pre-paint theme script, re-seeds the vocab
+  SRS from the restored progress, and removes any chance of two stores
+  disagreeing about which learner they belong to. A backup is a whole
+  snapshot, so restoring one always writes all four keys — a file exported
+  before Script Studio was opened clears script progress rather than
+  merging into it.
+- ✅ **The storage loaders trusted their own JSON** — three of the four
+  stores assigned `JSON.parse` output straight to a declared type, so a
+  corrupt key escaped the `try/catch` and threw later, in a component. The
+  worst was `custom-cards`, whose payload is a bare array: a stored `"null"`
+  parsed fine and then threw on `.filter`. Restore is the one path where
+  untrusted JSON reaches storage, so `backup.ts` owns the sanitizers and
+  **both** paths use them — a doctored file and a hand-corrupted key are the
+  same problem. Boxes are clamped to the ladder, because a box past the end
+  of `INTERVALS` schedules `now + undefined` = NaN, an item never due again.
+- ✅ **"Reset everything" left the custom cards behind** — `resetAll` never
+  touched the fourth key (and `customCards` had no `reset()` to call), so
+  the confirm text was lying.
+
+## Round 11 — learning science as the differentiator (2026-07-25)
+
+Four changes chosen for evidence behind them rather than novelty, plus the
+lab they fed into. The common thread: the comfortable arrangement is
+usually the worse one.
+
+- ✅ **Talker variability in contrast drills** — every string is rendered in
+  both Burmese neural voices and the aspiration/tone drills pick a talker
+  per trial (high-variability phonetic training). Weaker than the
+  literature's paradigm — two vendor voices, not five humans — and with
+  only two there's no third to hold out as an unheard test, so the app
+  claims nothing about generalization. `progress.voice` covers #18.
+- ✅ **Interleaved practice queues** — `introduce()` gives a lesson step's
+  cohort one due timestamp and `dueIds()` sorts by due, so the first review
+  after a lesson served it as a block. Jittering the due does *not* fix
+  that (every lesson-1 word is still due before every lesson-2 word); the
+  reorder has to happen after selection.
+- ✅ **Retention calibration** — after a correct answer, occasionally "will
+  you still know this tomorrow?", then the confrontation when the word
+  returns, and a lean on the account page. A review inside 20 hours leaves
+  the prediction pending rather than resolving it dishonestly.
+- ✅ **Morphological decomposition** — 38 course compounds taken apart, in
+  the dictionary and the wrong-answer reveal. Lint enforces that parts
+  rebuild the word and that the word is really taught.
+- ✅ **Confusion Lab** (`/script/confusions`) — see below.
+
+### The Confusion Lab
+
+Every choice drill already computed the most diagnostic fact available —
+not that the learner was wrong but *what they reached for* — and threw it
+away, keeping a bare boolean. ခ mistaken for ဂ and ခ mistaken for က are
+different problems and the app couldn't tell them apart.
+
+Recording the pair gives a per-learner confusion matrix, which drives a
+drill ordered by real blind spots and a map the learner can read. The
+trial format is **sorting, not picking**: six audio chips into two bins,
+because a two-option "which did you hear?" has a 50% floor, tests
+labelling one token rather than the category, and allows no revision.
+
+Scoped to aspiration pairs on purpose. Tone is the other candidate and is
+held back: creaky versus high is a phonation difference and the one thing
+synthetic speech is least likely to carry faithfully, and training a
+contrast on audio that doesn't reliably contain it is worse than not
+training it. Tone joins once a native speaker has checked the clips (#24).
+
+Still to come, per the original design: minimal pairs in real sentences
+where the confusion changes meaning, as a graduation rung.
+
 ## Highest impact next
 
 1. ✅ **Listening-only exercise type** — the audio pipeline exists but is never the
@@ -253,9 +339,9 @@ landed together; progress export/import (#20) was deliberately left out.
     variable swap; the cream/gold palette needs a deliberate dark counterpart.
 17. ✅ **PWA / offline** — service worker caching the audio and app shell. Still
     local; makes the phone-home-screen use case work.
-18. 💤 **Voice option in settings** — offer the male voice
-    (`my-MM-ThihaNeural`) alongside the female one; volume sliders for SFX vs.
-    speech.
+18. ✅ **Voice option in settings** — the male voice (`my-MM-ThihaNeural`) is
+    selectable alongside the female one (round 11). Volume sliders for SFX vs.
+    speech are 💤 still open.
 19. ✅ **Accessibility pass** — `VerdictAnnouncer.svelte` mirrors correct/wrong
     into an `aria-live` region (naming the answer, so consecutive correct
     answers stay distinct and actually re-announce); the exercise stage takes
@@ -265,8 +351,8 @@ landed together; progress export/import (#20) was deliberately left out.
     UA default ring was invisible under it. Applied to the lesson player,
     /practice, /reader **and** `ScriptSession` (all four surfaces).
     The trace-skip path is moot while the pad is gated off (#6).
-20. 💤 **Progress export/import** — download/restore a JSON backup of the
-    localStorage keys from the profile page.
+20. ✅ **Progress export/import** — download/restore a JSON backup of the
+    localStorage keys from the profile page. See round 10.
 
 ## Engineering quality
 

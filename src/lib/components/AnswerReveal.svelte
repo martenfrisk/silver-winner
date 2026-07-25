@@ -3,6 +3,7 @@
 	// button. The parent auto-plays the audio once; this lets the learner
 	// replay it while reading the reveal.
 	import SpeakButton from './SpeakButton.svelte';
+	import { morphology } from '$lib/data/morphology';
 	import { Lightbulb } from '@lucide/svelte';
 
 	let {
@@ -23,6 +24,11 @@
 		/** One-line grammar tip for the pattern the learner just missed. */
 		tip?: string | null;
 	} = $props();
+
+	// A missed compound is the best moment to show it isn't one lump: the
+	// learner already knows they didn't have it, and the pieces are usually
+	// words they do have.
+	const parts = $derived(morphology[my]?.filter((p) => p.my.trim()) ?? null);
 </script>
 
 <div class="reveal-card" role="status">
@@ -33,6 +39,14 @@
 			{#if sub}<span class="reveal-sub">{sub}</span>{/if}
 			{#if en}<span class="reveal-en">{en}</span>{/if}
 		</span>
+		{#if parts}
+			<span class="reveal-parts">
+				{#each parts as p, i (i)}
+					{#if i > 0}<span class="reveal-plus" aria-hidden="true">+</span>{/if}
+					<span class="reveal-part"><span class="my">{p.my}</span> {p.gloss}</span>
+				{/each}
+			</span>
+		{/if}
 		{#if tip}<span class="reveal-tip"><Lightbulb size={15} strokeWidth={2} /> {tip}</span>{/if}
 	</div>
 </div>
@@ -84,6 +98,24 @@
 	}
 	.reveal-en {
 		color: var(--ink-soft);
+	}
+	.reveal-parts {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 3px 6px;
+		margin-top: 5px;
+		font-family: var(--font-ui);
+		font-size: 0.78rem;
+		font-weight: 700;
+		color: var(--ink-soft);
+	}
+	.reveal-part .my {
+		font-size: 0.9rem;
+		color: var(--ink);
+	}
+	.reveal-plus {
+		font-weight: 900;
 	}
 	.reveal-tip {
 		margin-top: 4px;

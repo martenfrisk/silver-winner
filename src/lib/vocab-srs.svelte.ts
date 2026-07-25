@@ -8,8 +8,7 @@
 import { browser } from '$app/environment';
 import { course, stepExercises, type LessonStep } from '$lib/data/course';
 import { progress } from '$lib/progress.svelte';
-
-const STORAGE_KEY = 'myanlingo-vocab-v1';
+import { VOCAB_KEY as STORAGE_KEY, sanitizeEntries, sanitizeStrings } from '$lib/backup';
 
 /** Review intervals per box, in milliseconds (same ladder as the script SRS). */
 const INTERVALS = [
@@ -86,9 +85,10 @@ class VocabSrs {
 			try {
 				const raw = localStorage.getItem(STORAGE_KEY);
 				if (raw) {
-					const s: Saved = JSON.parse(raw);
-					this.entries = s.entries ?? {};
-					this.mistakes = s.mistakes ?? [];
+					// Sanitized rather than trusted — see the note in srs.svelte.ts.
+					const s = JSON.parse(raw) as Partial<Saved> | null;
+					this.entries = sanitizeEntries(s?.entries, VOCAB_MAX_BOX);
+					this.mistakes = sanitizeStrings(s?.mistakes, MISTAKE_CAP);
 				}
 			} catch {
 				// Corrupt storage — start fresh.

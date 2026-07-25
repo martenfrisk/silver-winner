@@ -3,6 +3,7 @@
 	import type { ChoiceOption } from '$lib/script-session';
 	import SpeakButton from './SpeakButton.svelte';
 	import { sfx, speak } from '$lib/audio';
+	import type { VoiceId } from '$lib/voices';
 	import { ui } from '$lib/i18n.svelte';
 	import { Zap, Ear } from '@lucide/svelte';
 
@@ -11,6 +12,7 @@
 		questionKey,
 		promptBig,
 		promptSpeak,
+		speakVoice,
 		speakAfter = false,
 		options,
 		correct,
@@ -21,12 +23,15 @@
 		questionKey?: 'what-sound' | 'what-say' | 'which-hear';
 		promptBig?: string;
 		promptSpeak?: string;
+		/** Talker for the prompt — set by contrast drills, see $lib/voices. */
+		speakVoice?: VoiceId;
 		/** Hold the audio until after answering (decode-it-yourself drills). */
 		speakAfter?: boolean;
 		options: ChoiceOption[];
 		correct: number;
 		timed?: number;
-		onanswer: (ok: boolean) => void;
+		/** `picked` is the chosen option's glyph, when it has one — see $lib/confusion. */
+		onanswer: (ok: boolean, picked?: string) => void;
 	} = $props();
 
 	let answered = $state<number | null>(null); // -1 = timed out
@@ -37,7 +42,7 @@
 
 	onMount(() => {
 		if (promptSpeak && !timed && !speakAfter) {
-			const t = setTimeout(() => speak(promptSpeak!), 350);
+			const t = setTimeout(() => speak(promptSpeak!, speakVoice), 350);
 			return () => clearTimeout(t);
 		}
 		if (timed) {
@@ -64,13 +69,13 @@
 			// Always hear the answer, not just on the decode drills that held
 			// the audio back: a right answer is the best moment to attach the
 			// sound to the shape.
-			if (promptSpeak) setTimeout(() => speak(promptSpeak!), 250);
+			if (promptSpeak) setTimeout(() => speak(promptSpeak!, speakVoice), 250);
 		} else {
 			sfx.wrong();
 			// Hear what was asked while the correct option is highlighted.
-			if (promptSpeak) setTimeout(() => speak(promptSpeak!), 500);
+			if (promptSpeak) setTimeout(() => speak(promptSpeak!, speakVoice), 500);
 		}
-		onanswer(ok);
+		onanswer(ok, options[i]?.glyphId);
 	}
 
 	function cls(i: number): string {
@@ -91,14 +96,14 @@
 		<div class="prompt">
 			<span class="my big" class:word={promptBig.length > 2}>{promptBig}</span>
 			{#if promptSpeak && answered !== null}
-				<SpeakButton text={promptSpeak} />
+				<SpeakButton text={promptSpeak} voice={speakVoice} />
 			{/if}
 		</div>
 	{:else if promptSpeak}
 		<!-- Listening drill: audio-only prompt, tap to replay. -->
 		<div class="prompt listen">
 			<span class="listen-ear" aria-hidden="true"><Ear size={22} strokeWidth={2} /></span>
-			<SpeakButton text={promptSpeak} size="lg" />
+			<SpeakButton text={promptSpeak} size="lg" voice={speakVoice} />
 		</div>
 	{/if}
 	<div class="options" class:glyph-grid={options.some((o) => o.my)}>

@@ -1,73 +1,57 @@
 // Generates static MP3 pronunciation files for every Burmese string in the
-// course using Microsoft Edge's neural TTS (voice: my-MM-NilarNeural).
+// course using Microsoft Edge's neural TTS, in every voice in $lib/voices.
 //
 // Usage:
 //   pip install edge-tts        (or point EDGE_TTS at the binary)
-//   bun run audio
+//   bun run audio               all voices, skipping files already on disk
+//   bun run audio --voice m     just one voice
 //
-// Output: static/audio/<hash>.mp3 + src/lib/audio-manifest.json
-import { course } from '../src/lib/data/course';
-import { allAudioSyllables, decodableSentences, decodableWords, glyphs, loanWords } from '../src/lib/data/script';
-import { lineMy, stories } from '../src/lib/data/stories';
+// Output: static/audio/<hash>.mp3 + src/lib/audio-manifest.json, which maps
+// each string to a { voiceId: hash } record. The manifest stores the bare
+// hash rather than the path because it ships in the client bundle and the
+// "audio/" prefix on every entry was pure repetition.
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { DEFAULT_VOICE, VOICES, VOICE_IDS, audioHash, isVoiceId } from '../src/lib/voices';
+import { collectSpeakables } from './speakables';
 
 const EDGE_TTS = process.env.EDGE_TTS ?? 'edge-tts';
-const VOICE = process.env.TTS_VOICE ?? 'my-MM-NilarNeural';
 const outDir = join(import.meta.dir, '../static/audio');
 const manifestPath = join(import.meta.dir, '../src/lib/audio-manifest.json');
 
-/** djb2 — stable tiny hash for filenames. */
-function hash(s: string): string {
-	let h = 5381;
-	for (const c of s) h = (h * 33) ^ c.codePointAt(0)!;
-	return (h >>> 0).toString(16).padStart(8, '0');
-}
+const voiceArg = process.argv[process.argv.indexOf('--voice') + 1];
+const wanted = process.argv.includes('--voice') && isVoiceId(voiceArg) ? [voiceArg] : VOICE_IDS;
 
-// Collect every string that the app can speak.
-const texts = new Set<string>();
-for (const unit of course) {
-	for (const lesson of unit.lessons) {
-		for (const ex of lesson.exercises) {
-			if (ex.kind === 'learn') texts.add(ex.my);
-			else if (ex.kind === 'choice' && ex.promptMy) texts.add(ex.promptMy);
-			else if (ex.kind === 'match') for (const p of ex.pairs) texts.add(p.l);
-			else if (ex.kind === 'assemble') texts.add(ex.my);
-			else if (ex.kind === 'listen') texts.add(ex.my);
-		}
-	}
-}
-// Script Studio: glyph names, buildable syllables, decodable words + sentences.
-for (const g of glyphs) texts.add(g.speak);
-for (const s of allAudioSyllables()) texts.add(s.text);
-for (const words of Object.values(decodableWords)) for (const w of words) texts.add(w.my);
-for (const sentences of Object.values(decodableSentences)) for (const s of sentences) texts.add(s.my);
-for (const w of loanWords) texts.add(w.my);
-for (const story of stories) for (const line of story.lines) texts.add(lineMy(line));
-
+const texts = [...collectSpeakables()];
 mkdirSync(outDir, { recursive: true });
 
-const entries = [...texts].map((text) => ({ text, file: `audio/${hash(text)}.mp3` }));
-const todo = entries.filter((e) => !existsSync(join(outDir, `${hash(e.text)}.mp3`)));
-console.log(`${texts.size} strings, ${todo.length} to generate (voice: ${VOICE})`);
+/** Every (text, voice) pair we want on disk. */
+const jobs = texts.flatMap((text) =>
+	wanted.map((voice) => ({ text, voice, stem: audioHash(text, voice) }))
+);
+const todo = jobs.filter((j) => !existsSync(join(outDir, `${j.stem}.mp3`)));
+
+console.log(
+	`${texts.length} strings × ${wanted.length} voice(s) (${wanted.join(', ')}) — ${todo.length} to generate`
+);
 
 let failed = 0;
 const CONCURRENCY = 4;
 for (let i = 0; i < todo.length; i += CONCURRENCY) {
 	const batch = todo.slice(i, i + CONCURRENCY);
 	await Promise.all(
-		batch.map(async ({ text }) => {
-			const dest = join(outDir, `${hash(text)}.mp3`);
+		batch.map(async ({ text, voice, stem }) => {
+			const dest = join(outDir, `${stem}.mp3`);
 			const proc = Bun.spawn(
-				[EDGE_TTS, '--voice', VOICE, '--text', text, '--write-media', dest],
+				[EDGE_TTS, '--voice', VOICES[voice].tts, '--text', text, '--write-media', dest],
 				{ stdout: 'ignore', stderr: 'pipe' }
 			);
 			const code = await proc.exited;
 			if (code !== 0) {
 				failed++;
-				console.error(`FAILED: ${text}\n${await new Response(proc.stderr).text()}`);
+				console.error(`FAILED [${voice}]: ${text}\n${await new Response(proc.stderr).text()}`);
 			} else {
-				console.log(`ok: ${text}`);
+				console.log(`ok [${voice}]: ${text}`);
 			}
 		})
 	);
@@ -78,6 +62,23 @@ if (failed > 0) {
 	process.exit(1);
 }
 
-const manifest = Object.fromEntries(entries.map((e) => [e.text, e.file]));
+// The manifest lists a voice only when its file is actually on disk, so a
+// partial run (`--voice m` interrupted, say) degrades to fewer voices for some
+// strings rather than pointing the app at files that aren't there.
+const manifest: Record<string, Record<string, string>> = {};
+for (const text of texts) {
+	const available: Record<string, string> = {};
+	for (const voice of VOICE_IDS) {
+		const stem = audioHash(text, voice);
+		if (existsSync(join(outDir, `${stem}.mp3`))) available[voice] = stem;
+	}
+	if (Object.keys(available).length > 0) manifest[text] = available;
+}
+
 writeFileSync(manifestPath, JSON.stringify(manifest, null, '\t') + '\n');
-console.log(`\nWrote ${entries.length} entries to src/lib/audio-manifest.json`);
+
+const full = Object.values(manifest).filter((v) => Object.keys(v).length === VOICE_IDS.length);
+console.log(
+	`\nWrote ${Object.keys(manifest).length} entries to src/lib/audio-manifest.json ` +
+		`(${full.length} with all ${VOICE_IDS.length} voices, default ${DEFAULT_VOICE})`
+);

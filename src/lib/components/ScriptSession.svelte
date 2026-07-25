@@ -25,6 +25,7 @@
 	import NoAudioPrompt from './NoAudioPrompt.svelte';
 	import VerdictAnnouncer from './VerdictAnnouncer.svelte';
 	import HeaderMute from './HeaderMute.svelte';
+	import { confusions } from '$lib/confusion.svelte';
 
 	let {
 		initialQueue,
@@ -106,10 +107,14 @@
 		return `${e.kind}:${'glyph' in e ? e.glyph.id : ''}`;
 	}
 
-	function grade(ok: boolean) {
+	function grade(ok: boolean, picked?: string) {
 		answered = ok;
 		noAudioPromptState.noteAnswer();
 		const g = ex && 'glyph' in ex ? ex.glyph.id : ex?.kind === 'choice' ? ex.glyphId : undefined;
+		// What they reached for instead, not just that they were wrong. This is
+		// the one byte the drill already knew and used to discard — see
+		// $lib/confusion.
+		if (!ok && g && picked && picked !== g) confusions.note(g, picked);
 		if (
 			ex?.kind === 'choice' ||
 			ex?.kind === 'word' ||
@@ -262,6 +267,7 @@
 							questionKey={ex.questionKey}
 							promptBig={ex.promptBig}
 							promptSpeak={ex.promptSpeak}
+							speakVoice={ex.speakVoice}
 							speakAfter={ex.speakAfter}
 							options={ex.options}
 							correct={ex.correct}

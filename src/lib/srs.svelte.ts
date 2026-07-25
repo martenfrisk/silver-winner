@@ -1,8 +1,7 @@
 // Spaced-repetition state for the Script Studio: one Leitner-box entry per
 // glyph, persisted to localStorage. Box 0 = new/lapsed … box 4 = mastered.
 import { browser } from '$app/environment';
-
-const STORAGE_KEY = 'myanlingo-script-v1';
+import { SCRIPT_KEY as STORAGE_KEY, sanitizeEntries, sanitizeStrings } from '$lib/backup';
 
 /** Review intervals per box, in milliseconds. */
 const INTERVALS = [
@@ -36,9 +35,12 @@ class Srs {
 			try {
 				const raw = localStorage.getItem(STORAGE_KEY);
 				if (raw) {
-					const s: Saved = JSON.parse(raw);
-					this.entries = s.entries ?? {};
-					this.unitsDone = s.unitsDone ?? [];
+					// Sanitized rather than trusted: this is the same code path a
+					// restored backup takes, and a hand-corrupted key would otherwise
+					// throw somewhere far from here. See $lib/backup.
+					const s = JSON.parse(raw) as Partial<Saved> | null;
+					this.entries = sanitizeEntries(s?.entries, MAX_BOX);
+					this.unitsDone = sanitizeStrings(s?.unitsDone);
 				}
 			} catch {
 				// Corrupt storage — start fresh.

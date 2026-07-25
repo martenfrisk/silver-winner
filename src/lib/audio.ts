@@ -3,10 +3,12 @@
 // platform speech synthesis as a fallback.
 import { progress } from '$lib/progress.svelte';
 import manifest from '$lib/audio-manifest.json';
+import { DEFAULT_VOICE, VOICE_IDS, type VoiceId } from '$lib/voices';
 // Type-only, so this costs nothing at runtime — no course data is pulled in.
 import type { Exercise } from '$lib/data/course';
 
-const pronunciations: Record<string, string> = manifest;
+/** text -> { voiceId: filename stem }. See scripts/generate-audio.ts. */
+const pronunciations: Record<string, Partial<Record<VoiceId, string>>> = manifest;
 
 let ctx: AudioContext | null = null;
 
@@ -103,20 +105,55 @@ export function canSpeak(text?: string): boolean {
 	return burmeseVoice() !== null;
 }
 
+/** Which voices a string was actually rendered in — usually all of them. */
+export function voicesFor(text: string): VoiceId[] {
+	const entry = pronunciations[text];
+	if (!entry) return [];
+	return VOICE_IDS.filter((v) => entry[v]);
+}
+
+/**
+ * Picks a voice for one trial, rotating deterministically on `seed`.
+ *
+ * Deterministic rather than random so a trial keeps the same voice across
+ * re-renders — the alternative is the talker changing when a replay button is
+ * pressed, which turns a listening drill into a different question. Falls back
+ * to the learner's preferred voice when the string has only one rendering.
+ */
+export function voiceForTrial(text: string, seed: number): VoiceId {
+	const available = voicesFor(text);
+	if (available.length <= 1) return available[0] ?? preferredVoice();
+	return available[Math.abs(Math.trunc(seed)) % available.length];
+}
+
+function preferredVoice(): VoiceId {
+	return progress.voice;
+}
+
 const audioCache = new Map<string, HTMLAudioElement>();
 let current: HTMLAudioElement | null = null;
 
-/** Element for `text`, created (and so started downloading) on first ask. */
-function element(text: string): HTMLAudioElement | null {
-	const file = pronunciations[text];
-	if (!file) return null;
-	let a = audioCache.get(file);
+/** Element for `text` in `voice`, created (and so started downloading) on first ask. */
+function element(text: string, voice?: VoiceId): HTMLAudioElement | null {
+	const entry = pronunciations[text];
+	if (!entry) return null;
+	// Fall back through the requested voice, the learner's preference, then the
+	// default, so a string rendered in only one voice still plays.
+	const stem =
+		(voice && entry[voice]) ?? entry[preferredVoice()] ?? entry[DEFAULT_VOICE] ?? firstStem(entry);
+	if (!stem) return null;
+	let a = audioCache.get(stem);
 	if (!a) {
-		a = new Audio(`/${file}`);
+		a = new Audio(`/audio/${stem}.mp3`);
 		a.preload = 'auto';
-		audioCache.set(file, a);
+		audioCache.set(stem, a);
 	}
 	return a;
+}
+
+function firstStem(entry: Partial<Record<VoiceId, string>>): string | undefined {
+	for (const v of VOICE_IDS) if (entry[v]) return entry[v];
+	return undefined;
 }
 
 /**
@@ -160,10 +197,10 @@ export function speakablesOf(ex: Exercise | undefined): string[] {
  * Speaks Burmese text — from a pre-generated audio file when available,
  * otherwise via platform speech synthesis. Returns whether it spoke.
  */
-export function speak(text: string): boolean {
+export function speak(text: string, voice?: VoiceId): boolean {
 	if (!progress.audioOn || typeof window === 'undefined') return false;
 
-	const a = element(text);
+	const a = element(text, voice);
 	if (a) {
 		current?.pause();
 		current = a;
@@ -173,12 +210,14 @@ export function speak(text: string): boolean {
 		return true;
 	}
 
-	const voice = burmeseVoice();
-	if (!voice) return false;
+	// No pre-generated file — fall back to a platform voice. The requested
+	// VoiceId has no meaning here; the OS offers whatever Burmese voice it has.
+	const systemVoice = burmeseVoice();
+	if (!systemVoice) return false;
 	speechSynthesis.cancel();
 	const u = new SpeechSynthesisUtterance(text);
-	u.voice = voice;
-	u.lang = voice.lang;
+	u.voice = systemVoice;
+	u.lang = systemVoice.lang;
 	u.rate = 0.85;
 	speechSynthesis.speak(u);
 	return true;

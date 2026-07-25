@@ -14,6 +14,7 @@ import type { Profile } from '$lib/progress.svelte';
 import { syllables } from '$lib/burmese';
 import { quoted } from '$lib/gloss';
 import { shuffle } from '$lib/shuffle';
+import { interleaveByGroup } from '$lib/interleave';
 import { allVocab, vocabByMy, vocabSrs, type VocabItem } from '$lib/vocab-srs.svelte';
 
 /** The course-exercise kinds a practice session generates. */
@@ -228,9 +229,16 @@ export function buildVocabPracticeQueue(profile: Profile | null = null): VocabEx
 		}
 	}
 
-	return ids
-		.slice(0, MAX_ITEMS)
-		.map((my, i) => ({ my, ex: exerciseFor(vocabByMy.get(my)!, i, vocabSrs.box(my), profile) }));
+	// 4. Interleave by source lesson. Selection above is due-ordered, which
+	// groups each lesson's cohort together (they share an introduce timestamp);
+	// presenting them that way is blocked practice, which tests better in the
+	// session and worse a week later. See $lib/interleave. Recent mistakes get
+	// spread through the session rather than front-loaded, which is the same
+	// argument: massing repetitions of a word you just missed is the weakest
+	// way to fix it.
+	return interleaveByGroup(ids.slice(0, MAX_ITEMS), (my) => vocabByMy.get(my)?.lessonId ?? '').map(
+		(my, i) => ({ my, ex: exerciseFor(vocabByMy.get(my)!, i, vocabSrs.box(my), profile) })
+	);
 }
 
 export function starsFor(mistakes: number): number {

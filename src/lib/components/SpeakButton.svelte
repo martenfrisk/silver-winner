@@ -3,9 +3,23 @@
 	import { canSpeak, speak } from '$lib/audio';
 	import { sfx } from '$lib/audio';
 	import { progress } from '$lib/progress.svelte';
+	import type { VoiceId } from '$lib/voices';
 	import { Volume2 } from '@lucide/svelte';
 
-	let { text, size = 'md' }: { text: string; size?: 'md' | 'lg' } = $props();
+	let {
+		text,
+		size = 'md',
+		voice
+	}: {
+		text: string;
+		size?: 'md' | 'lg';
+		/**
+		 * Talker to replay in. Contrast drills pass the one their prompt used —
+		 * without it, a replay would swap the voice mid-trial and quietly change
+		 * the question being asked.
+		 */
+		voice?: VoiceId;
+	} = $props();
 	let hasAudio = $state(false);
 	// Hidden while audio is off — a speaker button that can't make a sound is
 	// worse than no button.
@@ -22,7 +36,7 @@
 
 	function onclick(e: MouseEvent) {
 		e.stopPropagation();
-		if (!speak(text)) sfx.tap();
+		if (!speak(text, voice)) sfx.tap();
 	}
 </script>
 

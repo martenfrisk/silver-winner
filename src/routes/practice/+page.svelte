@@ -23,6 +23,8 @@
 	import { AttemptTracker, MAX_ATTEMPTS } from '$lib/stuck';
 	import { AutoAdvance } from '$lib/auto-advance.svelte';
 	import { noAudioPromptState } from '$lib/no-audio-prompt.svelte';
+	import { calibration } from '$lib/calibration.svelte';
+	import { shouldAsk, verdictLine, type Resolved } from '$lib/calibration';
 
 	// The queue is built once at mount; requeues append copies.
 	let queue = $state<VocabEx[]>(buildVocabPracticeQueue(progress.profile));
@@ -41,6 +43,13 @@
 	// Misses per word, so a review can't trap you on one item (see $lib/stuck).
 	const attempts = new AttemptTracker();
 	let retired = $state(false);
+
+	// Retention calibration (see $lib/calibration): `askPrediction` holds the
+	// footer open on a question, `resolved` reports a past prediction meeting
+	// reality. Never both on one card — being told you were wrong and asked to
+	// predict again in the same breath is noise.
+	let askPrediction = $state(false);
+	let resolved = $state<Resolved | null>(null);
 
 	// Correct answers move on by themselves after a beat.
 	const auto = new AutoAdvance();
@@ -96,6 +105,12 @@
 	function applyResult(ok: boolean, { autoSpeak = true } = {}) {
 		if (!item) return;
 		noAudioPromptState.noteAnswer();
+		// Box before grading — what the learner was actually predicting about.
+		const boxBefore = vocabSrs.box(item.my);
+		// Any standing prediction on this word meets reality now. Resolving
+		// before grading keeps the two independent: the SRS schedules, this only
+		// reports.
+		resolved = calibration.resolve(item.my, ok);
 		vocabSrs.grade(item.my, ok);
 		if (ok) {
 			status = 'correct';
@@ -103,7 +118,17 @@
 			maxCombo = Math.max(maxCombo, combo);
 			sfx.correct();
 			if (combo > 0 && combo % 5 === 0) sfx.match(); // combo milestone
-			auto.start(advance);
+			askPrediction =
+				!resolved &&
+				shouldAsk({
+					correct: true,
+					box: boxBefore,
+					hasPending: calibration.hasPending(item.my),
+					askedThisSession: calibration.askedThisSession
+				});
+			// The question replaces the auto-advance rather than racing it —
+			// being timed out mid-thought would make the answer meaningless.
+			if (!askPrediction) auto.start(advance);
 		} else {
 			status = 'wrong';
 			mistakes++;
@@ -149,6 +174,15 @@
 		applyResult(ok, { autoSpeak: false });
 	}
 
+	/** Records the prediction and moves on — the question is the last beat of the card. */
+	function predict(said: boolean) {
+		if (!item) return;
+		calibration.predict(item.my, said, vocabSrs.box(item.my));
+		askPrediction = false;
+		sfx.tap();
+		advance();
+	}
+
 	function advance() {
 		if (!ex) return;
 		auto.cancel();
@@ -158,6 +192,8 @@
 		selected = null;
 		sequence = [];
 		retired = false;
+		askPrediction = false;
+		resolved = null;
 		if (idx >= queue.length) finish();
 	}
 
@@ -298,11 +334,28 @@
 		</main>
 
 		<footer class:correct={status === 'correct'} class:wrong={status === 'wrong'}>
-			{#if status === 'correct'}
+			{#if status === 'correct' && askPrediction}
+				<div class="feedback stacked" in:fly={{ y: 24, duration: 250 }}>
+					<div class="verdict-row">
+						<Mascot mood="happy" size={52} />
+						<strong>Will you still know this tomorrow?</strong>
+					</div>
+					<p class="predict-note">No wrong answer. We'll tell you what happened.</p>
+					<div class="predict-row">
+						<button class="btn ghost" onclick={() => predict(false)}>Probably not</button>
+						<button class="btn green" onclick={() => predict(true)}>Yes</button>
+					</div>
+				</div>
+			{:else if status === 'correct'}
 				<div class="feedback" in:fly={{ y: 24, duration: 250 }}>
 					<Mascot mood="happy" size={64} />
 					<div class="feedback-text">
 						<strong>{['ကောင်းတယ်! Nice!', 'Great job!', 'ဟုတ်ပြီ! Correct!'][solved % 3]}</strong>
+						{#if resolved}
+							<span class="called-it" class:hit={resolved.said === resolved.ok}>
+								{verdictLine(resolved.said, resolved.ok)}
+							</span>
+						{/if}
 					</div>
 					{#if combo >= 2}
 						<span class="combo-chip" class:hot={combo >= 5}>🔥×{combo}</span>
@@ -317,6 +370,11 @@
 						<Mascot mood="sad" size={52} />
 						<strong>{ui('not-quite').text}</strong>
 					</div>
+					{#if resolved}
+						<p class="called-it" class:hit={resolved.said === resolved.ok}>
+							{verdictLine(resolved.said, resolved.ok)}
+						</p>
+					{/if}
 					{#if reveal}
 						<AnswerReveal
 							my={reveal.my}
@@ -472,6 +530,31 @@
 		flex-direction: column;
 		align-items: stretch;
 		gap: 10px;
+	}
+	/* Calibration: the question that holds the card open, and the line that
+	   reports an earlier prediction meeting reality. */
+	.predict-note {
+		margin: 0;
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--ink-soft);
+	}
+	.predict-row {
+		display: flex;
+		gap: 10px;
+	}
+	.predict-row .btn {
+		flex: 1;
+	}
+	.called-it {
+		display: block;
+		margin: 4px 0 0;
+		font-size: 0.85rem;
+		font-weight: 800;
+		color: var(--ink-soft);
+	}
+	.called-it.hit {
+		color: var(--teal-deep);
 	}
 	.verdict-row {
 		display: flex;
