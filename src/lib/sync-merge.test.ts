@@ -287,3 +287,99 @@ describe('mergeState: confusions', () => {
 		expect(merged.confusions).toEqual({ kha: { ga: 5, ka: 1 }, nga: { ka: 2 } });
 	});
 });
+
+describe('mergeState: whole-state idempotency', () => {
+	// The individual rules are each tested for idempotency above, but the
+	// property that actually matters is the composite one: pushing a merged
+	// result and merging again must be a no-op. If it isn't, every routine
+	// re-sync drifts, and the drift compounds silently across devices. This is
+	// the guarantee that makes a snapshot sync safe to run repeatedly.
+	const rich = (): { local: SyncState; remote: SyncState } => ({
+		local: state({
+			progress: progress({
+				xp: 400,
+				streak: 5,
+				lastStudy: '2026-07-20',
+				stars: { 'first-words': 3, 'how-are-you': 1 },
+				activity: { '2026-07-19': 30, '2026-07-20': 25 },
+				achievements: { 'first-10': 111 },
+				crowns: { 'first-words': 222 },
+				skipped: { 'ka-row': 333 }
+			}),
+			script: {
+				entries: { ka: { box: 2, due: 900, seen: 5, lapses: 1 } },
+				unitsDone: ['first-letters']
+			},
+			vocab: { entries: { ရေ: { box: 1, due: 800, seen: 3, lapses: 0 } }, mistakes: ['ရေ'] },
+			cards: [{ id: 'a', front: 'x', back: 'y', box: 2, due: 700, created: 10 }],
+			calibration: {
+				pending: [{ id: 'ရေ', said: true, at: 500, box: 2 }],
+				history: [{ said: true, ok: false, at: 400 }]
+			},
+			confusions: { kha: { ga: 3 } }
+		}),
+		remote: state({
+			progress: progress({
+				xp: 380,
+				streak: 7,
+				lastStudy: '2026-07-21',
+				stars: { 'first-words': 2, 'polite-talk': 3 },
+				activity: { '2026-07-20': 40, '2026-07-21': 15 },
+				achievements: { 'seven-day': 555 },
+				crowns: { 'how-are-you': 666 },
+				skipped: {}
+			}),
+			script: {
+				entries: { ka: { box: 3, due: 950, seen: 8, lapses: 2 }, kha: { box: 1, due: 100, seen: 1, lapses: 0 } },
+				unitsDone: ['first-letters', 'hooks-and-tails']
+			},
+			vocab: { entries: { ထမင်း: { box: 2, due: 850, seen: 4, lapses: 1 } }, mistakes: ['ထမင်း'] },
+			cards: [{ id: 'b', front: 'p', back: 'q', box: 0, due: 600, created: 20 }],
+			calibration: {
+				pending: [{ id: 'ထမင်း', said: false, at: 450, box: 1 }],
+				history: [{ said: false, ok: true, at: 300 }]
+			},
+			confusions: { kha: { ga: 5 }, sa: { hsa: 2 } }
+		})
+	});
+
+	it('merging the merged result against the same remote changes nothing', () => {
+		const { local, remote } = rich();
+		const once = mergeState(local, remote, 100, 200);
+		const twice = mergeState(once, remote, 100, 200);
+		expect(twice).toEqual(once);
+	});
+
+	it('stays stable when the merged result becomes the remote too', () => {
+		// The realistic loop: merge, push, then another device pulls what we
+		// pushed. Nothing may grow on that round trip.
+		const { local, remote } = rich();
+		const once = mergeState(local, remote, 100, 200);
+		expect(mergeState(once, once, 100, 200)).toEqual(once);
+	});
+
+	it('never loses a recorded gain from either side', () => {
+		const { local, remote } = rich();
+		const m = mergeState(local, remote, 100, 200);
+		expect(m.progress.xp).toBe(400); // max, not 780
+		expect(m.progress.stars['first-words']).toBe(3);
+		expect(m.progress.stars['polite-talk']).toBe(3);
+		expect(m.progress.activity['2026-07-20']).toBe(40); // max, not 65
+		expect(Object.keys(m.progress.achievements).sort()).toEqual(['first-10', 'seven-day']);
+		expect(Object.keys(m.script.entries).sort()).toEqual(['ka', 'kha']);
+		expect(m.script.entries.ka.seen).toBe(8); // the fuller history won
+		expect(m.script.unitsDone.sort()).toEqual(['first-letters', 'hooks-and-tails']);
+		expect(m.cards.map((c) => c.id).sort()).toEqual(['a', 'b']);
+		expect(m.confusions.kha.ga).toBe(5);
+	});
+
+	it('is order independent for the fields that are pure unions or maxima', () => {
+		const { local, remote } = rich();
+		const ab = mergeState(local, remote, 100, 200);
+		const ba = mergeState(remote, local, 100, 200);
+		expect(ba.progress.xp).toBe(ab.progress.xp);
+		expect(ba.script.entries).toEqual(ab.script.entries);
+		expect([...ba.script.unitsDone].sort()).toEqual([...ab.script.unitsDone].sort());
+		expect(ba.confusions).toEqual(ab.confusions);
+	});
+});
