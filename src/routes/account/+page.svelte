@@ -3,6 +3,8 @@
 	import { srs } from '$lib/srs.svelte';
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { customCards } from '$lib/custom-cards.svelte';
+	import { calibration } from '$lib/calibration.svelte';
+	import { describeLean } from '$lib/calibration';
 	import { buildBackup, backupFilename, parseBackup, describeBackup } from '$lib/backup';
 	import { VOICES, VOICE_IDS } from '$lib/voices';
 	import { speak } from '$lib/audio';
@@ -46,6 +48,9 @@
 		if (confirm('Reset course progress (lessons, XP, streak)? This cannot be undone.')) {
 			progress.reset();
 			vocabSrs.reset();
+			// Predictions are about course words; keeping them would resolve
+			// against a learner who no longer exists.
+			calibration.reset();
 		}
 	}
 
@@ -61,6 +66,7 @@
 			srs.reset();
 			vocabSrs.reset();
 			customCards.reset();
+			calibration.reset();
 		}
 	}
 
@@ -333,6 +339,35 @@
 		</label>
 	</section>
 
+	{#if calibration.summary.resolved > 0 || calibration.pendingCount > 0}
+		<section class="calibration">
+			<h2>How well you read yourself</h2>
+			<div class="cal-card">
+				{#if calibration.summary.resolved > 0}
+					<p class="cal-score">
+						<strong>{calibration.summary.right}</strong> of
+						<strong>{calibration.summary.resolved}</strong> predictions right
+					</p>
+					<div class="cal-bars">
+						<span class="cal-bar over" style="--n: {calibration.summary.overshoot}"></span>
+						<span class="cal-bar under" style="--n: {calibration.summary.undershoot}"></span>
+					</div>
+					<p class="cal-legend">
+						{calibration.summary.overshoot} thought you'd remember and didn't ·
+						{calibration.summary.undershoot} doubted yourself and knew it
+					</p>
+				{/if}
+				<p class="cal-lean">{describeLean(calibration.summary)}</p>
+				{#if calibration.pendingCount > 0}
+					<p class="note">
+						{calibration.pendingCount} prediction{calibration.pendingCount === 1 ? '' : 's'} waiting
+						on {calibration.pendingCount === 1 ? 'its word' : 'their words'} to come back around.
+					</p>
+				{/if}
+			</div>
+		</section>
+	{/if}
+
 	<section class="backup">
 		<h2>Backup</h2>
 		<div class="setting">
@@ -470,6 +505,7 @@
 	.settings h2,
 	.activity h2,
 	.badges h2,
+	.calibration h2,
 	.backup h2,
 	.danger h2 {
 		font-size: 1.1rem;
@@ -621,6 +657,52 @@
 		background: var(--disabled-bg, var(--line));
 		box-shadow: none;
 		cursor: not-allowed;
+	}
+	.cal-card {
+		background: var(--card);
+		border-radius: var(--radius);
+		box-shadow: inset 0 0 0 2px var(--line);
+		padding: 16px;
+	}
+	.cal-score {
+		margin: 0 0 10px;
+		font-size: 1rem;
+		font-weight: 700;
+	}
+	.cal-score strong {
+		font-weight: 900;
+	}
+	/* Two bars sized by count, so the lean is visible before the sentence is read. */
+	.cal-bars {
+		display: flex;
+		gap: 4px;
+		height: 10px;
+		margin-bottom: 8px;
+	}
+	.cal-bar {
+		flex: var(--n) 0 0;
+		border-radius: 5px;
+		min-width: 0;
+	}
+	.cal-bar.over {
+		background: var(--coral);
+	}
+	.cal-bar.under {
+		background: var(--teal);
+	}
+	.cal-legend {
+		margin: 0 0 10px;
+		font-size: 0.78rem;
+		font-weight: 700;
+		color: var(--ink-soft);
+	}
+	.cal-lean {
+		margin: 0;
+		font-size: 0.9rem;
+		font-weight: 800;
+	}
+	.cal-card .note {
+		margin-top: 10px;
 	}
 	/* The backup rows are informational, not clickable as a whole — the button is. */
 	.backup .setting {

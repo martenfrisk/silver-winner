@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	BACKUP_KEYS,
 	BACKUP_VERSION,
+	CALIBRATION_KEY,
 	CUSTOM_KEY,
 	PROGRESS_KEY,
 	SCRIPT_KEY,
@@ -37,7 +38,11 @@ const fullBackup = () =>
 			}),
 			[CUSTOM_KEY]: JSON.stringify([
 				{ id: 'a1', front: 'umbrella', back: 'ထီး', box: 1, due: 300, created: 50 }
-			])
+			]),
+			[CALIBRATION_KEY]: JSON.stringify({
+				pending: [{ id: 'မင်္ဂလာပါ', said: true, at: 400, box: 2 }],
+				history: [{ said: true, ok: false, at: 350 }]
+			})
 		}),
 		T0
 	);

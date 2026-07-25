@@ -29,9 +29,16 @@ export const PROGRESS_KEY = 'myanlingo-progress-v1';
 export const SCRIPT_KEY = 'myanlingo-script-v1';
 export const VOCAB_KEY = 'myanlingo-vocab-v1';
 export const CUSTOM_KEY = 'myanlingo-custom-v1';
+export const CALIBRATION_KEY = 'myanlingo-calibration-v1';
 
 /** Every key a backup covers. A new persisted key belongs in this list. */
-export const BACKUP_KEYS = [PROGRESS_KEY, SCRIPT_KEY, VOCAB_KEY, CUSTOM_KEY] as const;
+export const BACKUP_KEYS = [
+	PROGRESS_KEY,
+	SCRIPT_KEY,
+	VOCAB_KEY,
+	CUSTOM_KEY,
+	CALIBRATION_KEY
+] as const;
 
 /** Both SRS ladders and the custom cards share this 5-box shape. */
 export interface LeitnerEntry {
@@ -195,6 +202,37 @@ export function sanitizeCards(u: unknown, maxBox: number): CardShape[] {
 	return out;
 }
 
+/** Retention-calibration state — see $lib/calibration. */
+export function sanitizeCalibration(u: unknown): {
+	pending: { id: string; said: boolean; at: number; box: number }[];
+	history: { said: boolean; ok: boolean; at: number }[];
+} {
+	const src = isRecord(u) ? u : {};
+	const pending: { id: string; said: boolean; at: number; box: number }[] = [];
+	if (Array.isArray(src.pending)) {
+		for (const raw of src.pending) {
+			if (!isRecord(raw) || typeof raw.id !== 'string' || !raw.id) continue;
+			pending.push({
+				id: raw.id,
+				said: raw.said === true,
+				at: num(raw.at, 0),
+				box: Math.max(0, Math.round(num(raw.box, 0)))
+			});
+		}
+	}
+	const history: { said: boolean; ok: boolean; at: number }[] = [];
+	if (Array.isArray(src.history)) {
+		for (const raw of src.history) {
+			if (!isRecord(raw)) continue;
+			// said/ok are the whole record; anything that doesn't carry both as
+			// booleans isn't a resolved prediction and would skew the summary.
+			if (typeof raw.said !== 'boolean' || typeof raw.ok !== 'boolean') continue;
+			history.push({ said: raw.said, ok: raw.ok, at: num(raw.at, 0) });
+		}
+	}
+	return { pending, history };
+}
+
 // ── Export ────────────────────────────────────────────────────────────
 
 /**
@@ -264,6 +302,7 @@ export function parseBackup(text: string, maxBox = 4): ParseResult {
 		mistakes: sanitizeStrings(vocabRaw.mistakes)
 	};
 	const cards = sanitizeCards(d[CUSTOM_KEY], maxBox);
+	const calibration = sanitizeCalibration(d[CALIBRATION_KEY]);
 
 	return {
 		ok: true,
@@ -271,7 +310,8 @@ export function parseBackup(text: string, maxBox = 4): ParseResult {
 			[PROGRESS_KEY]: JSON.stringify(progress),
 			[SCRIPT_KEY]: JSON.stringify(script),
 			[VOCAB_KEY]: JSON.stringify(vocab),
-			[CUSTOM_KEY]: JSON.stringify(cards)
+			[CUSTOM_KEY]: JSON.stringify(cards),
+			[CALIBRATION_KEY]: JSON.stringify(calibration)
 		},
 		summary: {
 			exportedAt: num(file.exportedAt, 0),
