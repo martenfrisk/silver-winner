@@ -48,7 +48,7 @@
 
 <svelte:head><title>My cards · Shwe</title></svelte:head>
 
-<div class="hub-page cards">
+<div class="cards">
 	{#if mode === 'review' && current}
 		<header class="head">
 			<button class="back" onclick={() => (mode = 'manage')} aria-label="End review"><ArrowLeft size={22} strokeWidth={2} /></button>
@@ -76,6 +76,9 @@
 			{/if}
 		</footer>
 	{:else}
+		<!-- Owned here rather than by the layout: a review run replaces this
+		     header with its own (the back arrow ends the run instead of
+		     navigating), so /cards is deliberately absent from HUB_TITLES. -->
 		<HubHeader title="My cards" />
 
 		{#if customCards.dueCount > 0}

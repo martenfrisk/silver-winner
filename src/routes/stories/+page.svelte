@@ -3,7 +3,6 @@
 	import { allLessons } from '$lib/data/course';
 	import { progress } from '$lib/progress.svelte';
 	import Mascot from '$lib/components/Mascot.svelte';
-	import HubHeader from '$lib/components/HubHeader.svelte';
 	import { BookOpen, Lock } from '@lucide/svelte';
 
 	const lessonTitle = (id: string) =>
@@ -22,8 +21,7 @@
 	<title>Stories · Shwe</title>
 </svelte:head>
 
-<div class="hub-page stories-home">
-	<HubHeader title="Stories" />
+<div class="stories-home">
 
 	<div class="intro">
 		<Mascot mood="idle" size={84} />

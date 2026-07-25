@@ -4,7 +4,6 @@
 	import { progress } from '$lib/progress.svelte';
 	import { srs } from '$lib/srs.svelte';
 	import Mascot from '$lib/components/Mascot.svelte';
-	import HubHeader from '$lib/components/HubHeader.svelte';
 	import { Lightbulb } from '@lucide/svelte';
 </script>
 
@@ -12,8 +11,7 @@
 	<title>Reader track · Shwe</title>
 </svelte:head>
 
-<div class="hub-page reader-home">
-	<HubHeader title="Reader track" />
+<div class="reader-home">
 
 	<div class="intro">
 		<Mascot mood="idle" size={84} />

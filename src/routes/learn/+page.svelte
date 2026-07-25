@@ -12,7 +12,6 @@
 	import { canSkipUnit, primaryMode } from '$lib/tracks';
 	import { sfx } from '$lib/audio';
 	import { goto } from '$app/navigation';
-	import HubHeader from '$lib/components/HubHeader.svelte';
 	import { Lock, Crown, Zap, BookOpen, BookOpenText } from '@lucide/svelte';
 
 	const mode = $derived(primaryMode(progress.profile));
@@ -51,8 +50,7 @@
 
 <svelte:head><title>Learn · Shwe</title></svelte:head>
 
-<div class="hub-page learn">
-	<HubHeader title="Learn" />
+<div class="learn">
 
 	{#each course as unit (unit.id)}
 		{@const pending = unit.lessons.filter((l) => !progress.isCompleted(l.id))}

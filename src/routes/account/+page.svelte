@@ -16,7 +16,6 @@
 	import { sync } from '$lib/sync.svelte';
 	import Mascot from '$lib/components/Mascot.svelte';
 	import Heatmap from '$lib/components/Heatmap.svelte';
-	import HubHeader from '$lib/components/HubHeader.svelte';
 	import { overview } from '$lib/overview.svelte';
 	import { Zap, Flame, GraduationCap, Trophy, Brain, Snowflake, Headphones, Download, Upload, Layers, Crown, BookOpen, BookOpenText, MessageSquare, PenLine, Cloud, CloudOff, RefreshCw, LogOut, Mail } from '@lucide/svelte';
 
@@ -164,8 +163,7 @@
 	<title>Profile · Shwe</title>
 </svelte:head>
 
-<div class="hub-page account">
-	<HubHeader title={ui('profile').text} />
+<div class="account">
 
 	<section class="hero">
 		<Mascot mood="happy" size={110} />

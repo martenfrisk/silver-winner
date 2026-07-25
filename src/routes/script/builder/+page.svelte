@@ -164,11 +164,6 @@
 </div>
 
 <style>
-	.builder {
-		max-width: 560px;
-		margin: 0 auto;
-		padding: 0 20px 60px;
-	}
 	.topbar {
 		display: flex;
 		align-items: center;

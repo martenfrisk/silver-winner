@@ -12,7 +12,6 @@
 	import { glyphById, totalGlyphs } from '$lib/data/script';
 	import { activeDecks, combinedDue, deckSummaries, hasAnyDeck, type ReviewSnapshot } from '$lib/review';
 	import Mascot from '$lib/components/Mascot.svelte';
-	import HubHeader from '$lib/components/HubHeader.svelte';
 	import { ArrowRight } from '@lucide/svelte';
 
 	const worst = $derived(confusions.worst[0]);
@@ -49,8 +48,7 @@
 
 <svelte:head><title>Review · Shwe</title></svelte:head>
 
-<div class="hub-page review">
-	<HubHeader title="Review" />
+<div class="review">
 
 	{#if !started}
 		<div class="empty-state">
