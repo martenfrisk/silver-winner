@@ -12,6 +12,7 @@
 	import { nextOpenRound, openRoundCount } from '$lib/rounds';
 	import { ui } from '$lib/i18n.svelte';
 	import Mascot from '$lib/components/Mascot.svelte';
+	import WeekRhythm from '$lib/components/WeekRhythm.svelte';
 	import StartChooser from '$lib/components/StartChooser.svelte';
 	import { stories } from '$lib/data/stories';
 	import { customCards } from '$lib/custom-cards.svelte';
@@ -84,8 +85,6 @@
 		return null;
 	});
 
-	// Dial ring geometry (r = 40).
-	const C = 2 * Math.PI * 40;
 </script>
 
 <svelte:head>
@@ -148,6 +147,10 @@
 						{progress.completedCount}/{totalLessons} lessons done.
 					{/if}
 				</p>
+				<!-- Where the streak flame used to be, at a fraction of the
+				     weight. See $lib/week for why a streak was the wrong shape
+				     for this job. -->
+				{#if progress.xp > 0}<WeekRhythm />{/if}
 			</div>
 		</section>
 	{/if}
@@ -181,26 +184,18 @@
 		<ArrowRight size={22} strokeWidth={2} class="pc-arrow" />
 	</a>
 
-	<!-- The dial is now just the streak and goal readout: no link, no
-	     competing suggestion. Still hidden until there's a number worth
-	     showing. -->
+	<!-- The daily goal, as a line rather than the teal panel with a streak ring
+	     that used to sit here. It was the second-heaviest thing on the page for
+	     a number that only matters in passing, and the ring's whole job was
+	     carrying a streak counter that has moved to the week strip above. -->
 	{#if progress.xp > 0}
-		<div class="dial" class:reached={goalRemaining === 0}>
-			<span class="ring" aria-hidden="true">
-				<svg viewBox="0 0 92 92">
-					<circle class="bg" cx="46" cy="46" r="40" />
-					<circle class="fill" cx="46" cy="46" r="40" stroke-dasharray={C} stroke-dashoffset={C * (1 - goalPct)} transform="rotate(-90 46 46)" />
-				</svg>
-				<span class="mid"><span class="n">{progress.streak}</span><span class="u">streak</span></span>
-			</span>
-			<span class="dtext">
-				<span class="lab">Today’s goal</span>
-				<span class="big">{progress.xpToday} / {progress.dailyGoal} XP</span>
-				<span class="sm">
-					{#if goalRemaining === 0}Reached for today.
-					{:else if progress.xpToday === 0}Nothing yet today.
-					{:else}{goalRemaining} XP to go.{/if}
-				</span>
+		<div class="goal" class:reached={goalRemaining === 0}>
+			<div class="goal-bar" role="progressbar" aria-valuenow={progress.xpToday} aria-valuemin={0} aria-valuemax={progress.dailyGoal}>
+				<div class="goal-fill" style="width: {Math.round(goalPct * 100)}%"></div>
+			</div>
+			<span class="goal-text">
+				{#if goalRemaining === 0}Daily goal reached
+				{:else}{progress.xpToday} / {progress.dailyGoal} XP today{/if}
 			</span>
 		</div>
 	{/if}
@@ -208,8 +203,11 @@
 	<!-- One tile for every deck. This used to be three (practice, cards, and
 	     a second cards tile in the list below when the count was zero), which
 	     meant "have I got anything to review?" had three answers on one
-	     screen. See $lib/review. -->
-	{#if reviewStarted}
+	     screen. See $lib/review.
+	     Hidden when the card above is already the review: nextUp leads with
+	     due work, so whenever there was anything to review the page said so
+	     twice, once as the hero and again three rows down. -->
+	{#if reviewStarted && next.href !== '/review'}
 		<a class="tile" href="/review">
 			<span class="tile-icon teal"><Dumbbell size={20} strokeWidth={2} /></span>
 			<span class="tile-text">
@@ -305,23 +303,34 @@
 	.greet h1 { font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: 1.7rem; color: var(--ink); line-height: 1.05; }
 	.greet-sub { color: var(--ink-soft); font-size: 0.92rem; margin-top: 2px; }
 
-	/* Today dial — streak in the centre, daily goal as the ring. */
-	.dial {
-		display: flex; align-items: center; gap: var(--s5);
-		background: var(--teal-deep); color: var(--on-primary);
-		border-radius: var(--radius-lg); padding: var(--s5); text-decoration: none;
+	/* Daily goal, as one line under the hero action. */
+	.goal {
+		display: flex;
+		align-items: center;
+		gap: var(--s3);
+		padding: 0 var(--s1);
 	}
-	.dial .ring { position: relative; width: 88px; height: 88px; flex: 0 0 auto; }
-	.dial .ring svg { width: 100%; height: 100%; }
-	.dial .ring .bg { fill: none; stroke: rgba(255, 255, 255, 0.16); stroke-width: 6; }
-	.dial .ring .fill { fill: none; stroke: var(--gold-bright, #f6c445); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.8s var(--pop); }
-	.dial .ring .mid { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; line-height: 1; }
-	.dial .ring .n { font-family: var(--font-display); font-style: italic; font-size: 1.9rem; color: var(--gold-bright, #f6c445); }
-	.dial .ring .u { font-size: 0.56rem; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.8; margin-top: 5px; }
-	.dial .dtext { display: flex; flex-direction: column; gap: 3px; }
-	.dial .lab { font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700; opacity: 0.82; }
-	.dial .big { font-family: var(--font-display); font-style: italic; font-size: 1.3rem; }
-	.dial .sm { font-size: 0.82rem; opacity: 0.82; line-height: 1.4; }
+	.goal-bar {
+		flex: 1;
+		height: 6px;
+		border-radius: 99px;
+		background: var(--line);
+		overflow: hidden;
+	}
+	.goal-fill {
+		height: 100%;
+		border-radius: 99px;
+		background: var(--teal);
+		transition: width 0.5s var(--pop);
+	}
+	.goal.reached .goal-fill { background: var(--gold); }
+	.goal-text {
+		flex: 0 0 auto;
+		font-size: 0.78rem;
+		font-weight: 700;
+		color: var(--ink-soft);
+		font-variant-numeric: tabular-nums;
+	}
 
 	.primary-card {
 		display: flex; align-items: center; gap: var(--s4);

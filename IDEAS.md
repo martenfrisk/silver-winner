@@ -459,6 +459,47 @@ were living behind those chips.
   sharing a character is orthography, not morphology. Substring matching now
   needs two characters on both sides.
 
+## Round 17 — UAT round 5 (2026-07-26)
+
+Four issues from use, sharing a root: the app was leaking its own
+implementation into the teaching.
+
+- ✅ **Romanization out of prose, structure onto the card** — a note read
+  "ရေ (yei) is “water”" to a learner who had romanization switched off,
+  because a note is a static string. `morphology.ts` already decomposed the
+  word properly; `LearnCard` was the one surface that never rendered it. Now
+  it does, four question frames were added to the table, and `lint:content`
+  warns on romanization in a note (comparing against the course's own
+  romanization syllables, so it can tell `(yei)` from `(water)`).
+- ✅ **Listening drills that test meaning** (`listen-mode.ts`) — audio plus
+  three Burmese options is weak at both ends: a learner who can't read is
+  matching shapes, one who can just decodes the options. For the two profiles
+  that told us they read Burmese, 26 of the 43 authored drills now ask for the
+  meaning instead. The other 17 deliberately don't: the script unit's glyph
+  drills and the discourse particles carry `keepScript`, the digit drills have
+  no glosses to use, and one is blocked by the ည duplicate.
+- ✅ **No more near-synonym options** (`near-synonyms.ts`) — "I'm off now /
+  See you / See you tomorrow" asked which English phrase the author picked for
+  သွားတော့မယ်, not whether the learner understood it. One shared rule, used by
+  `lint:content` when content is written *and* by the transform above when it
+  generates options, so it can refuse to build a bad question out of a good
+  one. It cannot catch a shared semantic field with no shared words — the
+  နော်/ပေါ့/လေ particles — which is what `keepScript` is for.
+- ✅ **Frontpage rebalanced** — the streak/XP dial was the second-heaviest
+  thing on the page and `/review` was linked twice (as the hero *and* as a
+  tile, whenever anything was due). The dial is now a one-line goal bar, the
+  tile hides when the hero already points at review.
+- ✅ **Week rhythm instead of a streak** (`week.ts`, `WeekRhythm.svelte`) —
+  seven dots, filled for days studied, gold when the daily goal was met.
+  Missing a day costs one dot and the week refills on its own. A streak works
+  by making you afraid to lose it, and tells someone who studies six days a
+  week that they have nothing. `progress.streak` stays behind freezes, its two
+  achievements and the /account stat — alive, just off the home screen.
+- 💤 **Morphology coverage** is 42 of 229 words. Expanding it is the cheapest
+  win left on the learn card, but the glosses want the native-speaker pass in
+  #24 — several apparent compounds are coincidence (လေး "four" inside ညီလေး
+  is a diminutive, not the number).
+
 ## Highest impact next
 
 1. ✅ **Listening-only exercise type** — the audio pipeline exists but is never the

@@ -11,6 +11,7 @@
 	import { noAudioPromptState } from '$lib/no-audio-prompt.svelte';
 	import { AutoAdvance } from '$lib/auto-advance.svelte';
 	import { clickNth, digitOf, isShortcutIgnored } from '$lib/keyboard';
+	import WeekRhythm from '$lib/components/WeekRhythm.svelte';
 	import { progress } from '$lib/progress.svelte';
 	import { ui } from '$lib/i18n.svelte';
 	import Mascot from './Mascot.svelte';
@@ -213,8 +214,8 @@
 				<span class="stat-value">🎯 {Math.max(0, Math.round((100 * (queue.length - mistakes)) / Math.max(queue.length, 1)))}%</span>
 			</div>
 			<div class="stat">
-				<span class="stat-label">{ui('streak').text}</span>
-				<span class="stat-value">🔥 {progress.streak}</span>
+				<span class="stat-label">This week</span>
+				<div class="stat-value"><WeekRhythm compact /></div>
 			</div>
 		</div>
 		<button class="btn green big" onclick={quit}>{ui('continue').text}</button>
