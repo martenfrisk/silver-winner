@@ -5,7 +5,7 @@
 	import { starsFor } from '$lib/script-session';
 	import { strokeData } from '$lib/data/script';
 	import { sfx } from '$lib/audio';
-	import { scriptSheet } from '$lib/script-sheet.svelte';
+	import { overlayOpen } from '$lib/overlays.svelte';
 	import { scriptNeedsAudio } from '$lib/silent-mode';
 	import { AttemptTracker, MAX_ATTEMPTS } from '$lib/stuck';
 	import { noAudioPromptState } from '$lib/no-audio-prompt.svelte';
@@ -167,7 +167,7 @@
 	}
 
 	function onkeydown(e: KeyboardEvent) {
-		if (isShortcutIgnored(e) || scriptSheet.open) return;
+		if (isShortcutIgnored(e) || overlayOpen()) return;
 		if (done) {
 			if (e.key === 'Enter') quit();
 			return;

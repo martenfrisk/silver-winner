@@ -15,6 +15,7 @@
 	import { ui } from '$lib/i18n.svelte';
 	import { sfx, speak } from '$lib/audio';
 	import { scriptSheet } from '$lib/script-sheet.svelte';
+	import { overlayOpen } from '$lib/overlays.svelte';
 	import { isShortcutIgnored } from '$lib/keyboard';
 	import Mascot from '$lib/components/Mascot.svelte';
 	import Confetti from '$lib/components/Confetti.svelte';
@@ -101,7 +102,7 @@
 	}
 
 	function onkeydown(e: KeyboardEvent) {
-		if (isShortcutIgnored(e) || scriptSheet.open) return;
+		if (isShortcutIgnored(e) || overlayOpen()) return;
 		if (done) {
 			if (e.key === 'Enter') quit();
 			return;

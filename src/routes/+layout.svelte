@@ -16,6 +16,7 @@
 	import { ui } from '$lib/i18n.svelte';
 	import AchievementToast from '$lib/components/AchievementToast.svelte';
 	import ScriptSheet from '$lib/components/ScriptSheet.svelte';
+	import WordSheet from '$lib/components/WordSheet.svelte';
 	import BottomNav from '$lib/components/BottomNav.svelte';
 	import HubHeader from '$lib/components/HubHeader.svelte';
 
@@ -55,4 +56,5 @@
 {/if}
 <AchievementToast />
 <ScriptSheet />
+<WordSheet />
 <BottomNav />

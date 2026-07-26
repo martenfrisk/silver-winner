@@ -435,6 +435,30 @@ were living behind those chips.
   progress-derived state rendered as `span` with a live `href` after
   hydration. See the note in CLAUDE.md.
 
+## Round 16 — looking a word up stops costing you your place (2026-07-26)
+
+- ✅ **Word sheet** (`WordSheet.svelte`, `word-sheet.svelte.ts`) — "Look it up"
+  on a wrong-answer reveal opened `/dictionary?q=<word>`. That card only ever
+  shows mid-session, and the players rebuild their queue on mount, so the
+  browser Back button — the only way back, and not an obvious one — returned
+  the learner to a *different* question than the one they had just missed.
+  Now the entry comes to them: definition, SRS strength, morphology, and
+  related words, over the top of the session. Related words are tappable and
+  swap the sheet rather than navigating.
+- ✅ **`word-lookup.ts`** assembles the entry (pure, tested). Handles the case
+  the old link quietly failed at too: a reveal can hold a whole phrase with no
+  dictionary headword, which now shows its parts instead of "no results".
+- ✅ **`overlays.svelte.ts`** — one answer to "is a sheet capturing input?".
+  All five players guarded with `|| scriptSheet.open`; a second overlay would
+  have meant remembering five sites, and the failure mode is silent (a digit
+  answers the question hidden behind the sheet). An e2e test presses `1` with
+  the sheet open and asserts nothing happens.
+- 🐛 Found while eyeballing it: the entry for မင်္ဂလာပါ listed "The letter
+  ga", "nga", "pa" and "ma" as related words. The script lessons teach bare
+  glyphs as vocabulary and the greeting contains all four characters —
+  sharing a character is orthography, not morphology. Substring matching now
+  needs two characters on both sides.
+
 ## Highest impact next
 
 1. ✅ **Listening-only exercise type** — the audio pipeline exists but is never the

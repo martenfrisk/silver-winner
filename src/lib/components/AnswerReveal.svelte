@@ -4,6 +4,7 @@
 	// replay it while reading the reveal.
 	import SpeakButton from './SpeakButton.svelte';
 	import { morphology } from '$lib/data/morphology';
+	import { wordSheet } from '$lib/word-sheet.svelte';
 	import { Lightbulb } from '@lucide/svelte';
 
 	let {
@@ -48,9 +49,12 @@
 			</span>
 		{/if}
 		{#if tip}<span class="reveal-tip"><Lightbulb size={15} strokeWidth={2} /> {tip}</span>{/if}
-		<!-- Missing a word is the moment someone actually wants the dictionary,
-		     and it used to be reachable only from a magnifier on /learn. -->
-		<a class="reveal-look" href="/dictionary?q={encodeURIComponent(my)}">Look it up</a>
+		<!-- Missing a word is the moment someone actually wants the dictionary.
+		     A sheet rather than a link to /dictionary: this card only ever shows
+		     mid-session, and navigating away rebuilt the player's queue, so the
+		     browser Back button (the only way back) returned to a *different*
+		     question than the one just missed. See $lib/word-sheet. -->
+		<button class="reveal-look" onclick={() => wordSheet.show(my)}>Look it up</button>
 	</div>
 </div>
 
@@ -127,6 +131,10 @@
 		font-size: 0.78rem;
 		font-weight: 800;
 		color: var(--teal-ink);
+		/* Underlined explicitly: it reads as a link and used to be one, but a
+		   button carries no decoration of its own. */
+		text-decoration: underline;
+		text-underline-offset: 2px;
 	}
 	.reveal-tip {
 		margin-top: 4px;
