@@ -93,10 +93,9 @@
 		return my && vocabByMy.has(my) ? my : null;
 	}
 
-	function check() {
-		if (!ex || status !== 'answer') return;
+	function applyResult(ok: boolean) {
+		if (!ex) return;
 		noAudioPromptState.noteAnswer();
-		const ok = selected === ex.correct;
 		// Reading a word is a review of it. Without this the reader track fed
 		// nothing back into the SRS, so its words never came up again.
 		const word = targetWord(ex);
@@ -118,6 +117,21 @@
 			const answerAudio = reveal?.speak;
 			if (answerAudio) setTimeout(() => speak(answerAudio), 600);
 		}
+	}
+
+	function check() {
+		if (!ex || status !== 'answer') return;
+		applyResult(selected === ex.correct);
+	}
+
+	/**
+	 * Grades a recognition drill as a miss without a guess — a tapped option
+	 * is indistinguishable from a lucky one, so admitting "I don't know" avoids
+	 * promoting an SRS box on a coin flip.
+	 */
+	function idk() {
+		if (!ex || status !== 'answer') return;
+		applyResult(false);
 	}
 
 	function advance() {
@@ -238,9 +252,9 @@
 					in:fly={{ x: 60, duration: 300 }}
 				>
 					{#if ex.kind === 'choice'}
-						<ChoiceExercise {ex} bind:selected {status} onpick={check} />
+						<ChoiceExercise {ex} bind:selected {status} onpick={check} onIdk={idk} />
 					{:else}
-						<ListenExercise {ex} bind:selected {status} onpick={check} />
+						<ListenExercise {ex} bind:selected {status} onpick={check} onIdk={idk} />
 					{/if}
 				</div>
 			{/key}

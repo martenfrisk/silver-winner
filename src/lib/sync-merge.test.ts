@@ -11,6 +11,7 @@ function progress(overrides: Partial<ProgressSaved> = {}): ProgressSaved {
 		sound: true,
 		showRoman: false,
 		immersion: false,
+		selfReview: false,
 		theme: 'system',
 		profile: null,
 		voice: 'f',

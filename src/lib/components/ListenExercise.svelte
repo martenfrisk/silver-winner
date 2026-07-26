@@ -15,13 +15,21 @@
 		ex,
 		selected = $bindable(null),
 		status,
-		onpick
+		onpick,
+		onIdk
 	}: {
 		ex: ListenEx;
 		selected: number | null;
 		status: 'answer' | 'correct' | 'wrong';
 		/** Called right after a tap selects an option (one-tap checking). */
 		onpick?: () => void;
+		/**
+		 * Called when the learner admits they're guessing rather than picking an
+		 * option, so the parent can grade it as a miss instead of letting a
+		 * lucky tap promote an SRS box the learner hasn't earned. Omit where
+		 * nothing is being scheduled yet (first-exposure lesson quizzes).
+		 */
+		onIdk?: () => void;
 	} = $props();
 
 	// Options are shown in a shuffled order so the answer isn't always first.
@@ -63,6 +71,11 @@
 		// correct/wrong sound), so no tap blip of our own.
 		onpick?.();
 		if (!onpick) sfx.tap();
+	}
+
+	function idk() {
+		if (status !== 'answer') return;
+		onIdk?.();
 	}
 
 	function cls(i: number): string {
@@ -108,6 +121,9 @@
 			</button>
 		{/each}
 	</div>
+	{#if onIdk && status === 'answer'}
+		<button type="button" class="idk" onclick={idk}>{ui('idk').text}</button>
+	{/if}
 	{#if forceRoman}
 		<p class="roman-note">Romanization shown until you’ve learned some letters. See the Script Studio.</p>
 	{/if}
@@ -185,6 +201,18 @@
 	}
 	.main {
 		font-size: 1.25rem;
+	}
+	.idk {
+		align-self: center;
+		color: var(--ink-soft);
+		font-weight: 700;
+		font-size: 0.85rem;
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		padding: 4px;
+	}
+	.idk:hover {
+		color: var(--ink);
 	}
 	.roman-note {
 		margin: 0;

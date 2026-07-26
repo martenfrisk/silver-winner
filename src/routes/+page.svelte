@@ -22,7 +22,9 @@
 		GraduationCap, BookOpen, PenLine, Dumbbell, ArrowRight, Volume2, VolumeX, Snowflake
 	} from '@lucide/svelte';
 
-	const totalLessons = course.reduce((n, u) => n + u.lessons.length, 0);
+	// The learner's own course length, not the content's: skipping a unit takes
+	// its lessons out of the ladder. See progress.courseTotal.
+	const totalLessons = $derived(progress.courseTotal);
 	const goalPct = $derived(Math.min(1, progress.xpToday / Math.max(1, progress.dailyGoal)));
 	const goalRemaining = $derived(Math.max(0, progress.dailyGoal - progress.xpToday));
 

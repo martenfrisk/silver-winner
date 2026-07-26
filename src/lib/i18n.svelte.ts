@@ -18,6 +18,7 @@ const STRINGS = {
 	continue: { en: 'Continue', my: 'ရှေ့ဆက်', tier: 1 },
 	check: { en: 'Check', my: 'စစ်ဆေး', tier: 1 },
 	skip: { en: 'Skip', my: 'ကျော်', tier: 1 },
+	idk: { en: "I don't know", my: 'မသိဘူး', tier: 1 },
 	'got-it': { en: 'Got it', my: 'ရပြီ', tier: 1 },
 	start: { en: 'START', my: 'စ!', tier: 1 },
 	practice: { en: 'Practice', my: 'လေ့ကျင့်', tier: 1 },

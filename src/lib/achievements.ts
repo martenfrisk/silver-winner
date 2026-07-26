@@ -40,7 +40,9 @@ export const achievements: AchievementDef[] = [
 		emoji: '🏆',
 		name: 'Graduate',
 		desc: 'Complete every course lesson',
-		earned: () => progress.completedCount >= lessonOrder.length
+		// Against the learner's own total, not the full 24: a skipped unit is
+		// not a lesson they still owe. See progress.courseTotal.
+		earned: () => progress.completedCount >= progress.courseTotal
 	},
 	{
 		id: 'glyphs-10',

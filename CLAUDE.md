@@ -68,6 +68,8 @@ The pattern to preserve: session builders take a state snapshot as arguments and
 
 Both SRS stores use the same 5-box interval ladder (0 / 4h / 1d / 3d / 7d). The box drives the exercise **format**, not just scheduling — box 0–1 recognition, 2–3 production, 4 free recall (see the header comment in `practice-session.ts`).
 
+There is a **second scheduler** for words only: `sm2.ts` (SM-2, three grades — again/good/easy), used when `progress.selfReview` is on. It writes `ease`/`interval`/`reps` onto the *same* vocab entry, so the setting can be toggled either way without losing a word's history; `vocabSrs.gradeSelf` moves the box alongside it so guided review stays in step. `/practice` is a two-line route that picks `GuidedPracticeSession` or `SelfReviewSession` on that setting — the two sessions share nothing else, and neither knows the other exists.
+
 ### Three tracks and learner profiles
 
 `course` (lesson path, `/`), `reader` (`/reader`, script-only drills over the same course vocab, never shows romanization) and `script` (`/script` Script Studio). `Profile` (`beginner | script-reader | speaker | explorer`) reorders and frames the home screen and tunes content — it must **never hide or lock** a track. `tracks.ts` holds that routing logic.

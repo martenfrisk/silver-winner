@@ -376,6 +376,35 @@ missing links. Five phases, each shipped on its own.
   stays the source of truth and nothing is login-gated. Reuses `backup.ts` as
   the sync payload. The merge rule is documented and idempotent by design.
 
+## Round 14 — a real SRS for the learners who want one (2026-07-26)
+
+- ✅ **Self-graded word review** (`progress.selfReview`, off by default) —
+  `/practice` becomes an Anki-style deck: Burmese on the front, recall the
+  meaning, reveal, then grade yourself Again / Good / Easy. Three grades, not
+  Anki's four: "Hard" is the one people misuse, and `again`/`good`/`easy`
+  already span the range. Each button shows the interval it buys, which is
+  what stops Easy becoming the default tap.
+- ✅ **SM-2 scheduler** (`sm2.ts`, pure + unit-tested) — per-card ease,
+  fixed 1d/6d opening steps, `interval × ease` after that, lapses back inside
+  the session at 10 minutes, capped at a year. Runs *alongside* the Leitner
+  ladder rather than replacing it: `ease`/`interval`/`reps` are optional
+  fields on the same vocab entry, so the setting is safe to toggle both ways,
+  and `gradeSelf` still moves the box so guided review's format ladder stays
+  in step.
+- ✅ **The queue never invents work** — unlike `buildVocabPracticeQueue`,
+  which tops a thin session up with the weakest words. A scheduler that
+  reviews cards early to fill a session isn't one; if nothing is due, the
+  session says so.
+- ✅ **Skipped lessons leave the course meter** — waving through the script
+  unit ("I know this") used to leave a script-reader stuck at 21/24 forever,
+  since skipped lessons can never earn stars. `progress.courseTotal` /
+  `overview.courseTotal` drop them from the denominator too, so the meter,
+  the home hero and the Graduate achievement all count the learner's own
+  course rather than the content's.
+- 💤 **Self-graded letters** — the same treatment for the glyph SRS. Held
+  back deliberately: Script Studio drills are tracing and sound contrast,
+  which have no English "answer" side to grade yourself against.
+
 ## Highest impact next
 
 1. ✅ **Listening-only exercise type** — the audio pipeline exists but is never the

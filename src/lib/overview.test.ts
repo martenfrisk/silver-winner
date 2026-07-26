@@ -5,6 +5,7 @@ import { storyStarsKey } from './data/stories';
 import {
 	courseDone,
 	courseRounds,
+	courseTotal,
 	overallPct,
 	readerDone,
 	starKind,
@@ -16,6 +17,7 @@ import {
 const snap = (o: Partial<OverviewSnapshot> = {}): OverviewSnapshot => ({
 	stars: {},
 	lessonIds: ['first-words', 'how-are-you', 'polite-talk'],
+	skippedIds: [],
 	unitIds: ['greetings', 'numbers'],
 	storyIds: ['hello-shwe', 'teashop'],
 	unlockedStoryIds: ['hello-shwe'],
@@ -107,6 +109,39 @@ describe('per-track counts', () => {
 
 	it('ignores a zero-star entry', () => {
 		expect(courseDone(snap({ stars: { 'first-words': 0 } }))).toBe(0);
+	});
+});
+
+describe('courseTotal drops skipped lessons from the denominator', () => {
+	it('counts every lesson when nothing is skipped', () => {
+		expect(courseTotal(snap())).toBe(3);
+	});
+
+	it('shrinks by each skipped lesson', () => {
+		expect(courseTotal(snap({ skippedIds: ['polite-talk'] }))).toBe(2);
+	});
+
+	it('lets a learner who skipped a unit still reach 100%', () => {
+		// The bug this guards: a script-reader waves through the script unit and
+		// the meter sticks below full forever, because the skipped lessons can
+		// never earn stars.
+		const s = snap({
+			stars: { 'first-words': 3, 'how-are-you': 2 },
+			skippedIds: ['polite-talk']
+		});
+		expect(courseDone(s)).toBe(2);
+		expect(courseTotal(s)).toBe(2);
+		expect(trackSummaries(s).find((r) => r.id === 'course')!.pct).toBe(1);
+	});
+
+	it('never reports more done than total if a lesson is somehow both', () => {
+		const s = snap({ stars: { 'first-words': 3 }, skippedIds: ['first-words'] });
+		expect(courseTotal(s)).toBe(3);
+		expect(courseDone(s)).toBeLessThanOrEqual(courseTotal(s));
+	});
+
+	it('ignores skip entries for lessons that do not exist', () => {
+		expect(courseTotal(snap({ skippedIds: ['deleted-lesson'] }))).toBe(3);
 	});
 });
 

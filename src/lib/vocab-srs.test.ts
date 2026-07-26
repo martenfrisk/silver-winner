@@ -148,3 +148,71 @@ describe('introduceUnit (the reader track)', () => {
 		expect(vocabSrs.introducedCount).toBe(0);
 	});
 });
+
+describe('gradeSelf (self-graded review)', () => {
+	const DAY = 86_400_000;
+	let word: string;
+
+	beforeEach(() => {
+		word = firstVocab[0].my;
+		vocabSrs.introduceLesson(firstLesson.id);
+	});
+
+	it('schedules by SM-2 rather than the box intervals', () => {
+		// The Leitner ladder would put a box-2 item exactly 1 day out; SM-2's
+		// second fixed step is 6 days. Grading twice reaches it.
+		vocabSrs.gradeSelf(word, 'good');
+		vocabSrs.gradeSelf(word, 'good');
+		expect(vocabSrs.entries[word].due - T0).toBe(6 * DAY);
+	});
+
+	it('brings a lapse back inside the session', () => {
+		vocabSrs.gradeSelf(word, 'again');
+		expect(vocabSrs.entries[word].due - T0).toBe(10 * 60_000);
+	});
+
+	it('persists the SM-2 state alongside the box', () => {
+		vocabSrs.gradeSelf(word, 'easy');
+		expect(vocabSrs.entries[word]).toMatchObject({ reps: 1, interval: 4 });
+		expect(vocabSrs.entries[word].ease).toBeGreaterThan(2.5);
+	});
+
+	// The box drives the exercise format in guided review, so a learner who
+	// switches the setting off must not land back on beginner recognition
+	// drills for words they have been reviewing for months.
+	it('keeps the box moving so guided review stays in step', () => {
+		const before = vocabSrs.box(word);
+		vocabSrs.gradeSelf(word, 'good');
+		expect(vocabSrs.box(word)).toBe(before + 1);
+		vocabSrs.gradeSelf(word, 'again');
+		expect(vocabSrs.box(word)).toBe(before);
+	});
+
+	it('never pushes the box past the top', () => {
+		for (let i = 0; i < 10; i++) vocabSrs.gradeSelf(word, 'good');
+		expect(vocabSrs.box(word)).toBe(VOCAB_MAX_BOX);
+	});
+
+	it('counts a lapse and clears it on a hit, like the app-graded path', () => {
+		vocabSrs.gradeSelf(word, 'again');
+		expect(vocabSrs.entries[word].lapses).toBe(1);
+		expect(vocabSrs.mistakes).toContain(word);
+		vocabSrs.gradeSelf(word, 'good');
+		expect(vocabSrs.mistakes).not.toContain(word);
+	});
+
+	it('can pick up a word the app graded first, without resetting it', () => {
+		vocabSrs.grade(word, true); // guided review, no SM-2 state written
+		expect(vocabSrs.entries[word].reps).toBeUndefined();
+		vocabSrs.gradeSelf(word, 'good');
+		// Starts the SM-2 ladder from the bottom but keeps the box it earned.
+		expect(vocabSrs.entries[word]).toMatchObject({ reps: 1, interval: 1 });
+		expect(vocabSrs.box(word)).toBe(3);
+	});
+
+	it('grades a word it has never seen rather than throwing', () => {
+		vocabSrs.reset();
+		expect(() => vocabSrs.gradeSelf(word, 'good')).not.toThrow();
+		expect(vocabSrs.isIntroduced(word)).toBe(true);
+	});
+});

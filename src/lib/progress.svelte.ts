@@ -48,6 +48,16 @@ class Progress {
 	showRoman = $state(false);
 	// Immersion mode: UI strings gradually switch to Burmese as script knowledge grows.
 	immersion = $state(false);
+	/**
+	 * Self-graded word review: Burmese on the front, the learner grades their
+	 * own recall, scheduled by SM-2 instead of the Leitner boxes (see $lib/sm2).
+	 *
+	 * Off by default and staying that way. Self-grading is strictly better for
+	 * a learner who is honest with themselves and strictly worse for one who
+	 * isn't, and a beginner has no way to know yet which of the two they are —
+	 * so it is offered, never defaulted into.
+	 */
+	selfReview = $state(false);
 	// 'system' follows the OS preference; 'light'/'dark' force it via data-theme on <html>.
 	theme = $state<Theme>('system');
 	// null = the home hero hasn't asked "where are you starting from?" yet.
@@ -94,6 +104,7 @@ class Progress {
 					this.sound = s.sound ?? true;
 					this.showRoman = s.showRoman ?? false;
 					this.immersion = s.immersion ?? false;
+					this.selfReview = s.selfReview ?? false;
 					this.theme = s.theme === 'light' || s.theme === 'dark' ? s.theme : 'system';
 					this.profile = PROFILES.includes(s.profile as Profile) ? (s.profile ?? null) : null;
 					this.voice = isVoiceId(s.voice) ? s.voice : DEFAULT_VOICE;
@@ -151,6 +162,7 @@ class Progress {
 			sound: this.sound,
 			showRoman: this.showRoman,
 			immersion: this.immersion,
+			selfReview: this.selfReview,
 			theme: this.theme,
 			profile: this.profile,
 			voice: this.voice,
@@ -285,6 +297,20 @@ class Progress {
 		return Object.keys(this.stars).filter((id) => lessonOrder.includes(id)).length;
 	}
 
+	/**
+	 * How many course lessons count as this learner's course.
+	 *
+	 * Skipping a unit says "I already know this", so those lessons stop being
+	 * part of the ladder — counting them in the denominator forever would leave
+	 * a script-reader stuck at 21/24 with no way to reach the end short of
+	 * sitting through the very lessons they were invited to skip. A skipped
+	 * lesson is still openable, and doing it un-skips it, which puts it back in
+	 * both halves of the fraction.
+	 */
+	get courseTotal(): number {
+		return lessonOrder.filter((id) => !this.isSkipped(id) || this.isCompleted(id)).length;
+	}
+
 	toggleSound() {
 		this.sound = !this.sound;
 		this.save();
@@ -302,6 +328,11 @@ class Progress {
 
 	toggleRoman() {
 		this.showRoman = !this.showRoman;
+		this.save();
+	}
+
+	toggleSelfReview() {
+		this.selfReview = !this.selfReview;
 		this.save();
 	}
 
