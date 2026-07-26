@@ -13,13 +13,14 @@
 	import { progress } from '$lib/progress.svelte';
 	import { nextPartOf } from '$lib/rounds';
 	import { sessionXp, COMBO_BONUS, COMBO_BONUS_AT, CROWN_BONUS } from '$lib/xp';
-	import { vocabSrs } from '$lib/vocab-srs.svelte';
+	import { vocabByMy, vocabSrs } from '$lib/vocab-srs.svelte';
 	import { ui } from '$lib/i18n.svelte';
 	import { prefetch, sfx, speak, speakablesOf } from '$lib/audio';
 	import { scriptSheet } from '$lib/script-sheet.svelte';
 	import { overlayOpen } from '$lib/overlays.svelte';
 	import { clickNth, digitOf, isShortcutIgnored } from '$lib/keyboard';
 	import Mascot from '$lib/components/Mascot.svelte';
+	import WeekRhythm from '$lib/components/WeekRhythm.svelte';
 	import Confetti from '$lib/components/Confetti.svelte';
 	import LearnCard from '$lib/components/LearnCard.svelte';
 	import ChoiceExercise from '$lib/components/ChoiceExercise.svelte';
@@ -32,6 +33,8 @@
 	import HeaderMute from '$lib/components/HeaderMute.svelte';
 	import { grammarTip } from '$lib/grammar-tips';
 	import { silentSafe } from '$lib/silent-mode';
+	import { meaningFirst } from '$lib/listen-mode';
+	import { readsScript } from '$lib/tracks';
 	import { AttemptTracker, MAX_ATTEMPTS } from '$lib/stuck';
 	import { AutoAdvance } from '$lib/auto-advance.svelte';
 	import { noAudioPromptState } from '$lib/no-audio-prompt.svelte';
@@ -104,7 +107,14 @@
 
 	// Listening drills become reading drills while audio is off, so muting
 	// mid-lesson never strands the learner on a question they can't hear.
-	const ex = $derived(silentSafe(queue[idx], progress.audioOn));
+	// Meaning-first before silent-safe: the first keeps it a listening drill,
+	// the second may then turn that into a reading one.
+	const ex = $derived(
+		silentSafe(
+			meaningFirst(queue[idx], readsScript(progress.profile), (my) => vocabByMy.get(my)?.en),
+			progress.audioOn
+		)
+	);
 	const total = $derived(queue.length);
 
 	// Warm the next card's clips while this one is on screen, so its auto-play
@@ -331,8 +341,8 @@
 				<span class="stat-value">🎯 {Math.max(0, Math.round((100 * (total - mistakes)) / Math.max(total, 1)))}%</span>
 			</div>
 			<div class="stat">
-				<span class="stat-label">{ui('streak').text}</span>
-				<span class="stat-value">🔥 {progress.streak}</span>
+				<span class="stat-label">This week</span>
+				<div class="stat-value"><WeekRhythm compact /></div>
 			</div>
 		</div>
 		{#if nextPart}

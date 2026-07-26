@@ -8,7 +8,7 @@
 	import { goto } from '$app/navigation';
 	import { fly, scale } from 'svelte/transition';
 	import { buildVocabPracticeQueue, starsFor, type VocabEx } from '$lib/practice-session';
-	import { vocabSrs } from '$lib/vocab-srs.svelte';
+	import { vocabByMy, vocabSrs } from '$lib/vocab-srs.svelte';
 	import { progress } from '$lib/progress.svelte';
 	import { sessionXp } from '$lib/xp';
 	import { ui } from '$lib/i18n.svelte';
@@ -17,6 +17,7 @@
 	import { overlayOpen } from '$lib/overlays.svelte';
 	import { clickNth, digitOf, isShortcutIgnored } from '$lib/keyboard';
 	import Mascot from '$lib/components/Mascot.svelte';
+	import WeekRhythm from '$lib/components/WeekRhythm.svelte';
 	import Confetti from '$lib/components/Confetti.svelte';
 	import ChoiceExercise from '$lib/components/ChoiceExercise.svelte';
 	import ListenExercise from '$lib/components/ListenExercise.svelte';
@@ -28,6 +29,8 @@
 	import HeaderMute from '$lib/components/HeaderMute.svelte';
 	import { grammarTip } from '$lib/grammar-tips';
 	import { silentSafe } from '$lib/silent-mode';
+	import { meaningFirst } from '$lib/listen-mode';
+	import { readsScript } from '$lib/tracks';
 	import { AttemptTracker, MAX_ATTEMPTS } from '$lib/stuck';
 	import { AutoAdvance } from '$lib/auto-advance.svelte';
 	import { noAudioPromptState } from '$lib/no-audio-prompt.svelte';
@@ -78,7 +81,13 @@
 		stage?.focus({ preventScroll: true });
 	});
 	// Listening drills become reading drills while audio is off.
-	const ex = $derived(item && silentSafe(item.ex, progress.audioOn));
+	const ex = $derived(
+		item &&
+			silentSafe(
+				meaningFirst(item.ex, readsScript(progress.profile), (my) => vocabByMy.get(my)?.en),
+				progress.audioOn
+			)
+	);
 	const total = $derived(queue.length);
 	const pct = $derived(total === 0 ? 0 : (solved / total) * 100);
 	// Only assemble still needs a Check step; choice/listen check on tap and
@@ -293,8 +302,8 @@
 				<span class="stat-value">🎯 {Math.max(0, Math.round((100 * (total - mistakes)) / Math.max(total, 1)))}%</span>
 			</div>
 			<div class="stat">
-				<span class="stat-label">{ui('streak').text}</span>
-				<span class="stat-value">🔥 {progress.streak}</span>
+				<span class="stat-label">This week</span>
+				<div class="stat-value"><WeekRhythm compact /></div>
 			</div>
 		</div>
 		<button class="btn green big" onclick={quit}>{ui('continue').text}</button>
