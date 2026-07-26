@@ -5,6 +5,7 @@ import { storyStarsKey } from './data/stories';
 import {
 	courseDone,
 	courseRounds,
+	courseTotal,
 	overallPct,
 	readerDone,
 	starKind,
@@ -16,6 +17,7 @@ import {
 const snap = (o: Partial<OverviewSnapshot> = {}): OverviewSnapshot => ({
 	stars: {},
 	lessonIds: ['first-words', 'how-are-you', 'polite-talk'],
+	skippedIds: [],
 	unitIds: ['greetings', 'numbers'],
 	storyIds: ['hello-shwe', 'teashop'],
 	unlockedStoryIds: ['hello-shwe'],
@@ -110,11 +112,56 @@ describe('per-track counts', () => {
 	});
 });
 
+describe('courseTotal drops skipped lessons from the denominator', () => {
+	it('counts every lesson when nothing is skipped', () => {
+		expect(courseTotal(snap())).toBe(3);
+	});
+
+	it('shrinks by each skipped lesson', () => {
+		expect(courseTotal(snap({ skippedIds: ['polite-talk'] }))).toBe(2);
+	});
+
+	it('lets a learner who skipped a unit still reach 100%', () => {
+		// The bug this guards: a script-reader waves through the script unit and
+		// the meter sticks below full forever, because the skipped lessons can
+		// never earn stars.
+		const s = snap({
+			stars: { 'first-words': 3, 'how-are-you': 2 },
+			skippedIds: ['polite-talk']
+		});
+		expect(courseDone(s)).toBe(2);
+		expect(courseTotal(s)).toBe(2);
+		expect(trackSummaries(s).find((r) => r.id === 'course')!.pct).toBe(1);
+	});
+
+	it('never reports more done than total if a lesson is somehow both', () => {
+		const s = snap({ stars: { 'first-words': 3 }, skippedIds: ['first-words'] });
+		expect(courseTotal(s)).toBe(3);
+		expect(courseDone(s)).toBeLessThanOrEqual(courseTotal(s));
+	});
+
+	it('ignores skip entries for lessons that do not exist', () => {
+		expect(courseTotal(snap({ skippedIds: ['deleted-lesson'] }))).toBe(3);
+	});
+});
+
 describe('trackSummaries', () => {
-	it('returns all four tracks even when empty, with no NaN', () => {
+	it('returns every track even when empty, with no NaN', () => {
 		const rows = trackSummaries(snap({ storyIds: [], unitIds: [] }));
-		expect(rows.map((r) => r.id)).toEqual(['course', 'reader', 'script', 'stories']);
+		expect(rows.map((r) => r.id)).toEqual(['course', 'rounds', 'reader', 'script', 'stories']);
 		for (const r of rows) expect(Number.isFinite(r.pct), r.id).toBe(true);
+	});
+
+	// "Have I unlocked everything?" and "have I learned everything it
+	// teaches?" are different questions, and the optional parts are most of
+	// the answer to the second — so they get their own row rather than being
+	// folded into the course one.
+	it('counts the optional parts separately from the lessons', () => {
+		const rows = trackSummaries(
+			snap({ stars: { 'first-words': 3, [stepStarsKey('first-words', 2)]: 2 } })
+		);
+		expect(rows.find((r) => r.id === 'course')).toMatchObject({ done: 1, total: 3 });
+		expect(rows.find((r) => r.id === 'rounds')).toMatchObject({ done: 1, total: 6 });
 	});
 
 	it('carries the script track through from the srs counts', () => {
@@ -138,15 +185,39 @@ describe('overallPct', () => {
 	});
 
 	it('weights by track size rather than averaging percentages', () => {
-		// All 2 stories done but nothing else: averaging the four percentages
-		// would say 25%, which badly overstates 2 items out of 18.
+		// All 2 stories done but nothing else: averaging the percentages would
+		// say 20%, which badly overstates 2 items out of 24.
 		const s = snap({
 			stars: { [storyStarsKey('hello-shwe')]: 3, [storyStarsKey('teashop')]: 3 }
 		});
-		expect(overallPct(s)).toBeCloseTo(2 / (3 + 2 + 11 + 2));
+		expect(overallPct(s)).toBeCloseTo(2 / (3 + 6 + 2 + 11 + 2));
 	});
 
-	it('reaches 1 when everything is done', () => {
+	it('reaches 1 when everything is done, optional parts included', () => {
+		const lessons = ['first-words', 'how-are-you', 'polite-talk'];
+		const s = snap({
+			stars: {
+				...Object.fromEntries(lessons.map((id) => [id, 3])),
+				// The 6 deeper rounds the fixture's totalRounds promises.
+				...Object.fromEntries(
+					lessons.flatMap((id) => [
+						[stepStarsKey(id, 2), 3],
+						[stepStarsKey(id, 3), 3]
+					])
+				),
+				[readerStarsKey('greetings')]: 3,
+				[readerStarsKey('numbers')]: 3,
+				[storyStarsKey('hello-shwe')]: 3,
+				[storyStarsKey('teashop')]: 3
+			},
+			scriptUnitsDone: 11
+		});
+		expect(overallPct(s)).toBe(1);
+	});
+
+	it('is short of 1 for a learner who did only the required parts', () => {
+		// The bug this pins: finishing every lesson's part 1 used to read as
+		// 100% of the course while two thirds of its words were untouched.
 		const s = snap({
 			stars: {
 				'first-words': 3,
@@ -159,6 +230,6 @@ describe('overallPct', () => {
 			},
 			scriptUnitsDone: 11
 		});
-		expect(overallPct(s)).toBe(1);
+		expect(overallPct(s)).toBeLessThan(1);
 	});
 });

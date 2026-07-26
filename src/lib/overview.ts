@@ -52,7 +52,7 @@ export function starKind(key: string): ParsedKey {
 }
 
 export interface TrackSummary {
-	id: 'course' | 'reader' | 'script' | 'stories';
+	id: 'course' | 'rounds' | 'reader' | 'script' | 'stories';
 	title: string;
 	href: string;
 	done: number;
@@ -66,6 +66,8 @@ export interface OverviewSnapshot {
 	stars: Record<string, number>;
 	/** Course lesson ids, in order. */
 	lessonIds: readonly string[];
+	/** Lessons waved through with "I know this" — see courseTotal. */
+	skippedIds: readonly string[];
 	/** Course unit ids (the reader track shares these). */
 	unitIds: readonly string[];
 	/** All story ids, and the ones whose prerequisites are met. */
@@ -97,6 +99,26 @@ export function courseDone(s: OverviewSnapshot): number {
 }
 
 /**
+ * Lessons that make up this learner's course.
+ *
+ * Skipping a unit ("I know this", offered to profiles that already read the
+ * script) waves its lessons through without stars, so counting them here left
+ * the meter permanently short of its own total — 21/24 with the missing three
+ * unreachable by design. A skip removes a lesson from the ladder rather than
+ * marking it done, so it leaves the denominator too.
+ *
+ * The `done.has` clause is belt and braces: completing a lesson un-skips it
+ * (see progress.completeLesson), so a lesson should never be both — but if one
+ * ever were, dropping it from the total while `courseDone` still counted it
+ * would report more done than exist.
+ */
+export function courseTotal(s: OverviewSnapshot): number {
+	const skipped = new Set(s.skippedIds);
+	const done = idsOfKind(s.stars, 'lesson');
+	return s.lessonIds.filter((id) => !skipped.has(id) || done.has(id)).length;
+}
+
+/**
  * Deeper rounds (steps 2 and 3) completed across the whole course.
  *
  * These were invisible outside a ring on one lesson node, which is a strange
@@ -124,6 +146,8 @@ export function storiesDone(s: OverviewSnapshot): number {
 /** One row per track, for the progress strip and the stats grid. */
 export function trackSummaries(s: OverviewSnapshot): TrackSummary[] {
 	const course = courseDone(s);
+	const courseOf = courseTotal(s);
+	const rounds = courseRounds(s);
 	const reader = readerDone(s);
 	const story = storiesDone(s);
 	return [
@@ -132,8 +156,20 @@ export function trackSummaries(s: OverviewSnapshot): TrackSummary[] {
 			title: 'Course',
 			href: '/learn',
 			done: course,
-			total: s.lessonIds.length,
-			pct: pct(course, s.lessonIds.length)
+			total: courseOf,
+			pct: pct(course, courseOf)
+		},
+		// The optional parts, counted separately rather than folded into the
+		// course row. Two different questions — "have I unlocked everything?"
+		// and "have I learned everything it teaches?" — and one bar answering
+		// only the first is how most of the material stayed invisible.
+		{
+			id: 'rounds',
+			title: 'Lesson parts',
+			href: '/learn',
+			done: rounds.done,
+			total: rounds.total,
+			pct: pct(rounds.done, rounds.total)
 		},
 		{
 			id: 'reader',

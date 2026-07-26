@@ -68,6 +68,14 @@ The pattern to preserve: session builders take a state snapshot as arguments and
 
 Both SRS stores use the same 5-box interval ladder (0 / 4h / 1d / 3d / 7d). The box drives the exercise **format**, not just scheduling — box 0–1 recognition, 2–3 production, 4 free recall (see the header comment in `practice-session.ts`).
 
+There is a **second scheduler** for words only: `sm2.ts` (SM-2, three grades — again/good/easy), used when `progress.selfReview` is on. It writes `ease`/`interval`/`reps` onto the *same* vocab entry, so the setting can be toggled either way without losing a word's history; `vocabSrs.gradeSelf` moves the box alongside it so guided review stays in step. `/practice` is a two-line route that picks `GuidedPracticeSession` or `SelfReviewSession` on that setting — the two sessions share nothing else, and neither knows the other exists.
+
+### Lesson parts
+
+A lesson is 2–3 **parts** (`step` on an exercise, `lessonSteps` / `stepExercises` / `stepStarsKey` in `course.ts`), each teaching about four new words. Only part 1 gates the next lesson; the rest are optional but are *not* bonus content — 42 of the course's 66 parts are optional, so anything that treats them as an extra hides most of the material. `rounds.ts` is the pure module that owns the vocabulary and the state (`lessonRounds`, `nextOpenRound`, `nextPartOf`) for the path, Today's tile and hero, and the lesson completion screen.
+
+Note for anything rendered on `/learn`: the page server-renders with empty progress and hydrates against localStorage, so **vary attributes, never tag names or block structure** on progress-derived state. A `<svelte:element>` switching `a`/`span` silently stayed a `span` on the client.
+
 ### Three tracks and learner profiles
 
 `course` (lesson path, `/`), `reader` (`/reader`, script-only drills over the same course vocab, never shows romanization) and `script` (`/script` Script Studio). `Profile` (`beginner | script-reader | speaker | explorer`) reorders and frames the home screen and tunes content — it must **never hide or lock** a track. `tracks.ts` holds that routing logic.
@@ -81,6 +89,7 @@ Both SRS stores use the same 5-box interval ladder (0 / 4h / 1d / 3d / 7d). The 
 - **Theme** — tokens in `src/app.css` (`--gold`, `--heat-0..4`, etc.), light/dark via `data-theme` on `<html>`. An inline script in `app.html` reads the progress key and applies it **pre-paint**; `progress.applyTheme()` keeps it in sync. Style with the tokens, not literal colors.
 - **Immersion mode** — `i18n.svelte.ts` swaps UI strings to Burmese in 3 tiers gated on how many glyphs the learner has met. New user-facing chrome strings belong in its `STRINGS` map.
 - **Hub shell and navigation** — `src/lib/nav.ts` owns which routes are hubs, which tab each belongs to, and the shared header title. The **root layout** (`src/routes/+layout.svelte`) renders the `.hub-page` wrapper and `HubHeader` for hub routes, so the header is created once and survives navigation between hubs rather than being rebuilt per page. A new hub is added by listing it in `nav.ts`, not by copying a wrapper into the page. `nav.test.ts` enforces the invariants: every tab's `href` satisfies its own predicate, every hub lights exactly one tab, and every titled route has the shell.
+- **Modal overlays** — `ScriptSheet` (the script table) and `WordSheet` (a dictionary entry, opened by "Look it up" on a wrong-answer reveal) both live once in the root layout and are driven by session-only stores. A player must never navigate away mid-session: the queue is rebuilt on mount, so leaving and coming back lands the learner on a *different* question. Every player's keyboard handler guards with `overlayOpen()` from `overlays.svelte.ts` — add a new overlay there, not to the five call sites, or digits will answer the question hidden behind it.
 - **Service worker** — `src/service-worker.ts` precaches the app shell but excludes `/audio/` (cached lazily on play). The explicit route list lives in `src/lib/shell-pages.ts`; **add new static routes there** or an offline reload 404s. `shell-pages.test.ts` diffs the list against the routes on disk, so forgetting fails `bun run test` rather than shipping.
 - **e2e** — tests seed the progress key with `{ sound: false, profile: 'beginner' }` and wait on `body[data-hydrated="true"]`. Keep that attribute and don't break exact-text card labels casually.
 

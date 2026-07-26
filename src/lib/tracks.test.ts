@@ -78,6 +78,30 @@ describe('nextUp: the one hero action', () => {
 		expect(nextUp('beginner', { ...base, nextLesson: lesson }).href).toBe('/lesson/first-words');
 	});
 
+	// Most of the course's material is in the optional parts, so once the
+	// lesson spine is done they are the next real content — ahead of the other
+	// tracks and well ahead of crown replays.
+	it('offers an unfinished lesson part once there are no lessons left', () => {
+		const round = { lessonTitle: 'First words', label: 'Part 2', href: '/lesson/first-words?step=2' };
+		const n = nextUp('beginner', {
+			...base,
+			nextRound: round,
+			nextReaderUnit: { id: 'greetings', title: 'Greetings' },
+			uncrownedLesson: lesson
+		});
+		expect(n.href).toBe(round.href);
+		expect(n.sub).toContain('optional');
+	});
+
+	it('still puts unlocking the next lesson ahead of an optional part', () => {
+		const n = nextUp('beginner', {
+			...base,
+			nextLesson: lesson,
+			nextRound: { lessonTitle: 'Old one', label: 'Part 2', href: '/lesson/old?step=2' }
+		});
+		expect(n.href).toBe('/lesson/first-words');
+	});
+
 	it('offers the other tracks before crowns once the main one runs out', () => {
 		// A beginner who finished the course should be pointed at reading and
 		// letters, not straight into crown replays.

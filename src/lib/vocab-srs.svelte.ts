@@ -9,6 +9,7 @@ import { browser } from '$app/environment';
 import { course, stepExercises, type LessonStep } from '$lib/data/course';
 import { progress } from '$lib/progress.svelte';
 import { VOCAB_KEY as STORAGE_KEY, sanitizeEntries, sanitizeStrings } from '$lib/backup';
+import { schedule, stateOf, type Grade, type Sm2State } from '$lib/sm2';
 
 /** Review intervals per box, in milliseconds (same ladder as the script SRS). */
 const INTERVALS = [
@@ -36,6 +37,10 @@ export interface VocabEntry {
 	due: number; // epoch ms
 	seen: number;
 	lapses: number;
+	// SM-2 state, written only by self-graded review (see gradeSelf below).
+	ease?: number;
+	interval?: number; // days
+	reps?: number;
 }
 
 interface Saved {
@@ -185,6 +190,42 @@ class VocabSrs {
 		if (correct) this.mistakes = this.mistakes.filter((m) => m !== my);
 		else this.mistakes = [my, ...this.mistakes.filter((m) => m !== my)].slice(0, MISTAKE_CAP);
 		this.save();
+	}
+
+	/**
+	 * Grades one self-graded review answer (see $lib/sm2).
+	 *
+	 * SM-2 owns the *schedule*, but the box is still moved alongside it. The
+	 * box is what picks the exercise format in guided review (see the ladder in
+	 * $lib/practice-session), so leaving it frozen here would mean a learner
+	 * who ran self-graded review for a month and then switched the setting off
+	 * came back to the recognition drills they had long outgrown.
+	 */
+	gradeSelf(my: string, grade: Grade) {
+		const now = Date.now();
+		const e = this.entries[my] ?? { box: 0, due: now, seen: 0, lapses: 0 };
+		const { state, due } = schedule(stateOf(e), grade, now);
+		const ok = grade !== 'again';
+		this.entries = {
+			...this.entries,
+			[my]: {
+				box: ok ? Math.min(VOCAB_MAX_BOX, e.box + 1) : Math.max(0, e.box - 1),
+				due,
+				seen: e.seen + 1,
+				lapses: e.lapses + (ok ? 0 : 1),
+				ease: state.ease,
+				interval: state.interval,
+				reps: state.reps
+			}
+		};
+		if (ok) this.mistakes = this.mistakes.filter((m) => m !== my);
+		else this.mistakes = [my, ...this.mistakes.filter((m) => m !== my)].slice(0, MISTAKE_CAP);
+		this.save();
+	}
+
+	/** SM-2 state for a word, defaulted for one that has never been self-graded. */
+	sm2(my: string): Sm2State {
+		return stateOf(this.entries[my]);
 	}
 
 	/**

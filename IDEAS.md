@@ -376,6 +376,89 @@ missing links. Five phases, each shipped on its own.
   stays the source of truth and nothing is login-gated. Reuses `backup.ts` as
   the sync payload. The merge rule is documented and idempotent by design.
 
+## Round 14 — a real SRS for the learners who want one (2026-07-26)
+
+- ✅ **Self-graded word review** (`progress.selfReview`, off by default) —
+  `/practice` becomes an Anki-style deck: Burmese on the front, recall the
+  meaning, reveal, then grade yourself Again / Good / Easy. Three grades, not
+  Anki's four: "Hard" is the one people misuse, and `again`/`good`/`easy`
+  already span the range. Each button shows the interval it buys, which is
+  what stops Easy becoming the default tap.
+- ✅ **SM-2 scheduler** (`sm2.ts`, pure + unit-tested) — per-card ease,
+  fixed 1d/6d opening steps, `interval × ease` after that, lapses back inside
+  the session at 10 minutes, capped at a year. Runs *alongside* the Leitner
+  ladder rather than replacing it: `ease`/`interval`/`reps` are optional
+  fields on the same vocab entry, so the setting is safe to toggle both ways,
+  and `gradeSelf` still moves the box so guided review's format ladder stays
+  in step.
+- ✅ **The queue never invents work** — unlike `buildVocabPracticeQueue`,
+  which tops a thin session up with the weakest words. A scheduler that
+  reviews cards early to fill a session isn't one; if nothing is due, the
+  session says so.
+- ✅ **Skipped lessons leave the course meter** — waving through the script
+  unit ("I know this") used to leave a script-reader stuck at 21/24 forever,
+  since skipped lessons can never earn stars. `progress.courseTotal` /
+  `overview.courseTotal` drop them from the denominator too, so the meter,
+  the home hero and the Graduate achievement all count the learner's own
+  course rather than the content's.
+- 💤 **Self-graded letters** — the same treatment for the glyph SRS. Held
+  back deliberately: Script Studio drills are tracing and sound contrast,
+  which have no English "answer" side to grade yourself against.
+
+## Round 15 — lesson parts stop being a secret (2026-07-26)
+
+The deeper rounds were labelled "More words" and "Even more" and reached
+through two small chips that only appeared *after* a lesson was finished.
+They are not extras: every lesson has a part 2, eighteen have a part 3, each
+teaches about as many new words as part 1, and 42 of the course's 66 parts
+were living behind those chips.
+
+- ✅ **`rounds.ts`** — one pure module owning the vocabulary ("Part 1/2/3"),
+  the per-lesson state, the next open part and the next-part-of-this-lesson
+  lookup, so the path, Today and the lesson player can't disagree.
+- ✅ **Path**: every lesson shows all its parts as a full-width strip, always,
+  including before the lesson is started (locked but visible, so you can see
+  a lesson has three parts before choosing to open it). Deeper parts unlock
+  together on part 1 — they're siblings, not a ladder. The meta line reads
+  "1 of 3 parts done".
+- ✅ **Lesson completion** offers "Continue to Part 2" beside "Done for now",
+  with the optionality stated. That is the moment a learner has just met four
+  words and the rest are right there.
+- ✅ **Today**: a dedicated tile ("Carry on with First words · Part 2,
+  optional · N parts left"), a "Lesson parts" bar in Your Burmese (`x/42`),
+  and `nextUp` offers an unfinished part once the lesson spine is done —
+  ahead of the other tracks and well ahead of crown replays, since parts are
+  new words and a crown is a replay.
+- ✅ **Honest overall progress** — `overallPct` counts parts, so finishing
+  every part 1 no longer reads as 100% of a course two thirds untouched.
+- 🐛 Fixed in passing: `<svelte:element>` swapping `a`/`span` on
+  progress-derived state rendered as `span` with a live `href` after
+  hydration. See the note in CLAUDE.md.
+
+## Round 16 — looking a word up stops costing you your place (2026-07-26)
+
+- ✅ **Word sheet** (`WordSheet.svelte`, `word-sheet.svelte.ts`) — "Look it up"
+  on a wrong-answer reveal opened `/dictionary?q=<word>`. That card only ever
+  shows mid-session, and the players rebuild their queue on mount, so the
+  browser Back button — the only way back, and not an obvious one — returned
+  the learner to a *different* question than the one they had just missed.
+  Now the entry comes to them: definition, SRS strength, morphology, and
+  related words, over the top of the session. Related words are tappable and
+  swap the sheet rather than navigating.
+- ✅ **`word-lookup.ts`** assembles the entry (pure, tested). Handles the case
+  the old link quietly failed at too: a reveal can hold a whole phrase with no
+  dictionary headword, which now shows its parts instead of "no results".
+- ✅ **`overlays.svelte.ts`** — one answer to "is a sheet capturing input?".
+  All five players guarded with `|| scriptSheet.open`; a second overlay would
+  have meant remembering five sites, and the failure mode is silent (a digit
+  answers the question hidden behind the sheet). An e2e test presses `1` with
+  the sheet open and asserts nothing happens.
+- 🐛 Found while eyeballing it: the entry for မင်္ဂလာပါ listed "The letter
+  ga", "nga", "pa" and "ma" as related words. The script lessons teach bare
+  glyphs as vocabulary and the greeting contains all four characters —
+  sharing a character is orthography, not morphology. Substring matching now
+  needs two characters on both sides.
+
 ## Highest impact next
 
 1. ✅ **Listening-only exercise type** — the audio pipeline exists but is never the

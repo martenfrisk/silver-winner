@@ -48,6 +48,13 @@ export interface LeitnerEntry {
 	due: number; // epoch ms
 	seen: number;
 	lapses: number;
+	// SM-2 state, written only by self-graded review (see $lib/sm2). Absent on
+	// every card the app has graded for itself, which is why all three are
+	// optional: the two schedulers share one entry so the setting can be turned
+	// on and off without either losing the card's history.
+	ease?: number;
+	interval?: number; // days
+	reps?: number;
 }
 
 export interface BackupFile {
@@ -103,12 +110,23 @@ export function sanitizeEntries(u: unknown, maxBox: number): Record<string, Leit
 	const out: Record<string, LeitnerEntry> = {};
 	for (const [id, raw] of Object.entries(u)) {
 		if (!isRecord(raw)) continue;
-		out[id] = {
+		const entry: LeitnerEntry = {
 			box: clamp(Math.round(num(raw.box, 0)), 0, maxBox),
 			due: num(raw.due, 0),
 			seen: Math.max(0, Math.round(num(raw.seen, 0))),
 			lapses: Math.max(0, Math.round(num(raw.lapses, 0)))
 		};
+		// Carried through only when actually present: an entry with `ease: 2.5`
+		// invented for it would claim a self-graded history the card never had,
+		// and $lib/sm2 already defaults a card that is missing all three.
+		if (typeof raw.ease === 'number' && Number.isFinite(raw.ease)) entry.ease = raw.ease;
+		if (typeof raw.interval === 'number' && Number.isFinite(raw.interval)) {
+			entry.interval = Math.max(0, raw.interval);
+		}
+		if (typeof raw.reps === 'number' && Number.isFinite(raw.reps)) {
+			entry.reps = Math.max(0, Math.round(raw.reps));
+		}
+		out[id] = entry;
 	}
 	return out;
 }
@@ -153,6 +171,7 @@ export interface ProgressSaved {
 	sound: boolean;
 	showRoman: boolean;
 	immersion: boolean;
+	selfReview: boolean; // self-graded, SM-2 word review — see $lib/sm2
 	theme: Theme;
 	profile: Profile | null;
 	voice: VoiceId; // preferred TTS talker — see $lib/voices

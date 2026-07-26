@@ -16,6 +16,7 @@
 	import { ui } from '$lib/i18n.svelte';
 	import { prefetch, sfx, speak, speakablesOf } from '$lib/audio';
 	import { scriptSheet } from '$lib/script-sheet.svelte';
+	import { overlayOpen } from '$lib/overlays.svelte';
 	import { clickNth, digitOf, isShortcutIgnored } from '$lib/keyboard';
 	import Mascot from '$lib/components/Mascot.svelte';
 	import Confetti from '$lib/components/Confetti.svelte';
@@ -93,10 +94,9 @@
 		return my && vocabByMy.has(my) ? my : null;
 	}
 
-	function check() {
-		if (!ex || status !== 'answer') return;
+	function applyResult(ok: boolean) {
+		if (!ex) return;
 		noAudioPromptState.noteAnswer();
-		const ok = selected === ex.correct;
 		// Reading a word is a review of it. Without this the reader track fed
 		// nothing back into the SRS, so its words never came up again.
 		const word = targetWord(ex);
@@ -118,6 +118,21 @@
 			const answerAudio = reveal?.speak;
 			if (answerAudio) setTimeout(() => speak(answerAudio), 600);
 		}
+	}
+
+	function check() {
+		if (!ex || status !== 'answer') return;
+		applyResult(selected === ex.correct);
+	}
+
+	/**
+	 * Grades a recognition drill as a miss without a guess — a tapped option
+	 * is indistinguishable from a lucky one, so admitting "I don't know" avoids
+	 * promoting an SRS box on a coin flip.
+	 */
+	function idk() {
+		if (!ex || status !== 'answer') return;
+		applyResult(false);
 	}
 
 	function advance() {
@@ -149,7 +164,7 @@
 	}
 
 	function onkeydown(e: KeyboardEvent) {
-		if (isShortcutIgnored(e) || scriptSheet.open) return;
+		if (isShortcutIgnored(e) || overlayOpen()) return;
 		if (done) {
 			if (e.key === 'Enter') quit();
 			return;
@@ -238,9 +253,9 @@
 					in:fly={{ x: 60, duration: 300 }}
 				>
 					{#if ex.kind === 'choice'}
-						<ChoiceExercise {ex} bind:selected {status} onpick={check} />
+						<ChoiceExercise {ex} bind:selected {status} onpick={check} onIdk={idk} />
 					{:else}
-						<ListenExercise {ex} bind:selected {status} onpick={check} />
+						<ListenExercise {ex} bind:selected {status} onpick={check} onIdk={idk} />
 					{/if}
 				</div>
 			{/key}

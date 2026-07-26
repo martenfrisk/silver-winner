@@ -143,8 +143,11 @@ test('completes lesson 1, persists progress and unlocks lesson 2', async ({ page
 	await expect(complete.locator('.stars .star.lit')).toHaveCount(3);
 	await expect(complete.locator('.stat-value').first()).toContainText('⚡');
 
-	// Continue returns home.
-	await complete.getByRole('button', { name: 'Continue' }).click();
+	// Every lesson has more than one part, so completion offers the next one
+	// rather than only a way out. Part 2 is optional; "Done for now" is what
+	// goes home.
+	await expect(complete.getByRole('link', { name: /Continue to Part 2/ })).toBeVisible();
+	await complete.getByRole('button', { name: 'Done for now' }).click();
 	await expect(page).toHaveURL('/');
 
 	// Progress persisted to localStorage.
@@ -160,7 +163,11 @@ test('completes lesson 1, persists progress and unlocks lesson 2', async ({ page
 	await gotoApp(page, '/learn');
 	const node1 = page.getByRole('button', { name: lesson1.title, exact: true });
 	await expect(node1).toHaveClass(/done/);
-	await expect(page.locator('.lrow', { has: node1 }).locator('.stars')).toBeVisible();
+	// The lesson's parts strip: part 1 now shows its stars, and part 2 has
+	// opened up rather than staying hidden until someone goes looking.
+	const block1 = page.locator('.lblock', { has: node1 });
+	await expect(block1.locator('.part.done .part-stars')).toBeVisible();
+	await expect(block1.getByRole('link', { name: /Part 2/ })).toBeVisible();
 	if (lesson2) {
 		const node2 = page.getByRole('button', { name: lesson2.title, exact: true });
 		await expect(node2).toBeEnabled();
@@ -221,4 +228,48 @@ test('script studio hub renders the alphabet chart', async ({ page }) => {
 	const totalCells = chartSections.reduce((n, s) => n + s.ids.length, 0);
 	expect(totalCells).toBeGreaterThan(0);
 	await expect(page.locator('.chart .cell')).toHaveCount(totalCells);
+});
+
+test('looking a word up keeps your place in the lesson', async ({ page }) => {
+	// The bug this pins: "Look it up" used to navigate to /dictionary, and the
+	// only way back was the browser's Back button, which remounts the player
+	// and rebuilds its queue — so the learner returned to a different question
+	// than the one they had just missed.
+	const choice = lesson1Step1.find((ex) => ex.kind === 'choice');
+	test.skip(!choice, 'lesson 1 has no choice exercise to answer wrongly');
+	if (choice?.kind !== 'choice') return;
+
+	await gotoApp(page, `/lesson/${lesson1.id}`);
+	for (const ex of lesson1Step1) {
+		if (ex === choice) break;
+		await solveExercise(page, ex);
+	}
+
+	const question = await page.locator('.question').first().textContent();
+	const url = page.url();
+
+	// Answer it wrong on purpose — the reveal card only appears on a miss.
+	const wrong = choice.options.find((_, i) => i !== choice.correct)!;
+	await byExactText(page, page.locator('.options .answer-card'), wrong.text).click();
+
+	const reveal = page.locator('.reveal-card');
+	await expect(reveal).toBeVisible();
+	await reveal.getByRole('button', { name: 'Look it up' }).click();
+
+	// The entry opens over the session rather than instead of it.
+	const sheet = page.getByRole('dialog', { name: /Dictionary entry/ });
+	await expect(sheet).toBeVisible();
+	expect(page.url()).toBe(url);
+
+	// While it is up, the player's number shortcuts must not answer the
+	// question underneath — it isn't even visible.
+	await page.keyboard.press('1');
+	await expect(sheet).toBeVisible();
+
+	await sheet.getByRole('button', { name: 'Back to the question' }).click();
+	await expect(sheet).toBeHidden();
+
+	// Same question, same place, no navigation.
+	await expect(page.locator('.question').first()).toHaveText(question ?? '');
+	expect(page.url()).toBe(url);
 });

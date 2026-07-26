@@ -11,11 +11,13 @@
 		type LessonStep
 	} from '$lib/data/course';
 	import { progress } from '$lib/progress.svelte';
+	import { nextPartOf } from '$lib/rounds';
 	import { sessionXp, COMBO_BONUS, COMBO_BONUS_AT, CROWN_BONUS } from '$lib/xp';
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { ui } from '$lib/i18n.svelte';
 	import { prefetch, sfx, speak, speakablesOf } from '$lib/audio';
 	import { scriptSheet } from '$lib/script-sheet.svelte';
+	import { overlayOpen } from '$lib/overlays.svelte';
 	import { clickNth, digitOf, isShortcutIgnored } from '$lib/keyboard';
 	import Mascot from '$lib/components/Mascot.svelte';
 	import Confetti from '$lib/components/Confetti.svelte';
@@ -72,6 +74,18 @@
 	let matchReady = $state(false);
 	let crowned = $state(false);
 	let testedOut = $state(false);
+
+	/**
+	 * The part to offer on the completion screen.
+	 *
+	 * Gated on `done` so it reads `progress.stars` only after the finished run
+	 * has been written, which is what keeps it from offering the part that just
+	 * ended. A crown run is excluded: it replays part 1's drills, and chaining
+	 * that into part 2 would turn a victory lap into a queue.
+	 */
+	const nextPart = $derived(
+		found && !hard && done ? nextPartOf(found.lesson, step, progress.stars) : undefined
+	);
 
 	// Combo: consecutive correct answers. ≥5 at any point earns bonus XP.
 	let combo = $state(0);
@@ -235,7 +249,7 @@
 	}
 
 	function onkeydown(e: KeyboardEvent) {
-		if (isShortcutIgnored(e) || scriptSheet.open) return;
+		if (isShortcutIgnored(e) || overlayOpen()) return;
 		if (done) {
 			if (e.key === 'Enter') quit();
 			return;
@@ -321,7 +335,24 @@
 				<span class="stat-value">🔥 {progress.streak}</span>
 			</div>
 		</div>
-		<button class="btn green big" onclick={quit}>{ui('continue').text}</button>
+		{#if nextPart}
+			<!-- The one moment a learner definitely wants the next part: they have
+			     just met this lesson's first four words and the rest are right
+			     here. data-sveltekit-reload because this is the same route with a
+			     different ?step — a client-side nav would keep this component (and
+			     its finished queue) mounted. -->
+			<div class="next-part">
+				<a class="btn green big" href={nextPart.href} data-sveltekit-reload>
+					Continue to {nextPart.label}
+				</a>
+				<button class="btn ghost" onclick={quit}>Done for now</button>
+				<p class="next-part-note">
+					{nextPart.label} is optional &mdash; you're free to move on whenever you like.
+				</p>
+			</div>
+		{:else}
+			<button class="btn green big" onclick={quit}>{ui('continue').text}</button>
+		{/if}
 	</div>
 {:else}
 	<div class="lesson">
@@ -756,6 +787,23 @@
 		padding: 16px 48px;
 		font-size: 1.1rem;
 		margin-top: 8px;
+	}
+	.next-part {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 10px;
+	}
+	.next-part .btn {
+		text-decoration: none;
+	}
+	.next-part-note {
+		margin: 0;
+		max-width: 34ch;
+		font-size: 0.82rem;
+		font-weight: 700;
+		color: var(--ink-soft);
+		text-wrap: pretty;
 	}
 	.missing {
 		min-height: 100dvh;

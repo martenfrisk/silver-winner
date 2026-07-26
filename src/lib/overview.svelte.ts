@@ -38,6 +38,7 @@ class Overview {
 	private snapshot = $derived<OverviewSnapshot>({
 		stars: progress.stars,
 		lessonIds: LESSON_IDS,
+		skippedIds: Object.keys(progress.skipped),
 		unitIds: UNIT_IDS,
 		storyIds: STORY_IDS,
 		unlockedStoryIds: stories

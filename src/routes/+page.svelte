@@ -9,6 +9,7 @@
 	import { scriptUnits, totalGlyphs } from '$lib/data/script';
 	import { readerStarsKey } from '$lib/reader-session';
 	import { nextUp } from '$lib/tracks';
+	import { nextOpenRound, openRoundCount } from '$lib/rounds';
 	import { ui } from '$lib/i18n.svelte';
 	import Mascot from '$lib/components/Mascot.svelte';
 	import StartChooser from '$lib/components/StartChooser.svelte';
@@ -19,10 +20,12 @@
 	import { overview } from '$lib/overview.svelte';
 	import { scriptSheet } from '$lib/script-sheet.svelte';
 	import {
-		GraduationCap, BookOpen, PenLine, Dumbbell, ArrowRight, Volume2, VolumeX, Snowflake
+		GraduationCap, BookOpen, PenLine, Dumbbell, ArrowRight, Volume2, VolumeX, Snowflake, Layers
 	} from '@lucide/svelte';
 
-	const totalLessons = course.reduce((n, u) => n + u.lessons.length, 0);
+	// The learner's own course length, not the content's: skipping a unit takes
+	// its lessons out of the ladder. See progress.courseTotal.
+	const totalLessons = $derived(progress.courseTotal);
 	const goalPct = $derived(Math.min(1, progress.xpToday / Math.max(1, progress.dailyGoal)));
 	const goalRemaining = $derived(Math.max(0, progress.dailyGoal - progress.xpToday));
 
@@ -50,6 +53,11 @@
 	const scriptNext = $derived(scriptUnits.find((u) => !srs.isUnitDone(u.id)));
 	const uncrowned = $derived(allLessons.find((l) => !progress.isCrowned(l.id)));
 
+	// Optional lesson parts (see $lib/rounds): most of the course's words live
+	// in them, so Today names them rather than leaving them to the path.
+	const openRound = $derived(nextOpenRound(allLessons, progress.stars));
+	const openRounds = $derived(openRoundCount(allLessons, progress.stars));
+
 	const next = $derived(
 		nextUp(progress.profile, {
 			vocabDue: vocabSrs.dueCount,
@@ -57,6 +65,9 @@
 			nextLesson: courseNext,
 			nextReaderUnit: readerNext,
 			nextScriptUnit: scriptNext,
+			nextRound: openRound
+				? { lessonTitle: openRound.lessonTitle, label: openRound.label, href: openRound.href }
+				: undefined,
 			uncrownedLesson: uncrowned
 		})
 	);
@@ -216,6 +227,24 @@
 		</a>
 	{/if}
 
+	<!-- Lesson parts get a tile of their own because the hero can only ever
+	     name one thing, and while there are lessons left to unlock that thing
+	     is never a part — which is exactly how 42 of the course's 66 parts
+	     ended up invisible. See $lib/rounds. -->
+	{#if openRound}
+		<a class="tile" href={openRound.href}>
+			<span class="tile-icon plum"><Layers size={20} strokeWidth={2} /></span>
+			<span class="tile-text">
+				<span class="tile-title">Carry on with {openRound.lessonTitle}</span>
+				<span class="tile-sub">
+					{openRound.label}, optional &middot; {openRounds} part{openRounds === 1 ? '' : 's'} left across
+					your lessons
+				</span>
+			</span>
+			<ArrowRight size={18} strokeWidth={2} class="tile-arrow" />
+		</a>
+	{/if}
+
 	{#if unlockedStories > 0}
 		<a class="tile" href="/stories">
 			<span class="tile-icon gold"><BookOpen size={20} strokeWidth={2} /></span>
@@ -314,6 +343,7 @@
 	.tile-icon { width: 42px; height: 42px; border-radius: var(--radius-sm); display: grid; place-items: center; flex: 0 0 auto; }
 	.tile-icon.teal { background: var(--teal-soft); color: var(--teal-ink); }
 	.tile-icon.gold { background: var(--gold-wash); color: var(--gold-ink); }
+	.tile-icon.plum { background: var(--plum-wash, var(--sink)); color: var(--plum-ink); }
 	.tile-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 	.tile-title { font-weight: 700; font-size: 0.98rem; color: var(--ink); }
 	.tile-sub { font-size: 0.82rem; color: var(--ink-soft); line-height: 1.35; }

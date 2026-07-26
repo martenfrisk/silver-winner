@@ -146,6 +146,7 @@ export function defaultProgress(u: unknown): ProgressSaved {
 		sound: s.sound ?? true,
 		showRoman: s.showRoman ?? false,
 		immersion: s.immersion ?? false,
+		selfReview: s.selfReview ?? false,
 		theme: s.theme === 'light' || s.theme === 'dark' ? s.theme : 'system',
 		profile: PROFILES.includes(s.profile as Profile) ? (s.profile ?? null) : null,
 		voice: isVoiceId(s.voice) ? s.voice : DEFAULT_VOICE,

@@ -389,6 +389,22 @@
 		</div>
 		<label class="setting">
 			<span class="setting-text">
+				<span class="setting-title">Self-graded review</span>
+				<span class="setting-desc">
+					Turns word review into flashcards, the way Anki does it: the Burmese side comes
+					first, you recall the meaning, and you say how it went. Again, Good or Easy set
+					how long until you see it again, from ten minutes to months. Off by default,
+					because it only works if you're honest with yourself.
+				</span>
+			</span>
+			<input
+				type="checkbox"
+				checked={progress.selfReview}
+				onchange={() => progress.toggleSelfReview()}
+			/>
+		</label>
+		<label class="setting">
+			<span class="setting-text">
 				<span class="setting-title">Immersion mode</span>
 				<span class="setting-desc">
 					The app's buttons and labels gradually switch to Burmese as you learn more script,
