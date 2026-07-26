@@ -70,6 +70,12 @@ Both SRS stores use the same 5-box interval ladder (0 / 4h / 1d / 3d / 7d). The 
 
 There is a **second scheduler** for words only: `sm2.ts` (SM-2, three grades — again/good/easy), used when `progress.selfReview` is on. It writes `ease`/`interval`/`reps` onto the *same* vocab entry, so the setting can be toggled either way without losing a word's history; `vocabSrs.gradeSelf` moves the box alongside it so guided review stays in step. `/practice` is a two-line route that picks `GuidedPracticeSession` or `SelfReviewSession` on that setting — the two sessions share nothing else, and neither knows the other exists.
 
+### Lesson parts
+
+A lesson is 2–3 **parts** (`step` on an exercise, `lessonSteps` / `stepExercises` / `stepStarsKey` in `course.ts`), each teaching about four new words. Only part 1 gates the next lesson; the rest are optional but are *not* bonus content — 42 of the course's 66 parts are optional, so anything that treats them as an extra hides most of the material. `rounds.ts` is the pure module that owns the vocabulary and the state (`lessonRounds`, `nextOpenRound`, `nextPartOf`) for the path, Today's tile and hero, and the lesson completion screen.
+
+Note for anything rendered on `/learn`: the page server-renders with empty progress and hydrates against localStorage, so **vary attributes, never tag names or block structure** on progress-derived state. A `<svelte:element>` switching `a`/`span` silently stayed a `span` on the client.
+
 ### Three tracks and learner profiles
 
 `course` (lesson path, `/`), `reader` (`/reader`, script-only drills over the same course vocab, never shows romanization) and `script` (`/script` Script Studio). `Profile` (`beginner | script-reader | speaker | explorer`) reorders and frames the home screen and tunes content — it must **never hide or lock** a track. `tracks.ts` holds that routing logic.

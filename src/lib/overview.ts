@@ -52,7 +52,7 @@ export function starKind(key: string): ParsedKey {
 }
 
 export interface TrackSummary {
-	id: 'course' | 'reader' | 'script' | 'stories';
+	id: 'course' | 'rounds' | 'reader' | 'script' | 'stories';
 	title: string;
 	href: string;
 	done: number;
@@ -147,6 +147,7 @@ export function storiesDone(s: OverviewSnapshot): number {
 export function trackSummaries(s: OverviewSnapshot): TrackSummary[] {
 	const course = courseDone(s);
 	const courseOf = courseTotal(s);
+	const rounds = courseRounds(s);
 	const reader = readerDone(s);
 	const story = storiesDone(s);
 	return [
@@ -157,6 +158,18 @@ export function trackSummaries(s: OverviewSnapshot): TrackSummary[] {
 			done: course,
 			total: courseOf,
 			pct: pct(course, courseOf)
+		},
+		// The optional parts, counted separately rather than folded into the
+		// course row. Two different questions — "have I unlocked everything?"
+		// and "have I learned everything it teaches?" — and one bar answering
+		// only the first is how most of the material stayed invisible.
+		{
+			id: 'rounds',
+			title: 'Lesson parts',
+			href: '/learn',
+			done: rounds.done,
+			total: rounds.total,
+			pct: pct(rounds.done, rounds.total)
 		},
 		{
 			id: 'reader',

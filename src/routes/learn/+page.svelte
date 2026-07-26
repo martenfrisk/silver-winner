@@ -3,7 +3,8 @@
 	// not a winding map. Every feature from the old path is here: locking,
 	// stars, unit skip, test-out, crowns, and the optional deeper rounds (now
 	// full labelled rows instead of tiny +2/+3 chips).
-	import { course, lessonSteps, stepStarsKey, type Lesson, type Unit } from '$lib/data/course';
+	import { course, lessonSteps, type Lesson, type Unit } from '$lib/data/course';
+	import { lessonRounds, roundsOf } from '$lib/rounds';
 	import { lessonOrder } from '$lib/data/lesson-order';
 	import { storiesForUnit, storyStarsKey } from '$lib/data/stories';
 	import { readerStarsKey, unitVocab } from '$lib/reader-session';
@@ -24,11 +25,10 @@
 	const MY_DIGITS = ['၀', '၁', '၂', '၃', '၄', '၅', '၆', '၇', '၈', '၉'];
 	const myDigit = (n: number) => String(n).split('').map((d) => MY_DIGITS[+d]).join('');
 
-	/** How many of a lesson's rounds (core + deeper steps) are done. */
+	/** How many of a lesson's parts are done. */
 	function roundsDone(lesson: Lesson): number {
-		return lessonSteps(lesson).filter((s) => (progress.stars[stepStarsKey(lesson.id, s)] ?? 0) > 0).length;
+		return roundsOf(lesson, progress.stars).done;
 	}
-	const ROUND_LABEL: Record<number, string> = { 2: 'More words', 3: 'Even more' };
 
 	function openLesson(id: string, unlocked: boolean) {
 		if (!unlocked) return sfx.wrong();
@@ -88,80 +88,117 @@
 					{@const steps = lessonSteps(lesson)}
 					{@const rdone = roundsDone(lesson)}
 					{@const pct = rdone / steps.length}
-					<div class="lrow" class:locked={!unlocked && !skipped}>
-						<button
-							class="node"
-							class:done={stars > 0}
-							class:current={isCurrent}
-							onclick={() => openLesson(lesson.id, unlocked)}
-							disabled={!unlocked}
-							aria-label="{lesson.title}{unlocked ? '' : ' (locked)'}">
-							<svg viewBox="0 0 46 46" aria-hidden="true">
-								<circle cx="23" cy="23" r="20" fill="none" stroke="var(--line)" stroke-width="3.5" />
-								{#if pct > 0}
-									<circle
-										cx="23" cy="23" r="20" fill="none" stroke="var(--gold)" stroke-width="3.5"
-										stroke-linecap="round"
-										stroke-dasharray={C}
-										stroke-dashoffset={C * (1 - pct)}
-										transform="rotate(-90 23 23)" />
-								{/if}
-							</svg>
-							<span class="face">
-								{#if !unlocked && !skipped}
-									<Lock size={16} strokeWidth={2} />
-								{:else}
-									<span class="my">{myDigit(i + 1)}</span>
-								{/if}
-							</span>
-						</button>
+					{@const rounds = lessonRounds(lesson, progress.stars, unlocked)}
+					<!-- One block per lesson: the node row and its parts are one thing,
+					     which is the whole point of the change. -->
+					<div class="lblock">
+						<div class="lrow" class:locked={!unlocked && !skipped}>
+							<button
+								class="node"
+								class:done={stars > 0}
+								class:current={isCurrent}
+								onclick={() => openLesson(lesson.id, unlocked)}
+								disabled={!unlocked}
+								aria-label="{lesson.title}{unlocked ? '' : ' (locked)'}">
+								<svg viewBox="0 0 46 46" aria-hidden="true">
+									<circle cx="23" cy="23" r="20" fill="none" stroke="var(--line)" stroke-width="3.5" />
+									{#if pct > 0}
+										<circle
+											cx="23" cy="23" r="20" fill="none" stroke="var(--gold)" stroke-width="3.5"
+											stroke-linecap="round"
+											stroke-dasharray={C}
+											stroke-dashoffset={C * (1 - pct)}
+											transform="rotate(-90 23 23)" />
+									{/if}
+								</svg>
+								<span class="face">
+									{#if !unlocked && !skipped}
+										<Lock size={16} strokeWidth={2} />
+									{:else}
+										<span class="my">{myDigit(i + 1)}</span>
+									{/if}
+								</span>
+							</button>
 
-						<div class="txt">
-							<span class="t">{lesson.title}</span>
-							<span class="meta">
+							<div class="txt">
+								<span class="t">{lesson.title}</span>
+								<span class="meta">
+									{#if isCurrent && rdone === 0}
+										<span class="tag">Start here</span>
+									{:else if skipped}
+										<span class="muted">Skipped &middot; tap to learn anyway</span>
+									{:else if !unlocked}
+										<span class="muted">Locked</span>
+									{:else}
+										<span class="muted">{rdone} of {steps.length} parts done</span>
+									{/if}
+								</span>
+							</div>
+
+							<div class="chips">
 								{#if stars > 0}
-									<span class="stars">{'★'.repeat(stars)}<span class="dim">{'★'.repeat(3 - stars)}</span></span>
-								{:else if isCurrent}
-									<span class="tag">Start here</span>
-								{:else if skipped}
-									<span class="muted">Skipped &middot; tap to learn anyway</span>
-								{:else if !unlocked}
-									<span class="muted">Locked</span>
+									<a
+										class="chip crown"
+										class:crowned={progress.isCrowned(lesson.id)}
+										href="/lesson/{lesson.id}?mode=hard"
+										aria-label="Hard mode for {lesson.title}"
+										title={progress.isCrowned(lesson.id) ? 'Crowned! Replay hard mode anytime' : 'Hard mode: a perfect run earns the crown'}>
+										<Crown size={16} strokeWidth={2} />
+									</a>
 								{/if}
-							</span>
-							{#if stars > 0 && steps.length > 1}
-								<div class="rounds">
-									{#each steps.slice(1) as s (s)}
-										{@const rdoneStep = (progress.stars[stepStarsKey(lesson.id, s)] ?? 0) > 0}
-										<a class="round" class:done={rdoneStep} href="/lesson/{lesson.id}?step={s}">
-											{rdoneStep ? '✓' : '+'} {ROUND_LABEL[s]}
-										</a>
-									{/each}
-								</div>
-							{/if}
+								{#if !unlocked && progress.profile === 'speaker'}
+									<a
+										class="chip test"
+										href="/lesson/{lesson.id}?mode=hard"
+										aria-label="Test out of {lesson.title}"
+										title="Test out: a perfect drills-only run completes this lesson">
+										<Zap size={16} strokeWidth={2} />
+									</a>
+								{/if}
+							</div>
 						</div>
 
-						<div class="chips">
-							{#if stars > 0}
-								<a
-									class="chip crown"
-									class:crowned={progress.isCrowned(lesson.id)}
-									href="/lesson/{lesson.id}?mode=hard"
-									aria-label="Hard mode for {lesson.title}"
-									title={progress.isCrowned(lesson.id) ? 'Crowned! Replay hard mode anytime' : 'Hard mode: a perfect run earns the crown'}>
-									<Crown size={16} strokeWidth={2} />
-								</a>
-							{/if}
-							{#if !unlocked && progress.profile === 'speaker'}
-								<a
-									class="chip test"
-									href="/lesson/{lesson.id}?mode=hard"
-									aria-label="Test out of {lesson.title}"
-									title="Test out: a perfect drills-only run completes this lesson">
-									<Zap size={16} strokeWidth={2} />
-								</a>
-							{/if}
-						</div>
+						<!-- The parts, as a full row rather than two chips tucked under the
+						     title. They used to appear only after the lesson was finished
+						     and were labelled "More words" / "Even more", which read as
+						     bonus material — but each one teaches about as many new words
+						     as part 1, and 42 of the course's 66 parts live here. Listing
+						     them up front, locked-but-visible, is the point: a lesson has
+						     three parts, and only the first one gates what comes next. -->
+						{#if !skipped && steps.length > 1}
+							<div class="parts" class:dim={!unlocked}>
+								{#each rounds as r (r.step)}
+									<!-- Always an <a>, never a <svelte:element> that swaps to a
+									     <span> when locked: this page server-renders with empty
+									     progress and hydrates against localStorage, and a tag name
+									     is the one thing hydration cannot patch — the parts came
+									     out as spans carrying a live href. An <a> with no href is
+									     already the semantics wanted here: no link role, not
+									     focusable, not clickable. -->
+									<a
+										class="part"
+										class:done={r.done}
+										class:shut={!r.unlocked}
+										href={r.unlocked ? r.href : undefined}
+										aria-disabled={r.unlocked ? undefined : 'true'}
+										title={r.unlocked
+											? r.done
+												? `Replay ${r.label} of ${lesson.title}`
+												: `${r.label} of ${lesson.title}`
+											: 'Finish part 1 first'}
+									>
+										<span class="part-n">{r.label}</span>
+										{#if r.done}
+											<span class="part-stars">{'★'.repeat(r.stars)}</span>
+										{:else if r.unlocked}
+											<span class="part-go">{r.required ? 'Start' : 'Optional'}</span>
+										{:else}
+											<Lock size={11} strokeWidth={2.4} />
+										{/if}
+									</a>
+								{/each}
+							</div>
+						{/if}
 					</div>
 				{/each}
 			</div>
@@ -351,25 +388,40 @@
 	.txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 	.txt .t { font-weight: 700; font-size: 0.98rem; color: var(--ink); }
 	.txt .meta { font-size: 0.76rem; line-height: 1.2; }
-	.stars { color: var(--gold-ink); letter-spacing: 0.12em; font-size: 0.72rem; }
-	.stars .dim { color: var(--star-dim); }
 	.tag { color: var(--teal-ink); font-weight: 800; letter-spacing: 0.02em; }
 	.muted { color: var(--ink-soft); }
 
-	.rounds { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-	.round {
+	/* Indented past the node so the strip reads as belonging to the lesson
+	   above it rather than sitting on the spine as a sibling of the nodes. */
+	.parts {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		margin: 0 0 var(--s3) 62px;
+	}
+	.parts.dim { opacity: 0.55; }
+	.part {
 		display: inline-flex;
 		align-items: center;
-		gap: 4px;
-		padding: 4px 11px;
+		gap: 7px;
+		padding: 7px 13px;
 		border-radius: 999px;
-		font-size: 0.74rem;
+		font-size: 0.78rem;
 		font-weight: 700;
 		text-decoration: none;
 		color: var(--teal-ink);
-		background: var(--sink);
+		background: var(--card);
+		box-shadow: inset 0 0 0 1.5px var(--line);
+		transition: box-shadow 0.15s ease, translate 0.1s var(--pop);
 	}
-	.round.done { color: var(--gold-ink); }
+	.part:hover { box-shadow: inset 0 0 0 1.5px var(--teal); }
+	.part:active { translate: 0 1px; }
+	.part.done { background: var(--teal-soft); box-shadow: none; }
+	.part.shut { color: var(--ink-soft); background: var(--sink); box-shadow: none; }
+	.part-stars { color: var(--gold-ink); letter-spacing: 0.1em; font-size: 0.7rem; }
+	/* "Optional" is the whole difference between part 1 and the rest, so it is
+	   stated rather than implied by the parts being hidden. */
+	.part-go { color: var(--ink-soft); font-size: 0.7rem; font-weight: 700; }
 
 	.chips { display: flex; gap: 6px; flex: 0 0 auto; }
 	.chip {

@@ -405,6 +405,36 @@ missing links. Five phases, each shipped on its own.
   back deliberately: Script Studio drills are tracing and sound contrast,
   which have no English "answer" side to grade yourself against.
 
+## Round 15 — lesson parts stop being a secret (2026-07-26)
+
+The deeper rounds were labelled "More words" and "Even more" and reached
+through two small chips that only appeared *after* a lesson was finished.
+They are not extras: every lesson has a part 2, eighteen have a part 3, each
+teaches about as many new words as part 1, and 42 of the course's 66 parts
+were living behind those chips.
+
+- ✅ **`rounds.ts`** — one pure module owning the vocabulary ("Part 1/2/3"),
+  the per-lesson state, the next open part and the next-part-of-this-lesson
+  lookup, so the path, Today and the lesson player can't disagree.
+- ✅ **Path**: every lesson shows all its parts as a full-width strip, always,
+  including before the lesson is started (locked but visible, so you can see
+  a lesson has three parts before choosing to open it). Deeper parts unlock
+  together on part 1 — they're siblings, not a ladder. The meta line reads
+  "1 of 3 parts done".
+- ✅ **Lesson completion** offers "Continue to Part 2" beside "Done for now",
+  with the optionality stated. That is the moment a learner has just met four
+  words and the rest are right there.
+- ✅ **Today**: a dedicated tile ("Carry on with First words · Part 2,
+  optional · N parts left"), a "Lesson parts" bar in Your Burmese (`x/42`),
+  and `nextUp` offers an unfinished part once the lesson spine is done —
+  ahead of the other tracks and well ahead of crown replays, since parts are
+  new words and a crown is a replay.
+- ✅ **Honest overall progress** — `overallPct` counts parts, so finishing
+  every part 1 no longer reads as 100% of a course two thirds untouched.
+- 🐛 Fixed in passing: `<svelte:element>` swapping `a`/`span` on
+  progress-derived state rendered as `span` with a live `href` after
+  hydration. See the note in CLAUDE.md.
+
 ## Highest impact next
 
 1. ✅ **Listening-only exercise type** — the audio pipeline exists but is never the

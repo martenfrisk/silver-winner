@@ -89,6 +89,8 @@ export interface SuggestState {
 	nextReaderUnit?: { id: string; title: string };
 	/** First Script Studio unit not yet done. */
 	nextScriptUnit?: { id: string; title: string };
+	/** Next unfinished part of a lesson already started — see $lib/rounds. */
+	nextRound?: { lessonTitle: string; label: string; href: string };
 	uncrownedLesson?: { id: string; title: string };
 }
 
@@ -159,6 +161,18 @@ export function nextUp(profile: Profile | null, s: SuggestState): NextUp {
 			href: `/lesson/${s.nextLesson.id}`,
 			title: 'Continue the course',
 			sub: `Next: ${s.nextLesson.title}`,
+			track: 'course'
+		};
+	}
+
+	// No lessons left to unlock, but most of the course's material lives in the
+	// optional parts (42 of its 66 — see $lib/rounds), so those come before the
+	// other tracks and well before crowns: they are new words, not a replay.
+	if (s.nextRound) {
+		return {
+			href: s.nextRound.href,
+			title: `Continue ${s.nextRound.lessonTitle}`,
+			sub: `${s.nextRound.label}, optional`,
 			track: 'course'
 		};
 	}

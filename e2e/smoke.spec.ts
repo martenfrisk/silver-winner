@@ -143,8 +143,11 @@ test('completes lesson 1, persists progress and unlocks lesson 2', async ({ page
 	await expect(complete.locator('.stars .star.lit')).toHaveCount(3);
 	await expect(complete.locator('.stat-value').first()).toContainText('⚡');
 
-	// Continue returns home.
-	await complete.getByRole('button', { name: 'Continue' }).click();
+	// Every lesson has more than one part, so completion offers the next one
+	// rather than only a way out. Part 2 is optional; "Done for now" is what
+	// goes home.
+	await expect(complete.getByRole('link', { name: /Continue to Part 2/ })).toBeVisible();
+	await complete.getByRole('button', { name: 'Done for now' }).click();
 	await expect(page).toHaveURL('/');
 
 	// Progress persisted to localStorage.
@@ -160,7 +163,11 @@ test('completes lesson 1, persists progress and unlocks lesson 2', async ({ page
 	await gotoApp(page, '/learn');
 	const node1 = page.getByRole('button', { name: lesson1.title, exact: true });
 	await expect(node1).toHaveClass(/done/);
-	await expect(page.locator('.lrow', { has: node1 }).locator('.stars')).toBeVisible();
+	// The lesson's parts strip: part 1 now shows its stars, and part 2 has
+	// opened up rather than staying hidden until someone goes looking.
+	const block1 = page.locator('.lblock', { has: node1 });
+	await expect(block1.locator('.part.done .part-stars')).toBeVisible();
+	await expect(block1.getByRole('link', { name: /Part 2/ })).toBeVisible();
 	if (lesson2) {
 		const node2 = page.getByRole('button', { name: lesson2.title, exact: true });
 		await expect(node2).toBeEnabled();
