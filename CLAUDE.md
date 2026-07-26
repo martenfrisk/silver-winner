@@ -80,6 +80,17 @@ Note for anything rendered on `/learn`: the page server-renders with empty progr
 
 `course` (lesson path, `/`), `reader` (`/reader`, script-only drills over the same course vocab, never shows romanization) and `script` (`/script` Script Studio). `Profile` (`beginner | script-reader | speaker | explorer`) reorders and frames the home screen and tunes content — it must **never hide or lock** a track. `tracks.ts` holds that routing logic.
 
+### Render-time exercise transforms
+
+Two pure modules rewrite an exercise on its way to the screen rather than in the content, and they **compose in this order**:
+
+1. `listen-mode.ts` — `meaningFirst()` swaps a listening drill's Burmese options for their meanings when `readsScript(profile)` (see `tracks.ts`). Audio plus script options tests spelling recognition, not comprehension. It bails out (returning the drill untouched) when the drill is `keepScript`, when an option has no gloss, when the correct option's gloss isn't the drill's own `en`, or when the meanings would be near-synonyms.
+2. `silent-mode.ts` — may then turn that into a reading drill when audio is off.
+
+Both keep `correct` intact, so grading is never affected by either swap.
+
+**Content rules that fall out of this**: don't put romanization in a `note` — it's a static string, so the roman toggle can't switch it off; put the structure in `morphology.ts` instead, which `LearnCard`, `AnswerReveal`, `WordSheet` and the dictionary all render. And don't offer near-synonymous English options (`near-synonyms.ts` is the shared rule, used by both `lint:content` and the transform above). Both are lint warnings.
+
 ### Silent mode is a content contract
 
 `progress.audioOn` = permanent `sound` setting AND not `tempMute` (the session-only "no headphones" mute, deliberately unpersisted). `silent-mode.ts` guarantees the learner never meets an unanswerable question: applied at *render* time, listening drills convert into reading drills over the same options and correct index (so grading is untouched), and audio-only Script Studio drills are skipped. Any new audio-dependent exercise kind needs a case here.

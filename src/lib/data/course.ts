@@ -65,6 +65,17 @@ export type ExerciseBody =
        * meaning. Only the "en" form resists both shortcuts.
        */
       optionLang?: "my" | "en";
+      /**
+       * Keep the script options even for a learner who reads Burmese, who
+       * would otherwise be shown the meanings instead (see $lib/listen-mode).
+       *
+       * For the two cases where swapping in English would make the drill
+       * worse, not better: script-reading drills where decoding *is* the
+       * skill being tested, and words with no stable English gloss — the
+       * discourse particles နော် / ပေါ့ / လေ have labels, not translations,
+       * so choosing between those labels tests nothing.
+       */
+      keepScript?: true;
     }
   | {
       kind: "assemble";
@@ -182,7 +193,7 @@ export const course: Unit[] = [
             roman: "ma-hote-bu",
             en: "No",
             emoji: "❌",
-            note: "မ (ma) + …ဘူး (bu) wraps around a verb to negate it.",
+            note: "The pair wraps around a verb: မ opens the negation, ဘူး closes it.",
           },
           {
             kind: "choice",
@@ -268,7 +279,7 @@ export const course: Unit[] = [
             roman: "da ba-lèh",
             en: "What is this?",
             emoji: "❓",
-            note: "ဒါ (da) “this” + ဘာ (ba) “what” + လဲ, the question particle for open questions.",
+            note: "လဲ is the question particle for open questions — the ones you can’t answer yes or no.",
           },
           {
             kind: "learn",
@@ -411,7 +422,7 @@ export const course: Unit[] = [
             roman: "nei-kaung-la",
             en: "How are you?",
             emoji: "🙂",
-            note: "Literally “are you well?” The particle လား (la) turns a statement into a question.",
+            note: "Literally “are you well?” — လား is what turns a statement into a yes/no question.",
           },
           {
             kind: "learn",
@@ -558,7 +569,7 @@ export const course: Unit[] = [
             roman: "yei-sa-deh",
             en: "I’m thirsty",
             emoji: "💧",
-            note: "ရေ (yei) is “water” — literally “water-hungry”, matching ဗိုက်ဆာတယ်.",
+            note: "Same shape as ဗိုက်ဆာတယ်: swap the belly for water and you’re thirsty.",
           },
           {
             kind: "match",
@@ -597,7 +608,11 @@ export const course: Unit[] = [
             roman: "thwa-daw-meh",
             en: "I’m off now",
             optionLang: "en",
-            options: [{ text: "I’m off now" }, { text: "See you" }, { text: "See you tomorrow" }],
+            // Distractors from a different corner of the lesson on purpose.
+            // Pitting this against "See you" and "See you tomorrow" asked
+            // which English parting the author had picked for it, which is a
+            // guess even for someone who understood the Burmese perfectly.
+            options: [{ text: "I’m off now" }, { text: "I’m tired" }, { text: "Not well" }],
             correct: 0,
           },
           {
@@ -1468,6 +1483,7 @@ export const course: Unit[] = [
           // detour is exactly what a reader has to unlearn later.
           {
             kind: "listen",
+            keepScript: true,
             my: "က",
             roman: "ka",
             en: "The letter “ka”",
@@ -1493,6 +1509,7 @@ export const course: Unit[] = [
           },
           {
             kind: "listen",
+            keepScript: true,
             my: "င",
             roman: "nga",
             en: "The letter “nga”",
@@ -1505,6 +1522,7 @@ export const course: Unit[] = [
           },
           {
             kind: "listen",
+            keepScript: true,
             my: "ခ",
             roman: "kha",
             en: "The letter “kha”",
@@ -1602,6 +1620,7 @@ export const course: Unit[] = [
           },
           {
             kind: "listen",
+            keepScript: true,
             my: "စ",
             roman: "sa",
             en: "The letter “sa”",
@@ -1633,6 +1652,7 @@ export const course: Unit[] = [
           },
           {
             kind: "listen",
+            keepScript: true,
             my: "ည",
             roman: "nya",
             en: "The letter “nya”",
@@ -1730,6 +1750,7 @@ export const course: Unit[] = [
           },
           {
             kind: "listen",
+            keepScript: true,
             my: "တ",
             roman: "ta",
             en: "The letter “ta”",
@@ -1742,6 +1763,7 @@ export const course: Unit[] = [
           },
           {
             kind: "listen",
+            keepScript: true,
             my: "န",
             roman: "na",
             en: "The letter “na”",
@@ -1767,6 +1789,7 @@ export const course: Unit[] = [
           },
           {
             kind: "listen",
+            keepScript: true,
             my: "ပ",
             roman: "pa",
             en: "The letter “pa”",
@@ -1779,6 +1802,7 @@ export const course: Unit[] = [
           },
           {
             kind: "listen",
+            keepScript: true,
             my: "မ",
             roman: "ma",
             en: "The letter “ma”",
@@ -2544,7 +2568,7 @@ export const course: Unit[] = [
             roman: "a-mei",
             en: "Mother",
             emoji: "👩",
-            note: "At home kids just say မေမေ (mei-mei), like “mom”.",
+            note: "At home kids just say မေမေ, like “mom”.",
           },
           {
             kind: "learn",
@@ -4323,6 +4347,10 @@ export const course: Unit[] = [
             my: "ပေါ့",
             roman: "paw",
             en: "…of course / obviously",
+            // Sound to form is the honest test for these three: their English
+            // glosses are labels for a function, so a meaning drill over them
+            // would just ask which label was assigned to which particle.
+            keepScript: true,
             options: [
               { text: "ပေါ့", sub: "paw" },
               { text: "နော်", sub: "naw" },
@@ -4344,7 +4372,10 @@ export const course: Unit[] = [
             roman: "o-ke",
             en: "OK",
             optionLang: "en",
-            options: [{ text: "OK" }, { text: "…right? / …okay?" }, { text: "(softener)" }],
+            // အိုကေ is a loanword and does have a real translation, so it can
+            // be tested on meaning — but not against the particles, whose
+            // "meanings" are labels for a function rather than translations.
+            options: [{ text: "OK" }, { text: "Thank you" }, { text: "I don’t know" }],
             correct: 0,
           },
           {

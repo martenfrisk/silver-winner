@@ -19,6 +19,7 @@
 	import { overlayOpen } from '$lib/overlays.svelte';
 	import { clickNth, digitOf, isShortcutIgnored } from '$lib/keyboard';
 	import Mascot from '$lib/components/Mascot.svelte';
+	import WeekRhythm from '$lib/components/WeekRhythm.svelte';
 	import Confetti from '$lib/components/Confetti.svelte';
 	import ChoiceExercise from '$lib/components/ChoiceExercise.svelte';
 	import ListenExercise from '$lib/components/ListenExercise.svelte';
@@ -28,6 +29,8 @@
 	import HeaderMute from '$lib/components/HeaderMute.svelte';
 	import { grammarTip } from '$lib/grammar-tips';
 	import { silentSafe } from '$lib/silent-mode';
+	import { meaningFirst } from '$lib/listen-mode';
+	import { readsScript } from '$lib/tracks';
 	import { AttemptTracker, MAX_ATTEMPTS } from '$lib/stuck';
 	import { AutoAdvance } from '$lib/auto-advance.svelte';
 	import { noAudioPromptState } from '$lib/no-audio-prompt.svelte';
@@ -52,8 +55,16 @@
 	// Correct answers move on by themselves after a beat.
 	const auto = new AutoAdvance();
 
-	// Listening drills become reading drills while audio is off.
-	const ex = $derived(silentSafe(queue[idx], progress.audioOn));
+	// Meaning-first for learners who read, then reading drills while audio is
+	// off. This track's whole audience is people who can decode but don't know
+	// the words yet, so a listen drill over script options is the weakest
+	// question it could ask them.
+	const ex = $derived(
+		silentSafe(
+			meaningFirst(queue[idx], readsScript(progress.profile), (my) => vocabByMy.get(my)?.en),
+			progress.audioOn
+		)
+	);
 
 	// Warm the next card's clips while this one is on screen.
 	$effect(() => {
@@ -215,8 +226,8 @@
 				<span class="stat-value">🎯 {Math.max(0, Math.round((100 * (total - mistakes)) / Math.max(total, 1)))}%</span>
 			</div>
 			<div class="stat">
-				<span class="stat-label">{ui('streak').text}</span>
-				<span class="stat-value">🔥 {progress.streak}</span>
+				<span class="stat-label">This week</span>
+				<div class="stat-value"><WeekRhythm compact /></div>
 			</div>
 		</div>
 		<button class="btn green big" onclick={quit}>{ui('continue').text}</button>

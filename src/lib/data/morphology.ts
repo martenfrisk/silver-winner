@@ -212,6 +212,31 @@ export const morphology: Record<string, MorphPart[]> = {
 		{ my: 'မင်္ဂလာပါ', gloss: 'hello' },
 		{ my: ' ', gloss: '' },
 		{ my: 'ခင်ဗျာ', gloss: 'polite particle (male speaker)' }
+	],
+
+	// ── Question frames ───────────────────────────────────────────────
+	// These four were being explained in prose on the learn card, which is
+	// where the romanization crept in. The structure is the teaching point,
+	// so it belongs in the table the card can render.
+	'ဒါဘာလဲ': [
+		{ my: 'ဒါ', gloss: 'this' },
+		{ my: 'ဘာ', gloss: 'what' },
+		{ my: 'လဲ', gloss: '(open question)' }
+	],
+	'နေကောင်းလား': [
+		{ my: 'နေ', gloss: 'be, stay' },
+		{ my: 'ကောင်း', base: 'ကောင်းတယ်', gloss: 'be good' },
+		{ my: 'လား', gloss: '(yes/no question)' }
+	],
+	'ဘယ်လောက်လဲ': [
+		{ my: 'ဘယ်', gloss: 'which, what' },
+		{ my: 'လောက်', gloss: 'amount' },
+		{ my: 'လဲ', gloss: '(open question)' }
+	],
+	'မနက်ဖြန်တွေ့မယ်': [
+		{ my: 'မနက်ဖြန်', gloss: 'tomorrow' },
+		{ my: 'တွေ့', base: 'တွေ့မယ်', gloss: 'meet' },
+		{ my: 'မယ်', gloss: '(future ending)' }
 	]
 };
 

@@ -51,6 +51,18 @@ const KNOWN_UNITS: Partial<Record<NonNullable<Profile>, readonly string[]>> = {
 };
 
 /**
+ * Whether this profile told us they can already read Burmese script.
+ *
+ * The same two profiles KNOWN_UNITS lets skip the script unit, named once so
+ * the two uses can't drift: skipping the script lessons and being given
+ * meaning-first listening drills ($lib/listen-mode) are the same claim about
+ * the learner.
+ */
+export function readsScript(profile: Profile | null): boolean {
+	return profile === 'script-reader' || profile === 'speaker';
+}
+
+/**
  * Whether a course unit can be waved through for this profile. Skipping is
  * offered, never applied automatically — the learner said they know the
  * script, not that they want to be sent past it.

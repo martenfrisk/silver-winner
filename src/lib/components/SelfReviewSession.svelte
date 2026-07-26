@@ -18,6 +18,7 @@
 	import { overlayOpen } from '$lib/overlays.svelte';
 	import { isShortcutIgnored } from '$lib/keyboard';
 	import Mascot from '$lib/components/Mascot.svelte';
+	import WeekRhythm from '$lib/components/WeekRhythm.svelte';
 	import Confetti from '$lib/components/Confetti.svelte';
 	import HeaderMute from '$lib/components/HeaderMute.svelte';
 	import SelfGradeCard from '$lib/components/SelfGradeCard.svelte';
@@ -166,8 +167,8 @@
 				<span class="stat-value">🗂️ {dealt}</span>
 			</div>
 			<div class="stat">
-				<span class="stat-label">{ui('streak').text}</span>
-				<span class="stat-value">🔥 {progress.streak}</span>
+				<span class="stat-label">This week</span>
+				<div class="stat-value"><WeekRhythm compact /></div>
 			</div>
 		</div>
 		<button class="btn green big" onclick={quit}>{ui('continue').text}</button>

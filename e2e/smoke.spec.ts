@@ -273,3 +273,37 @@ test('looking a word up keeps your place in the lesson', async ({ page }) => {
 	await expect(page.locator('.question').first()).toHaveText(question ?? '');
 	expect(page.url()).toBe(url);
 });
+
+test('a script reader is asked what a word means, not how it is spelled', async ({ page }) => {
+	// Audio plus three Burmese options is a weak question at both ends of the
+	// skill range: a learner who can't read matches shapes, and one who can
+	// just decodes the options. Neither has to know the meaning. See
+	// $lib/listen-mode.
+	const drill = lesson1Step1.find((ex) => ex.kind === 'listen' && ex.optionLang !== 'en');
+	test.skip(!drill, 'lesson 1 has no script-option listening drill');
+	if (drill?.kind !== 'listen') return;
+
+	// Options are shuffled per render, so assert on the set, not on a position.
+	const options = page.locator('.options');
+
+	async function reachDrill() {
+		await gotoApp(page, `/lesson/${lesson1.id}`);
+		for (const ex of lesson1Step1) {
+			if (ex === drill) break;
+			await solveExercise(page, ex);
+		}
+	}
+
+	// A beginner keeps the script options — the scaffold is doing real work.
+	await reachDrill();
+	for (const opt of drill.options) await expect(options).toContainText(opt.text);
+
+	// Someone who told us they already read Burmese is asked for the meaning.
+	await page.evaluate((key) => {
+		localStorage.setItem(key, JSON.stringify({ sound: false, profile: 'script-reader' }));
+	}, STORAGE_KEY);
+	await reachDrill();
+	await expect(options).toContainText(drill.en);
+	// The Burmese is gone from the options — that is the whole point.
+	for (const opt of drill.options) await expect(options).not.toContainText(opt.text);
+});

@@ -19,6 +19,7 @@
 import { course } from '../src/lib/data/course';
 import { lineMy, stories } from '../src/lib/data/stories';
 import { morphology } from '../src/lib/data/morphology';
+import { nearSynonymPair } from '../src/lib/near-synonyms';
 import {
 	allAudioSyllables,
 	aspirationPairs,
@@ -352,6 +353,82 @@ const warn = (category: string, msg: string) => add(warnings, category, msg);
 			// taught word it's just noise the learner can't follow up.
 			if (p.base && !taught.has(p.base))
 				warn(cat, `"${word}" part "${p.my}" bases on "${p.base}", which no lesson teaches`);
+		}
+	}
+}
+
+// ── Romanization in prose ─────────────────────────────────────────────
+// Romanization is a setting the learner can turn off (progress.showRoman),
+// and the app honours it everywhere except here: a `note` is a static string,
+// so "ရေ (yei) is water" shows the romanization to someone who switched it
+// off. Two conventions live in the notes — `Burmese (romanization)` and
+// `Burmese (english gloss)` — and only the first is a bug.
+//
+// Detection compares the parenthesised token against the romanization
+// syllables the course actually uses, so it can tell (yei) from (water). A
+// warning, not an error: an English gloss that happens to collide with a
+// syllable would otherwise block the build over a false positive.
+{
+	const cat = 'Romanization in notes';
+	const syllables = new Set<string>();
+	for (const unit of course)
+		for (const lesson of unit.lessons)
+			for (const ex of lesson.exercises) {
+				const romans = [ex.roman, ...(ex.pairs?.map((p) => p.lSub) ?? [])];
+				for (const r of romans) {
+					if (typeof r !== 'string') continue;
+					for (const s of r.toLowerCase().split(/[\s-]+/)) if (s) syllables.add(s);
+				}
+			}
+
+	for (const unit of course) {
+		for (const lesson of unit.lessons) {
+			for (const ex of lesson.exercises) {
+				if (typeof ex.note !== 'string') continue;
+				for (const [, inner] of ex.note.matchAll(/\(([^)]+)\)/g)) {
+					const token = inner.trim().toLowerCase();
+					// Hyphenated syllable runs (mei-mei, ya-ba-deh) are romanization
+					// whatever the syllable set says; single tokens have to be known.
+					const hyphenated = /^[a-z]+(-[a-z]+)+$/.test(token);
+					if (hyphenated || (/^[a-z]+$/.test(token) && syllables.has(token))) {
+						warn(cat, `${lesson.id}: note romanizes "(${inner})" — use the word parts instead`);
+					}
+				}
+			}
+		}
+	}
+}
+
+// ── Near-synonym options ──────────────────────────────────────────────
+// A multiple choice is only a test of meaning if the options mean different
+// things. Offering "I'm off now", "See you" and "See you tomorrow" asks which
+// English phrase the author picked for သွားတော့မယ်, not whether the learner
+// understood it — the nuance between three L2 partings does not map onto
+// three English ones, so there is no answer to reason toward.
+//
+// Two shapes are catchable mechanically: one option contained in another, and
+// options sharing most of their content words. Semantic families the words
+// don't share (a set of discourse particles, say) still need human eyes.
+// The rule itself lives in $lib/near-synonyms, because the meaning-first
+// listening transform has to apply the same test at runtime to the options it
+// generates. One definition, two callers.
+{
+	const cat = 'Near-synonym options';
+	for (const unit of course) {
+		for (const lesson of unit.lessons) {
+			for (const ex of lesson.exercises) {
+				const opts = ex.options?.map((o) => o.text) ?? [];
+				if (opts.length < 2) continue;
+				// English options only: Burmese ones are distinguished by script.
+				if (opts.some((t) => MY_SCRIPT.test(t))) continue;
+				const pair = nearSynonymPair(opts);
+				if (pair) {
+					warn(
+						cat,
+						`${lesson.id}: "${pair[0]}" and "${pair[1]}" are near-synonyms — the learner is picking a wording, not a meaning`
+					);
+				}
+			}
 		}
 	}
 }
