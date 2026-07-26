@@ -3,6 +3,7 @@
 	import SpeakButton from './SpeakButton.svelte';
 	import { speak } from '$lib/audio';
 	import { progress } from '$lib/progress.svelte';
+	import { morphology } from '$lib/data/morphology';
 	import { Sparkles, Lightbulb } from '@lucide/svelte';
 
 	let {
@@ -12,6 +13,13 @@
 		emoji,
 		note
 	}: { my: string; roman: string; en: string; emoji?: string; note?: string } = $props();
+
+	// A compound is cheaper to learn as its pieces than as one opaque string,
+	// and this is the card where the learner meets it — but it was the one
+	// surface that never showed the decomposition, so notes had taken to
+	// explaining it in prose (with romanization baked in, which the roman
+	// toggle then couldn't switch off). See $lib/data/morphology.
+	const parts = $derived(morphology[my]?.filter((p) => p.my.trim()) ?? null);
 
 	// Every card gets a colour, so none of them needs an emoji to look like
 	// something. Not every word has an honest pictogram — a letter certainly
@@ -50,6 +58,17 @@
 		<p class="roman">{roman}</p>
 	{/if}
 	<p class="en">{en}</p>
+	{#if parts}
+		<div class="parts">
+			{#each parts as p, i (i)}
+				{#if i > 0}<span class="plus" aria-hidden="true">+</span>{/if}
+				<span class="part">
+					<span class="my part-my">{p.my}</span>
+					<span class="part-gloss">{p.gloss}</span>
+				</span>
+			{/each}
+		</div>
+	{/if}
 	{#if note}
 		<p class="note"><Lightbulb size={15} strokeWidth={2} /> {note}</p>
 	{/if}
@@ -137,6 +156,35 @@
 		margin: 0;
 		font-size: 1.35rem;
 		font-weight: 800;
+	}
+	/* The word taken apart, above the note: it is the structural fact, and the
+	   note is commentary on top of it. */
+	.parts {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: center;
+		gap: 4px 10px;
+		margin-top: 4px;
+		max-width: 420px;
+		font-family: var(--font-ui);
+		font-size: 0.82rem;
+		font-weight: 700;
+		color: var(--ink-soft);
+	}
+	.part {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 5px;
+	}
+	.part-my {
+		font-size: 1.05rem;
+		color: var(--ink);
+	}
+	.plus {
+		font-weight: 900;
+		color: var(--ink-soft);
+		opacity: 0.6;
 	}
 	.note {
 		display: flex;
