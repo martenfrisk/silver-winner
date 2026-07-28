@@ -39,7 +39,7 @@
 
 <div class="word-read">
 	<p class="tag"><BookOpen size={14} strokeWidth={2.2} /> Real reading</p>
-	<h2 class="question">{ui('what-say').text}</h2>
+	<h2 class="question">{ui('what-mean').text}</h2>
 	<div class="word-row">
 		<span class="my word">{word.my}</span>
 		{#if answered !== null}

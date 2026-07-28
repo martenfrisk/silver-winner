@@ -3,12 +3,24 @@
 // platform speech synthesis as a fallback.
 import { progress } from '$lib/progress.svelte';
 import manifest from '$lib/audio-manifest.json';
+import humanManifest from '$lib/human-audio-manifest.json';
 import { DEFAULT_VOICE, VOICE_IDS, type VoiceId } from '$lib/voices';
 // Type-only, so this costs nothing at runtime — no course data is pulled in.
 import type { Exercise } from '$lib/data/course';
 
 /** text -> { voiceId: filename stem }. See scripts/generate-audio.ts. */
 const pronunciations: Record<string, Partial<Record<VoiceId, string>>> = manifest;
+
+/**
+ * text -> filename stem, for real human recordings (see IDEAS.md Round 18).
+ * Deliberately not a third `VoiceId`: the `f`/`m` split exists to vary the
+ * talker in controlled contrast drills, where a sparse, one-off recording
+ * would break the comparison rather than improve it (see $lib/voices). This
+ * is a separate, much smaller override — one clip per string, no coverage
+ * expected — that beats synthesized speech everywhere else. Files live in
+ * `static/audio-human/` rather than `static/audio/` so the two never mix.
+ */
+const humanClips: Record<string, string> = humanManifest;
 
 let ctx: AudioContext | null = null;
 
@@ -101,7 +113,7 @@ function burmeseVoice(): SpeechSynthesisVoice | null {
 }
 
 export function canSpeak(text?: string): boolean {
-	if (text && text in pronunciations) return true;
+	if (text && (text in pronunciations || text in humanClips)) return true;
 	return burmeseVoice() !== null;
 }
 
@@ -133,8 +145,27 @@ function preferredVoice(): VoiceId {
 const audioCache = new Map<string, HTMLAudioElement>();
 let current: HTMLAudioElement | null = null;
 
+function cachedElement(src: string): HTMLAudioElement {
+	let a = audioCache.get(src);
+	if (!a) {
+		a = new Audio(src);
+		a.preload = 'auto';
+		audioCache.set(src, a);
+	}
+	return a;
+}
+
 /** Element for `text` in `voice`, created (and so started downloading) on first ask. */
 function element(text: string, voice?: VoiceId): HTMLAudioElement | null {
+	// A real recording beats synthesized speech — but only when the caller
+	// isn't deliberately requesting a specific TTS talker. Contrast drills
+	// (aspiration/tone pairs) always pass `voice` explicitly, because the
+	// comparison depends on exactly that voice; silently swapping in a human
+	// clip there would change the question, not just its quality.
+	if (!voice) {
+		const humanStem = humanClips[text];
+		if (humanStem) return cachedElement(`/audio-human/${humanStem}.mp3`);
+	}
 	const entry = pronunciations[text];
 	if (!entry) return null;
 	// Fall back through the requested voice, the learner's preference, then the
@@ -142,13 +173,7 @@ function element(text: string, voice?: VoiceId): HTMLAudioElement | null {
 	const stem =
 		(voice && entry[voice]) ?? entry[preferredVoice()] ?? entry[DEFAULT_VOICE] ?? firstStem(entry);
 	if (!stem) return null;
-	let a = audioCache.get(stem);
-	if (!a) {
-		a = new Audio(`/audio/${stem}.mp3`);
-		a.preload = 'auto';
-		audioCache.set(stem, a);
-	}
-	return a;
+	return cachedElement(`/audio/${stem}.mp3`);
 }
 
 function firstStem(entry: Partial<Record<VoiceId, string>>): string | undefined {

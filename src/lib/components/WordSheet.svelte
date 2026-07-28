@@ -52,7 +52,7 @@
 					<span class="my word">{entry.my}</span>
 					<span class="gloss">
 						{#if entry.known}
-							{#if progress.showRoman}<span class="roman">{entry.roman}</span>{/if}
+							{#if entry.roman && progress.showRoman}<span class="roman">{entry.roman}</span>{/if}
 							<span class="en">{entry.en}</span>
 						{:else}
 							<!-- Phrases reach this sheet too, and they have no headword. -->
@@ -104,7 +104,7 @@
 									<button class="rel" onclick={() => wordSheet.show(r.my)}>
 										<span class="my rel-my">{r.my}</span>
 										<span class="rel-en">
-											{r.en}{#if progress.showRoman}<span class="rel-roman"> &middot; {r.roman}</span>{/if}
+											{r.en}{#if r.roman && progress.showRoman}<span class="rel-roman"> &middot; {r.roman}</span>{/if}
 										</span>
 									</button>
 								</li>

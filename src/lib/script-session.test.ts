@@ -91,14 +91,16 @@ describe('drill generators', () => {
 		expect(dEx.question).toContain('5');
 	});
 
-	it('syllableRead needs learned material and marks the built syllable', () => {
+	it('syllableRead needs learned material and reads the built syllable aloud', () => {
 		expect(syllableRead(ka)).toBeNull(); // nothing introduced yet
 		srs.introduce(['ka', 'ma', 'aa']);
 		const ex = syllableRead(ka);
 		expect(ex).not.toBeNull();
-		if (!ex || ex.kind !== 'choice') return;
-		expect(ex.promptSpeak).toBeDefined();
-		expectValidChoice(ex);
+		// Self-graded against the audio, never a romanization multiple choice —
+		// see the doc comment on syllableRead.
+		if (!ex || ex.kind !== 'recall') return;
+		expect(ex.glyphId).toBe('ka');
+		expect(ex.speak).toBe(ex.my);
 	});
 
 	it('pairListen requires the aspiration mate to be introduced', () => {
@@ -142,8 +144,20 @@ describe('buildIntroQueue', () => {
 		if (!stacked) return; // data changed — nothing to assert
 		const queue = buildIntroQueue(stacked);
 		expect(queue.some((ex) => ex.kind === 'note')).toBe(true);
-		const wordReads = queue.filter((ex) => ex.kind === 'word');
+		// Audio on: word reads are self-graded against the audio (see wordRead's
+		// doc comment) — never a "pick the romanization" multiple choice.
+		const wordReads = queue.filter((ex) => ex.kind === 'recall');
 		expect(wordReads.length).toBeGreaterThan(0);
+
+		// Audio off: falls back to picking the word's meaning, never its
+		// romanization — the exact thing this drill must not test.
+		const silentReads = buildIntroQueue(stacked, false).filter((ex) => ex.kind === 'word');
+		expect(silentReads.length).toBeGreaterThan(0);
+		for (const ex of silentReads) {
+			if (ex.kind !== 'word') continue;
+			expect(ex.options).toContain(ex.word.en);
+			expect(ex.options).not.toContain(ex.word.roman);
+		}
 	});
 
 	// Tracing is gated off (see TRACING_ENABLED in script-session.ts).

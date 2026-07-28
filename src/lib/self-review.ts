@@ -16,7 +16,7 @@ import type { VocabItem } from '$lib/vocab-srs.svelte';
 /** One card: Burmese on the front, English on the back. */
 export interface SelfReviewCard {
 	my: string;
-	roman: string;
+	roman?: string;
 	en: string;
 }
 

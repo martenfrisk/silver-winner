@@ -51,7 +51,7 @@
 		<SpeakButton text={card.my} />
 		<div class="front-text">
 			<span class="my prompt">{card.my}</span>
-			{#if progress.showRoman}<span class="roman">{card.roman}</span>{/if}
+			{#if card.roman && progress.showRoman}<span class="roman">{card.roman}</span>{/if}
 		</div>
 	</div>
 

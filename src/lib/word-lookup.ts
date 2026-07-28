@@ -14,7 +14,7 @@ import type { VocabItem } from '$lib/vocab-srs.svelte';
 
 export interface RelatedWord {
 	my: string;
-	roman: string;
+	roman?: string;
 	en: string;
 }
 

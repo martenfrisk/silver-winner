@@ -27,7 +27,7 @@ export type PracticeExercise = Extract<
 export interface RecallEx {
 	kind: 'recall';
 	my: string;
-	roman: string;
+	roman?: string;
 	en: string;
 }
 

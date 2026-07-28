@@ -83,7 +83,9 @@ const warn = (category: string, msg: string) => add(warnings, category, msg);
 
 				if (ex.kind === 'learn') {
 					if (!ex.my) err(cat, `${at}: empty "my"`);
-					if (!ex.roman) err(cat, `${at}: empty "roman"`);
+					if (!lesson.scriptOnly && !ex.roman) err(cat, `${at}: empty "roman"`);
+					if (lesson.scriptOnly && ex.roman)
+						err(cat, `${at}: scriptOnly lesson has a "roman" value — remove it or drop scriptOnly`);
 					if (!ex.en) err(cat, `${at}: empty "en"`);
 				} else if (ex.kind === 'choice') {
 					if (!ex.question) err(cat, `${at}: empty question`);
@@ -98,7 +100,9 @@ const warn = (category: string, msg: string) => add(warnings, category, msg);
 					}
 				} else if (ex.kind === 'listen') {
 					if (!ex.my) err(cat, `${at}: empty "my"`);
-					if (!ex.roman) err(cat, `${at}: empty "roman"`);
+					if (!lesson.scriptOnly && !ex.roman) err(cat, `${at}: empty "roman"`);
+					if (lesson.scriptOnly && ex.roman)
+						err(cat, `${at}: scriptOnly lesson has a "roman" value — remove it or drop scriptOnly`);
 					if (!ex.en) err(cat, `${at}: empty "en"`);
 					if (ex.options.length < 2) err(cat, `${at}: fewer than 2 options`);
 					if (!Number.isInteger(ex.correct) || ex.correct < 0 || ex.correct >= ex.options.length)
@@ -139,7 +143,9 @@ const warn = (category: string, msg: string) => add(warnings, category, msg);
 				} else if (ex.kind === 'assemble') {
 					if (!ex.question) err(cat, `${at}: empty question`);
 					if (!ex.my) err(cat, `${at}: empty "my"`);
-					if (!ex.roman) err(cat, `${at}: empty "roman"`);
+					if (!lesson.scriptOnly && !ex.roman) err(cat, `${at}: empty "roman"`);
+					if (lesson.scriptOnly && ex.roman)
+						err(cat, `${at}: scriptOnly lesson has a "roman" value — remove it or drop scriptOnly`);
 					if (ex.answer.length === 0) err(cat, `${at}: no answer tiles`);
 					for (const t of [...ex.answer, ...ex.extras])
 						if (!t.t) err(cat, `${at}: tile with empty text`);
@@ -325,6 +331,18 @@ const warn = (category: string, msg: string) => add(warnings, category, msg);
 
 	for (const text of Object.keys(manifest))
 		if (!texts.has(text)) warn(cat, `stale manifest entry "${text}" (no longer speakable)`);
+
+	// Human recordings (see $lib/audio, IDEAS.md Round 18): a much smaller,
+	// hand-curated overlay, never touched by `bun run audio`, so a missing
+	// file here means someone deleted or forgot to commit an mp3, not that
+	// generation hasn't run yet — that is an error, not a warning.
+	const humanManifestPath = join(import.meta.dir, '../src/lib/human-audio-manifest.json');
+	const humanManifest: Record<string, string> = JSON.parse(readFileSync(humanManifestPath, 'utf8'));
+	for (const [text, stem] of Object.entries(humanManifest)) {
+		if (!texts.has(text)) warn(cat, `stale human-audio entry "${text}" (no longer speakable)`);
+		if (!existsSync(join(audioDir, 'audio-human', `${stem}.mp3`)))
+			err(cat, `human-audio entry "${text}" points to missing file ${stem}.mp3`);
+	}
 }
 
 // ── Morphology ────────────────────────────────────────────────────────

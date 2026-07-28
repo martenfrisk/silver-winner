@@ -20,7 +20,7 @@
 		onanswer
 	}: {
 		question: string;
-		questionKey?: 'what-sound' | 'what-say' | 'which-hear';
+		questionKey?: 'what-sound' | 'which-hear';
 		promptBig?: string;
 		promptSpeak?: string;
 		/** Talker for the prompt — set by contrast drills, see $lib/voices. */

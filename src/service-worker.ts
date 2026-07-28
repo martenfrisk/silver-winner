@@ -14,12 +14,15 @@ import { shellPages } from '$lib/shell-pages';
 
 const CACHE = `myanlingo-${version}`;
 
-// Everything except the audio library (3.6MB is too rude to force up front —
+/** Path prefixes cached lazily as they're played, not forced up front. */
+const AUDIO_PREFIXES = ['/audio/', '/audio-human/'];
+
+// Everything except the audio libraries (3.6MB is too rude to force up front —
 // clips are cached lazily as they're played).
 const precache = [
 	...build,
 	...prerendered,
-	...files.filter((f) => !f.startsWith('/audio/'))
+	...files.filter((f) => !AUDIO_PREFIXES.some((p) => f.startsWith(p)))
 ];
 
 sw.addEventListener('install', (event) => {
@@ -63,7 +66,8 @@ sw.addEventListener('fetch', (event) => {
 	// self-hosted now, so they arrive as hashed build assets and are already
 	// covered by `precache` — no cross-origin case left to handle.
 	if (url.origin !== sw.location.origin) return;
-	if (!url.pathname.startsWith('/audio/') && !precache.includes(url.pathname)) return;
+	if (!AUDIO_PREFIXES.some((p) => url.pathname.startsWith(p)) && !precache.includes(url.pathname))
+		return;
 
 	event.respondWith(
 		caches.match(request).then(

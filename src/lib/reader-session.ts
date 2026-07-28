@@ -11,7 +11,7 @@ export type ReaderExercise = Extract<Exercise, { kind: 'choice' } | { kind: 'lis
 
 export interface ReaderVocab {
 	my: string;
-	roman: string;
+	roman?: string;
 	en: string;
 }
 

@@ -20,6 +20,8 @@ export const lessonOrder: readonly string[] = [
 	"my-family",
 	"siblings",
 	"kids-and-love",
+	"everyday-titles",
+	"extended-family",
 	"around-town",
 	"where-is-it",
 	"left-and-right",
@@ -28,5 +30,6 @@ export const lessonOrder: readonly string[] = [
 	"days-of-week",
 	"little-words",
 	"how-people-really-greet",
-	"saying-it-with-feeling"
+	"saying-it-with-feeling",
+	"reading-solo"
 ];
