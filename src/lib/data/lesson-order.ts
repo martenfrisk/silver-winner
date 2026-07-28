@@ -36,5 +36,18 @@ export const lessonOrder: readonly string[] = [
 	"on-the-map",
 	"around-myanmar",
 	"streets-and-signs",
-	"burmese-names"
+	"burmese-names",
+	"built-from-parts",
+	"saying-what-you-want",
+	"asking-your-way"
+];
+
+/**
+ * Lessons that are in the path but not on the ladder (Lesson.optional).
+ *
+ * They never block what follows and are left out of the course total, so
+ * progress can answer both questions without importing course.ts.
+ */
+export const optionalLessons: readonly string[] = [
+	"loanwords"
 ];

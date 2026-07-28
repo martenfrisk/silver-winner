@@ -129,6 +129,12 @@
 										<span class="muted">Skipped &middot; tap to learn anyway</span>
 									{:else if !unlocked}
 										<span class="muted">Locked</span>
+									{:else if lesson.optional}
+										<!-- Said out loud, because the flag is otherwise invisible:
+										     this lesson gates nothing, and a learner deciding
+										     whether to spend twenty minutes on it deserves to know
+										     that before starting rather than after. -->
+										<span class="muted">Optional &middot; {rdone} of {steps.length} parts done</span>
 									{:else}
 										<span class="muted">{rdone} of {steps.length} parts done</span>
 									{/if}

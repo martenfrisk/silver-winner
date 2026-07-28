@@ -115,6 +115,23 @@ export interface Lesson {
    * quietly drift from what's actually authored.
    */
   scriptOnly?: true;
+  /**
+   * In the path, but not on the ladder: this lesson never blocks the one
+   * after it, and it is left out of the course total.
+   *
+   * For material that is genuinely worth having and genuinely not for
+   * everyone — the loanwords lesson is the case that prompted it, since a
+   * learner who already reads the script gets much less from "this word was
+   * English all along" than a beginner does. Making them clear it to reach
+   * the rest of the unit would be charging everyone for a lesson aimed at
+   * some.
+   *
+   * Deliberately *not* the same thing as `isSkipped` in `progress`: skipping
+   * is a learner's choice about a unit they already know, recorded per
+   * profile. This is a property of the content, so it reads the same for
+   * everybody and needs no state.
+   */
+  optional?: true;
 }
 
 /** Steps a lesson actually has content for, ascending. Always includes 1. */
@@ -5050,7 +5067,14 @@ export const course: Unit[] = [
         // key. Sound out ဒေါ်လာ, arrive at "dollar", and the letters have proved
         // themselves — a romanization printed beside it would have given the answer
         // away instead of confirming it.
+        //
+        // Optional, because the payoff is lopsided: "this word was English all
+        // along" is a revelation to a beginner sounding out their first
+        // syllables and barely news to someone who already reads the script,
+        // and this unit is aimed at the second. Worth having, not worth
+        // charging everyone to get past.
         scriptOnly: true,
+        optional: true,
         exercises: [
           // ── Money, which is where a traveller meets these first ──
           {
@@ -6272,6 +6296,653 @@ export const course: Unit[] = [
               { l: "ဂျက်", r: "Jack" },
               { l: "ရောဘတ်", r: "Robert" },
               { l: "ကက်သီ", r: "Kathy" },
+            ],
+          },
+        ],
+      },
+      {
+        id: "built-from-parts",
+        title: "Words built from words",
+        emoji: "🧩",
+        // Nothing here is a new word. Every one is two or three words the course has
+        // already taught, stuck together — ဘုန်းကြီး "monk" plus ကျောင်း "school" is
+        // a monastery, and စားသောက်ဆိုင် is literally eat-drink-shop (the gloss is
+        // the deck author's own). Seeing that is the difference between a vocabulary
+        // that grows by memorizing and one that grows by multiplying.
+        //
+        // These are also exactly the words that cannot be safely romanized. A
+        // compound voices at its seam — ကြီး is already "gyi:" inside ဘုန်းကြီး, and
+        // ဆိုင် softens the same way after လက်ဖက်ရည် — so a romanization built by
+        // gluing the parts' own romanizations together would be wrong in precisely
+        // the places this lesson is about. The recording is the authority instead,
+        // and the breakdown under each word carries the meaning.
+        scriptOnly: true,
+        exercises: [
+          // ── Places to eat, made of eating and shops ──
+          {
+            kind: "learn",
+            my: "လက်ဖက်ရည်ဆိုင်",
+            en: "Tea shop",
+            emoji: "🍵",
+            note: "လက်ဖက်ရည် \"tea\" + ဆိုင် \"shop\". Note the ဆိုင် softens at the seam — this is why the pieces are worth knowing by sound, not by spelling out a romanization.",
+          },
+          {
+            kind: "learn",
+            my: "စားသောက်ဆိုင်",
+            en: "Restaurant",
+            emoji: "🍽️",
+            note: "Eat-drink-shop: စား + သောက် + ဆိုင်, three words you already have.",
+          },
+          {
+            kind: "learn",
+            my: "အရက်ဆိုင်",
+            en: "Liquor shop",
+            emoji: "🍶",
+          },
+          {
+            kind: "learn",
+            my: "ဆိုင်ရှင်",
+            en: "Shopkeeper",
+            emoji: "🧑‍💼",
+          },
+          {
+            kind: "choice",
+            question: "What does this say?",
+            promptMy: "လက်ဖက်ရည်ဆိုင်",
+            options: [{ text: "Tea shop" }, { text: "Restaurant" }, { text: "Liquor shop" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            my: "ဆိုင်ရှင်",
+            en: "Shopkeeper",
+            optionLang: "en",
+            options: [{ text: "Shopkeeper" }, { text: "Tea shop" }, { text: "Restaurant" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            pairs: [
+              { l: "လက်ဖက်ရည်ဆိုင်", r: "Tea shop" },
+              { l: "စားသောက်ဆိုင်", r: "Restaurant" },
+              { l: "အရက်ဆိုင်", r: "Liquor shop" },
+              { l: "ဆိုင်ရှင်", r: "Shopkeeper" },
+            ],
+          },
+
+          // ── မုန့် "snack" turns other words into food ──
+          {
+            kind: "learn",
+            step: 2,
+            my: "ကိတ်မုန့်",
+            en: "Cake",
+            emoji: "🍰",
+            note: "မုန့် on the end marks it as something you eat, so a borrowed word like ကိတ် arrives already labelled.",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "ပေါင်မုန့်",
+            en: "Bread",
+            emoji: "🍞",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "ရေခဲမုန့်",
+            en: "Ice cream",
+            emoji: "🍦",
+          },
+          {
+            kind: "choice",
+            step: 2,
+            question: "What does this say?",
+            promptMy: "ကိတ်မုန့်",
+            options: [{ text: "Cake" }, { text: "Bread" }, { text: "Ice cream" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 2,
+            my: "ရေခဲမုန့်",
+            en: "Ice cream",
+            optionLang: "en",
+            options: [{ text: "Ice cream" }, { text: "Cake" }, { text: "Bread" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 2,
+            pairs: [
+              { l: "ကိတ်မုန့်", r: "Cake" },
+              { l: "ပေါင်မုန့်", r: "Bread" },
+              { l: "ရေခဲမုန့်", r: "Ice cream" },
+            ],
+          },
+
+          // ── Buildings, roads and ranks ──
+          {
+            kind: "learn",
+            step: 3,
+            my: "ဘုန်းကြီးကျောင်း",
+            en: "Monastery",
+            emoji: "🛕",
+            note: "ဘုန်းကြီး \"monk\" + ကျောင်း \"school\" — a monastery is where monks are taught, and the word says so.",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ဘုရားလမ်း",
+            en: "Pagoda Road",
+            emoji: "🛣️",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ဗိုလ်ကြီး",
+            en: "Captain",
+            emoji: "🎖️",
+            note: "ဗိုလ် \"officer\" + ကြီး \"big\". Ranks work the same way sizes do.",
+          },
+          {
+            kind: "choice",
+            step: 3,
+            question: "What does this say?",
+            promptMy: "ဘုန်းကြီးကျောင်း",
+            options: [{ text: "Monastery" }, { text: "Pagoda Road" }, { text: "Captain" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 3,
+            my: "ဗိုလ်ကြီး",
+            en: "Captain",
+            optionLang: "en",
+            options: [{ text: "Captain" }, { text: "Monastery" }, { text: "Pagoda Road" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 3,
+            pairs: [
+              { l: "ဘုန်းကြီးကျောင်း", r: "Monastery" },
+              { l: "ဘုရားလမ်း", r: "Pagoda Road" },
+              { l: "ဗိုလ်ကြီး", r: "Captain" },
+            ],
+          },
+
+          // ── သည် on the end: the person who deals in it ──
+          {
+            kind: "learn",
+            step: 4,
+            my: "မုန့်သည်",
+            en: "Snack seller",
+            emoji: "🧁",
+            note: "သည် makes \"the one who deals in it\" out of the thing itself. Once you have it, a whole class of jobs reads without being taught.",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "ရေသည်",
+            en: "Water seller",
+            emoji: "🚰",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "ကုန်သည်",
+            en: "Trader",
+            emoji: "⚖️",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "ငါးကျပ်",
+            en: "Five kyat",
+            emoji: "💰",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "ငါးနာရီ",
+            en: "Five o'clock",
+            emoji: "🕔",
+          },
+          {
+            kind: "choice",
+            step: 4,
+            question: "What does this say?",
+            promptMy: "မုန့်သည်",
+            options: [{ text: "Snack seller" }, { text: "Water seller" }, { text: "Trader" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 4,
+            my: "ငါးနာရီ",
+            en: "Five o'clock",
+            optionLang: "en",
+            options: [{ text: "Five o'clock" }, { text: "Snack seller" }, { text: "Water seller" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 4,
+            pairs: [
+              { l: "မုန့်သည်", r: "Snack seller" },
+              { l: "ရေသည်", r: "Water seller" },
+              { l: "ကုန်သည်", r: "Trader" },
+              { l: "ငါးကျပ်", r: "Five kyat" },
+            ],
+          },
+        ],
+      },
+      {
+        id: "saying-what-you-want",
+        title: "Saying what you want",
+        emoji: "🙋",
+        // One pattern, four ways round. ချင် after a verb means "want to", and the
+        // course has already used it twice without naming it (စားချင်တယ် "I want to
+        // eat", သောက်ချင်တယ် "I want to drink"). Naming it turns those two words into
+        // a frame: any verb you know goes in front, and the ending decides whether
+        // you are stating, asking, or refusing.
+        //
+        // The most useful thing in the unit, which is why it sits opposite an
+        // optional loanwords lesson rather than beside more proper nouns.
+        scriptOnly: true,
+        exercises: [
+          // ── Stating it: …ချင်ပါတယ် ──
+          {
+            kind: "learn",
+            my: "သွားချင်ပါတယ်",
+            en: "I want to go.",
+            emoji: "🚶",
+            note: "The frame is verb + ချင် + ပါတယ်. Swap the verb and you have the sentence for anything you can already name.",
+          },
+          {
+            kind: "learn",
+            my: "ထိုင်ချင်ပါတယ်။",
+            en: "I'd like to sit down.",
+            emoji: "🪑",
+          },
+          {
+            kind: "learn",
+            my: "ဆိုင် ဝင်ချင်ပါတယ်။",
+            en: "I'd like to go into the shop.",
+            emoji: "🏪",
+          },
+          {
+            kind: "learn",
+            my: "စမူဆာ စားချင်ပါတယ်။",
+            en: "I want to eat a samosa.",
+            emoji: "🥟",
+          },
+          {
+            kind: "choice",
+            question: "What does this say?",
+            promptMy: "သွားချင်ပါတယ်",
+            options: [{ text: "I want to go." }, { text: "I'd like to sit down." }, { text: "I'd like to go into the shop." }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            my: "စမူဆာ စားချင်ပါတယ်။",
+            en: "I want to eat a samosa.",
+            optionLang: "en",
+            options: [{ text: "I want to eat a samosa." }, { text: "I want to go." }, { text: "I'd like to sit down." }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            pairs: [
+              { l: "သွားချင်ပါတယ်", r: "I want to go." },
+              { l: "ထိုင်ချင်ပါတယ်။", r: "I'd like to sit down." },
+              { l: "ဆိုင် ဝင်ချင်ပါတယ်။", r: "I'd like to go into the shop." },
+              { l: "စမူဆာ စားချင်ပါတယ်။", r: "I want to eat a samosa." },
+            ],
+          },
+
+          // ── Asking what: ဘာ … ချင်သလဲ ──
+          {
+            kind: "learn",
+            step: 2,
+            my: "ဘာ စားချင်သလဲ",
+            en: "What do you want to eat?",
+            emoji: "🍜",
+            note: "ဘာ \"what\" in front, သလဲ on the end — the same ending as ဘယ်သွားမလဲ from Real Talk.",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "ဘာ သင်ချင်သလဲ။",
+            en: "What do you want to learn?",
+            emoji: "📚",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "ဘာ မေးချင်သလဲ။",
+            en: "What do you want to ask?",
+            emoji: "🙋‍♂️",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "ဘာ ရေးချင်သလဲ။",
+            en: "What do you want to write?",
+            emoji: "✍️",
+          },
+          {
+            kind: "match",
+            step: 2,
+            pairs: [
+              { l: "ဘာ စားချင်သလဲ", r: "What do you want to eat?" },
+              { l: "ဘာ သင်ချင်သလဲ။", r: "What do you want to learn?" },
+              { l: "ဘာ မေးချင်သလဲ။", r: "What do you want to ask?" },
+              { l: "ဘာ ရေးချင်သလဲ။", r: "What do you want to write?" },
+            ],
+          },
+
+          // ── Asking yes or no: …ချင်သလား ──
+          {
+            kind: "learn",
+            step: 3,
+            my: "ပလာတာ စားချင်သလား။",
+            en: "Do you want to eat a parata?",
+            emoji: "🫓",
+            note: "သလား instead of သလဲ turns the same frame into a yes/no question.",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ဝင်ထိုင်ချင်သလား။",
+            en: "Do you want to come in and sit down?",
+            emoji: "🚪",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ချောကလက် ကိုင်ချင်သလား။",
+            en: "Do you want to hold the chocolate?",
+            emoji: "🍫",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ဝက်သား ရှောင်ချင်သလား။",
+            en: "Do you want to avoid pork?",
+            emoji: "🚫",
+          },
+          {
+            kind: "match",
+            step: 3,
+            pairs: [
+              { l: "ပလာတာ စားချင်သလား။", r: "Do you want to eat a parata?" },
+              { l: "ဝင်ထိုင်ချင်သလား။", r: "Do you want to come in and sit down?" },
+              { l: "ချောကလက် ကိုင်ချင်သလား။", r: "Do you want to hold the chocolate?" },
+              { l: "ဝက်သား ရှောင်ချင်သလား။", r: "Do you want to avoid pork?" },
+            ],
+          },
+
+          // ── Turning it down: မ…ချင်ပါဘူး ──
+          {
+            kind: "learn",
+            step: 4,
+            my: "ပလာတာ မစားချင်ပါဘူး။",
+            en: "I don't want to eat a parata.",
+            emoji: "🙅",
+            note: "The negative wraps the verb: မ in front, ဘူး at the back, exactly as in မကြိုက်ဘူး and မလိုဘူး.",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "ထမင်း မစားချင်ပါဘူး။",
+            en: "We don't want to eat rice.",
+            emoji: "🍚",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "တက်စီ မစီးချင်ပါဘူး။",
+            en: "I don't want to take the taxi.",
+            emoji: "🚕",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "ကား မဆေးချင်ပါဘူး။",
+            en: "She doesn't want to wash the car.",
+            emoji: "🚗",
+          },
+          {
+            kind: "match",
+            step: 4,
+            pairs: [
+              { l: "ပလာတာ မစားချင်ပါဘူး။", r: "I don't want to eat a parata." },
+              { l: "ထမင်း မစားချင်ပါဘူး။", r: "We don't want to eat rice." },
+              { l: "တက်စီ မစီးချင်ပါဘူး။", r: "I don't want to take the taxi." },
+              { l: "ကား မဆေးချင်ပါဘူး။", r: "She doesn't want to wash the car." },
+            ],
+          },
+        ],
+      },
+      {
+        id: "asking-your-way",
+        title: "Asking your way",
+        emoji: "🧭",
+        // Where the unit pays out. The street and city names came from this unit's
+        // own lessons, the question words (ဘယ်မှာလဲ, ဒီမှာ, ရှိတယ်) came from Places
+        // & Directions, and neither half was much use without the other. Part 4
+        // answers a question the course has already taught you to ask: reading solo
+        // teaches ဘယ်နိုင်ငံက လာသလဲ။ "what country does she come from?", and these
+        // are the replies.
+        scriptOnly: true,
+        exercises: [
+          // ── Asking where something is ──
+          {
+            kind: "learn",
+            my: "အနော်ရထာလမ်း ဘယ်မှာလဲ။",
+            en: "Where is Anawrahta Street?",
+            emoji: "🧭",
+            note: "A street name from this unit in front of ဘယ်မှာလဲ from Places & Directions. Both halves were already yours.",
+          },
+          {
+            kind: "learn",
+            my: "မင်္ဂလာစျေး ဘယ်မှာလဲ။",
+            en: "Where's Mingala Market?",
+            emoji: "🛍️",
+          },
+          {
+            kind: "learn",
+            my: "ကမ်းနားလမ်းက ဒီမှာလား။",
+            en: "Is Strand Road here?",
+            emoji: "🚢",
+          },
+          {
+            kind: "learn",
+            my: "ဆရာစံလမ်းက ဒီမှာလား။",
+            en: "Is Saya San Street here?",
+            emoji: "🚦",
+          },
+          {
+            kind: "choice",
+            question: "What does this say?",
+            promptMy: "အနော်ရထာလမ်း ဘယ်မှာလဲ။",
+            options: [{ text: "Where is Anawrahta Street?" }, { text: "Where's Mingala Market?" }, { text: "Is Strand Road here?" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            my: "ဆရာစံလမ်းက ဒီမှာလား။",
+            en: "Is Saya San Street here?",
+            optionLang: "en",
+            options: [{ text: "Is Saya San Street here?" }, { text: "Where is Anawrahta Street?" }, { text: "Where's Mingala Market?" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            pairs: [
+              { l: "အနော်ရထာလမ်း ဘယ်မှာလဲ။", r: "Where is Anawrahta Street?" },
+              { l: "မင်္ဂလာစျေး ဘယ်မှာလဲ။", r: "Where's Mingala Market?" },
+              { l: "ကမ်းနားလမ်းက ဒီမှာလား။", r: "Is Strand Road here?" },
+              { l: "ဆရာစံလမ်းက ဒီမှာလား။", r: "Is Saya San Street here?" },
+            ],
+          },
+
+          // ── Being told the answer ──
+          {
+            kind: "learn",
+            step: 2,
+            my: "စထရင်းဟိုတယ်က ဒီမှာပါ။",
+            en: "The Strand Hotel is here.",
+            emoji: "🏨",
+            note: "ဒီမှာပါ is the answer to ဒီမှာလား — the polite ပါ where the question had လား.",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "မောင်တင်စျေးက ဒီမှာပါ။",
+            en: "Mawtin Market is here.",
+            emoji: "🧺",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "ဒါက ဟိုတယ်ပါ။",
+            en: "That's a hotel.",
+            emoji: "🛎️",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "ဒီလမ်းက အေလမ်းပါ။",
+            en: "This road is A Road.",
+            emoji: "🛣️",
+          },
+          {
+            kind: "choice",
+            step: 2,
+            question: "What does this say?",
+            promptMy: "စထရင်းဟိုတယ်က ဒီမှာပါ။",
+            options: [{ text: "The Strand Hotel is here." }, { text: "Mawtin Market is here." }, { text: "That's a hotel." }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 2,
+            my: "ဒီလမ်းက အေလမ်းပါ။",
+            en: "This road is A Road.",
+            optionLang: "en",
+            options: [{ text: "This road is A Road." }, { text: "The Strand Hotel is here." }, { text: "Mawtin Market is here." }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 2,
+            pairs: [
+              { l: "စထရင်းဟိုတယ်က ဒီမှာပါ။", r: "The Strand Hotel is here." },
+              { l: "မောင်တင်စျေးက ဒီမှာပါ။", r: "Mawtin Market is here." },
+              { l: "ဒါက ဟိုတယ်ပါ။", r: "That's a hotel." },
+              { l: "ဒီလမ်းက အေလမ်းပါ။", r: "This road is A Road." },
+            ],
+          },
+
+          // ── Is there one near here? ──
+          {
+            kind: "learn",
+            step: 3,
+            my: "ဒီနားမှာ ဟိုတယ် ရှိသလား။",
+            en: "Is there a hotel near here?",
+            emoji: "🏩",
+            note: "အနား \"nearby\" and ရှိတယ် \"there is\" both come from Places & Directions; only the word order is new.",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ဒီမှာ တယ်လီဖုန်း ရှိပါတယ်။",
+            en: "There is a telephone here.",
+            emoji: "☎️",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ဒီဆိုင်မှာ ဘာ ရှိသလဲ။",
+            en: "What is there in this shop?",
+            emoji: "🏬",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ပိုက်ဆံ မရှိပါဘူး။",
+            en: "They don't have any money.",
+            emoji: "💸",
+          },
+          {
+            kind: "choice",
+            step: 3,
+            question: "What does this say?",
+            promptMy: "ဒီနားမှာ ဟိုတယ် ရှိသလား။",
+            options: [{ text: "Is there a hotel near here?" }, { text: "What is there in this shop?" }, { text: "They don't have any money." }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 3,
+            my: "ပိုက်ဆံ မရှိပါဘူး။",
+            en: "They don't have any money.",
+            optionLang: "en",
+            options: [{ text: "They don't have any money." }, { text: "Is there a hotel near here?" }, { text: "What is there in this shop?" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 3,
+            pairs: [
+              { l: "ဒီနားမှာ ဟိုတယ် ရှိသလား။", r: "Is there a hotel near here?" },
+              { l: "ဒီမှာ တယ်လီဖုန်း ရှိပါတယ်။", r: "There is a telephone here." },
+              { l: "ဒီဆိုင်မှာ ဘာ ရှိသလဲ။", r: "What is there in this shop?" },
+              { l: "ပိုက်ဆံ မရှိပါဘူး။", r: "They don't have any money." },
+            ],
+          },
+
+          // ── Where someone comes from ──
+          {
+            kind: "learn",
+            step: 4,
+            my: "ဂျပန်က လာပါတယ်။",
+            en: "They come from Japan.",
+            emoji: "🇯🇵",
+            note: "The country from On the map, then က \"from\" and လာ \"come\". This is the reply to ဘယ်နိုင်ငံက လာသလဲ။ in Reading solo.",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "ဂျာမနီက လာပါတယ်။",
+            en: "They come from Germany.",
+            emoji: "🇩🇪",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "အင်းစိန်က လာပါတယ်။",
+            en: "They come from Insein.",
+            emoji: "🚉",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "နီပေါက လာပါတယ်။",
+            en: "They come from Nepal.",
+            emoji: "🏔️",
+          },
+          {
+            kind: "match",
+            step: 4,
+            pairs: [
+              { l: "ဂျပန်က လာပါတယ်။", r: "They come from Japan." },
+              { l: "ဂျာမနီက လာပါတယ်။", r: "They come from Germany." },
+              { l: "အင်းစိန်က လာပါတယ်။", r: "They come from Insein." },
+              { l: "နီပေါက လာပါတယ်။", r: "They come from Nepal." },
             ],
           },
         ],

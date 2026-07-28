@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import { lessonOrder } from '$lib/data/lesson-order';
+import { lessonOrder, optionalLessons } from '$lib/data/lesson-order';
 import { PROGRESS_KEY as STORAGE_KEY, sanitizeProgress, type ProgressSaved } from '$lib/backup';
 import { DEFAULT_VOICE, isVoiceId, type VoiceId } from '$lib/voices';
 import { sessionXp } from '$lib/xp';
@@ -275,8 +275,16 @@ class Progress {
 		this.save();
 	}
 
-	/** Whether a lesson stops blocking the ones after it. */
+	/**
+	 * Whether a lesson stops blocking the ones after it.
+	 *
+	 * An optional lesson never blocks anything, so it counts as cleared the
+	 * moment it exists (see Lesson.optional). That also keeps `currentLesson`
+	 * — which is just the first uncleared lesson — from parking the "current"
+	 * node on a lesson the learner was never asked to do.
+	 */
 	private isCleared(lessonId: string): boolean {
+		if (optionalLessons.includes(lessonId)) return true;
 		return this.isCompleted(lessonId) || this.isSkipped(lessonId);
 	}
 
@@ -303,12 +311,20 @@ class Progress {
 	 * Skipping a unit says "I already know this", so those lessons stop being
 	 * part of the ladder — counting them in the denominator forever would leave
 	 * a script-reader stuck at 21/24 with no way to reach the end short of
-	 * sitting through the very lessons they were invited to skip. A skipped
-	 * lesson is still openable, and doing it un-skips it, which puts it back in
-	 * both halves of the fraction.
+	 * sitting through the very lessons they were invited to skip. An optional
+	 * lesson (see Lesson.optional) was never required of anyone, so it is out
+	 * for the same reason without the learner having to say anything.
+	 *
+	 * Either way, doing the lesson anyway puts it back in *both* halves of the
+	 * fraction, which is what keeps the count from running past 100%.
 	 */
 	get courseTotal(): number {
-		return lessonOrder.filter((id) => !this.isSkipped(id) || this.isCompleted(id)).length;
+		return lessonOrder.filter((id) => this.countsTowardCourse(id)).length;
+	}
+
+	private countsTowardCourse(id: string): boolean {
+		if (this.isCompleted(id)) return true;
+		return !this.isSkipped(id) && !optionalLessons.includes(id);
 	}
 
 	toggleSound() {

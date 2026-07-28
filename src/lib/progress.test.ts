@@ -1,7 +1,7 @@
 // The store runs headless here: `browser` is false under vitest's node
 // environment, so the constructor skips localStorage and save() no-ops.
 import { afterEach, describe, expect, it } from 'vitest';
-import { lessonOrder } from './data/lesson-order';
+import { lessonOrder, optionalLessons } from './data/lesson-order';
 import { progress } from './progress.svelte';
 
 afterEach(() => {
@@ -53,6 +53,42 @@ describe('skipping lessons', () => {
 		progress.skipLesson(first);
 		progress.reset();
 		expect(progress.isSkipped(first)).toBe(false);
+	});
+});
+
+describe('optional lessons', () => {
+	const optional = optionalLessons[0];
+	const after = lessonOrder[lessonOrder.indexOf(optional) + 1];
+
+	it('the course has one, so the rest of this block means something', () => {
+		expect(optional).toBeDefined();
+		expect(after).toBeDefined();
+	});
+
+	it('never blocks the lesson after it, with nothing done', () => {
+		expect(progress.isUnlocked(after)).toBe(true);
+	});
+
+	it('is left out of the course total until it is actually done', () => {
+		const withoutIt = progress.courseTotal;
+		expect(withoutIt).toBe(lessonOrder.length - optionalLessons.length);
+		progress.completeLesson(optional, 3);
+		// Doing it puts it back in both halves, so the fraction can't exceed 1.
+		expect(progress.courseTotal).toBe(withoutIt + 1);
+		expect(progress.completedCount).toBe(1);
+	});
+
+	it('does not become the current lesson', () => {
+		expect(progress.currentLesson).not.toBe(optional);
+	});
+
+	// It is off the ladder, not out of the course: a learner who wants it
+	// must still be able to open it once they have reached that far.
+	it('is still unlocked by the lesson before it', () => {
+		const before = lessonOrder[lessonOrder.indexOf(optional) - 1];
+		expect(progress.isUnlocked(optional)).toBe(false);
+		progress.completeLesson(before, 3);
+		expect(progress.isUnlocked(optional)).toBe(true);
 	});
 });
 
