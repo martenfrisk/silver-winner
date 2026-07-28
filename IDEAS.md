@@ -860,3 +860,54 @@ at all.
   trusted romanization if the destination is a scriptOnly lesson. Not
   mined further this round; flagged as the natural next expansion of
   `reading-solo` or a sibling lesson.
+
+## Round 22 — the script-only capstone unit, and Part 4 (2026-07-28)
+
+The previous round's last line was that the unmined pool "no longer needs a
+trusted romanization if the destination is a scriptOnly lesson." This round
+takes that seriously: the ~90 words added below are shipped without a single
+romanization, and none of them needed one.
+
+- ✅ **Part 4 exists** — `LessonStep` is now `1 | 2 | 3 | 4`. Nothing but the
+  type and `ROUND_LABELS` bounded the count (every consumer already derives
+  its parts from `lessonSteps()`), so the change is four lines: the type, a
+  label, the `[1,2,3]` seeding loop in `vocab-srs`, and the `?step=` parser.
+  The five other `[1, 2, 3]` loops in the codebase turned out to be
+  three-star ratings, not parts — worth checking before assuming a widening
+  is invasive. `rounds.test.ts` gained a test that every step a lesson
+  declares has a label, since a missing one renders `undefined` as a chip
+  caption rather than failing anywhere.
+- ✅ **`read-alone` — "Read It Yourself"**, a ninth unit and the course's
+  script-only capstone. `reading-solo` **moved here** out of `real-talk`.
+  Round 21 put it there to avoid a single-lesson unit (the "Titles & Roles"
+  mistake); with five siblings that reasoning inverts — "the part of the
+  course you reach once you can read" is a milestone worth seeing on the
+  path, not a lesson hiding at the end of an unrelated theme.
+- ✅ **Five new scriptOnly lessons, 20 parts, ~90 words**, all four-part:
+  `loanwords`, `on-the-map`, `around-myanmar`, `streets-and-signs`,
+  `burmese-names`. Course totals: 27 → 32 lessons, 73 → 93 parts,
+  246 → 336 learn exercises.
+- ✅ **Why these themes, specifically** — loanwords and proper nouns are the
+  one class of vocabulary where *the meaning is the pronunciation*. A
+  learner who decodes ကော်ဖီ and lands on "coffee" has verified their own
+  decoding with nothing but their ear; a romanization printed beside it
+  would have given the answer away rather than confirmed it. That is not a
+  workaround for the romanizer's limits (Round 19) — it is strictly better
+  teaching, and it is why this unit could be authored at four times the
+  size of `reading-solo` without the risk that gated Rounds 19–21.
+- ✅ **86 of 86 new strings play the user's own recording** — every word was
+  picked by validating it against the deck TSV *and* `collection.media`
+  before authoring, so `bun run match:audio` matched 100% and nothing fell
+  through to TTS. The human-audio manifest went 135 → 221 entries. Authoring
+  from a pre-validated candidate pool, rather than writing content and
+  hoping the audio exists, is the workflow worth keeping.
+- ✅ **Morphology carried by the content, not a note** — the suffixes
+  နိုင်ငံ "country" (`on-the-map` part 2), မြို့ "town" (`around-myanmar`
+  part 1) and လမ်း "road" (`streets-and-signs`, already known from Places &
+  Directions) each get a part built around them, so a learner reads them off
+  a sign afterwards rather than memorizing sixteen opaque names.
+- 💤 **Still unmined**: roughly 470 rows remain in the "words" / "sentences"
+  categories, plus ~120 Pali and monk's-name rows that want a human decision
+  about whether they're course material at all. Kinzi stacking (စင်္ကာပူ)
+  is still not modelled in `script.ts`'s decompose/recompose rules, which is
+  what keeps a few place names out of Script Studio's decodable sets.

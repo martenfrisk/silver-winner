@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { allLessons, lessonSteps, stepStarsKey, type Lesson } from './data/course';
+import { allLessons, lessonSteps, stepStarsKey, type Lesson, type LessonStep } from './data/course';
 import {
 	lessonRounds,
 	nextOpenRound,
 	nextPartOf,
 	openRoundCount,
 	roundHref,
+	ROUND_LABELS,
 	roundsOf
 } from './rounds';
 
@@ -13,15 +14,46 @@ const lessons = allLessons.map((l) => l.lesson);
 /** A real multi-part lesson from the course, so the fixtures can't drift from the content. */
 const lesson: Lesson = lessons.find((l) => lessonSteps(l).length === 3)!;
 const twoPart: Lesson = lessons.find((l) => lessonSteps(l).length === 2)!;
+const fourPart: Lesson = lessons.find((l) => lessonSteps(l).length === 4)!;
 
 const cleared = (l: Lesson, ...steps: number[]) =>
-	Object.fromEntries(steps.map((s) => [stepStarsKey(l.id, s as 1 | 2 | 3), 3]));
+	Object.fromEntries(steps.map((s) => [stepStarsKey(l.id, s as LessonStep), 3]));
 
 describe('the course really is mostly parts', () => {
 	// Guards the premise of this whole module: if a content edit ever left the
 	// lessons single-part, the path UI below would be dead weight.
 	it('gives every lesson more than one part', () => {
 		for (const l of lessons) expect(lessonSteps(l).length, l.id).toBeGreaterThan(1);
+	});
+
+	// Every part a lesson can declare needs a name to render on the path, and
+	// the type is the only thing bounding how many there are — so widening
+	// LessonStep without labelling the new part would ship `undefined` as a
+	// chip caption rather than failing anywhere.
+	it('names every step the type allows', () => {
+		for (const l of lessons) {
+			for (const step of lessonSteps(l)) {
+				expect(ROUND_LABELS[step], `${l.id} part ${step}`).toBeTruthy();
+			}
+		}
+	});
+});
+
+describe('four-part lessons', () => {
+	it('exist in the course', () => {
+		expect(fourPart).toBeDefined();
+	});
+
+	it('lists all four parts, with only the first required', () => {
+		const rounds = lessonRounds(fourPart, {}, true);
+		expect(rounds.map((r) => r.step)).toEqual([1, 2, 3, 4]);
+		expect(rounds.filter((r) => r.required).map((r) => r.step)).toEqual([1]);
+	});
+
+	it('walks the learner from part 3 to part 4', () => {
+		const stars = cleared(fourPart, 1, 2, 3);
+		expect(nextPartOf(fourPart, 3, stars)?.step).toBe(4);
+		expect(nextPartOf(fourPart, 4, stars)).toBeUndefined();
 	});
 });
 

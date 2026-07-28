@@ -31,5 +31,10 @@ export const lessonOrder: readonly string[] = [
 	"little-words",
 	"how-people-really-greet",
 	"saying-it-with-feeling",
-	"reading-solo"
+	"reading-solo",
+	"loanwords",
+	"on-the-map",
+	"around-myanmar",
+	"streets-and-signs",
+	"burmese-names"
 ];

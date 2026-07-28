@@ -11,7 +11,7 @@ export interface Option {
  * How deep into a lesson an exercise sits.
  *
  * Step 1 is the lesson proper — it alone gates the next lesson, so the path
- * never forces anyone through the extra material. Steps 2 and 3 add more
+ * never forces anyone through the extra material. Steps 2 and up add more
  * words on the same topic for learners who want them, and are entered from
  * the path node after step 1 is done.
  *
@@ -19,8 +19,12 @@ export interface Option {
  * downstream reads `lesson.exercises` flat (the linter, the audio generator,
  * the vocab index, the e2e tests), and a tag leaves every one of them working
  * untouched. Only the lesson player filters.
+ *
+ * Nothing but this type and `ROUND_LABELS` bounds the count — every consumer
+ * derives its steps from `lessonSteps()` — so a lesson with genuinely more to
+ * teach can run to four parts without the shorter ones growing an empty one.
  */
-export type LessonStep = 1 | 2 | 3;
+export type LessonStep = 1 | 2 | 3 | 4;
 
 export type ExerciseBody =
   | {
@@ -4872,6 +4876,26 @@ export const course: Unit[] = [
           },
         ],
       },
+    ],
+  },
+  {
+    // The script-only capstone. Every lesson here is `scriptOnly`, and they
+    // are gathered into a unit rather than trailing off the end of Real Talk
+    // because there are now enough of them to be a destination: "the part of
+    // the course you reach once you can read" is a milestone worth being able
+    // to see on the path, not a lesson hiding behind an unrelated title.
+    //
+    // What makes this much material shippable without romanization is that
+    // every string below is one of the user's own recordings, so the check on
+    // a decoding is the audio rather than a Latin-letter gloss. Loanwords and
+    // proper nouns go further still: the meaning *is* the pronunciation, so
+    // landing on "coffee" from ကော်ဖီ verifies itself, and a romanization
+    // beside it would have given the answer away rather than confirmed it.
+    id: "read-alone",
+    title: "Read It Yourself",
+    my: "ကိုယ်တိုင်ဖတ်",
+    color: "var(--gold)",
+    lessons: [
       {
         id: "reading-solo",
         title: "Reading solo",
@@ -5012,6 +5036,1242 @@ export const course: Unit[] = [
               { l: "ဆေး စားသလား။", r: "Did he take the medicine?" },
               { l: "ဘယ်နိုင်ငံက လာသလဲ။", r: "What country does she come from?" },
               { l: "ဒါ ဗမာလို ဘယ်လို ခေါ်သလဲ။", r: "What's that called in Burmese?" },
+            ],
+          },
+        ],
+      },
+      {
+        id: "loanwords",
+        title: "Words you already know",
+        emoji: "🔤",
+        // The gentlest possible reading without romanization, and the reason this
+        // unit can do without it at all: these words were English before they were
+        // Burmese, so decoding one and hearing what you just said is its own answer
+        // key. Sound out ဒေါ်လာ, arrive at "dollar", and the letters have proved
+        // themselves — a romanization printed beside it would have given the answer
+        // away instead of confirming it.
+        scriptOnly: true,
+        exercises: [
+          // ── Money, which is where a traveller meets these first ──
+          {
+            kind: "learn",
+            my: "ဒေါ်လာ",
+            en: "Dollar",
+            emoji: "💵",
+          },
+          {
+            kind: "learn",
+            my: "ပေါင်",
+            en: "Pound",
+            emoji: "💷",
+          },
+          {
+            kind: "learn",
+            my: "ယန်း",
+            en: "Yen",
+            emoji: "💴",
+          },
+          {
+            kind: "learn",
+            my: "ဆင့်",
+            en: "Cent",
+            emoji: "🪙",
+          },
+          {
+            kind: "choice",
+            question: "What does this say?",
+            promptMy: "ဒေါ်လာ",
+            options: [{ text: "Dollar" }, { text: "Pound" }, { text: "Yen" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            my: "ဆင့်",
+            en: "Cent",
+            optionLang: "en",
+            options: [{ text: "Cent" }, { text: "Dollar" }, { text: "Pound" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            pairs: [
+              { l: "ဒေါ်လာ", r: "Dollar" },
+              { l: "ပေါင်", r: "Pound" },
+              { l: "ယန်း", r: "Yen" },
+              { l: "ဆင့်", r: "Cent" },
+            ],
+          },
+
+          // ── Clock and calendar ──
+          {
+            kind: "learn",
+            step: 2,
+            my: "စက္ကန့်",
+            en: "Second",
+            emoji: "⏱️",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "စက်တင်ဘာ",
+            en: "September",
+            emoji: "📅",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "အောက်တိုဘာ",
+            en: "October",
+            emoji: "🍂",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "နိုဝင်ဘာ",
+            en: "November",
+            emoji: "🌧️",
+          },
+          {
+            kind: "choice",
+            step: 2,
+            question: "What does this say?",
+            promptMy: "စက္ကန့်",
+            options: [{ text: "Second" }, { text: "September" }, { text: "October" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 2,
+            my: "နိုဝင်ဘာ",
+            en: "November",
+            optionLang: "en",
+            options: [{ text: "November" }, { text: "Second" }, { text: "September" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 2,
+            pairs: [
+              { l: "စက္ကန့်", r: "Second" },
+              { l: "စက်တင်ဘာ", r: "September" },
+              { l: "အောက်တိုဘာ", r: "October" },
+              { l: "နိုဝင်ဘာ", r: "November" },
+            ],
+          },
+
+          // ── Things you are carrying right now ──
+          {
+            kind: "learn",
+            step: 3,
+            my: "ပတ်စပို့",
+            en: "Passport",
+            emoji: "🛂",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ဘက်ထရီ",
+            en: "Battery",
+            emoji: "🔋",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ပို့စကတ်",
+            en: "Postcard",
+            emoji: "📮",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ပိုစတာ",
+            en: "Poster",
+            emoji: "🖼️",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ကိတ်",
+            en: "Cake",
+            emoji: "🍰",
+          },
+          {
+            kind: "choice",
+            step: 3,
+            question: "What does this say?",
+            promptMy: "ပတ်စပို့",
+            options: [{ text: "Passport" }, { text: "Battery" }, { text: "Postcard" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 3,
+            my: "ကိတ်",
+            en: "Cake",
+            optionLang: "en",
+            options: [{ text: "Cake" }, { text: "Passport" }, { text: "Battery" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 3,
+            pairs: [
+              { l: "ပတ်စပို့", r: "Passport" },
+              { l: "ဘက်ထရီ", r: "Battery" },
+              { l: "ပို့စကတ်", r: "Postcard" },
+              { l: "ပိုစတာ", r: "Poster" },
+            ],
+          },
+
+          // ── A loanword inside a whole sentence ──
+          {
+            kind: "learn",
+            step: 4,
+            my: "ဒါ ကော်ဖီပါ။",
+            en: "That's coffee.",
+            emoji: "☕",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "ဆယ် စက္ကန့်",
+            en: "Ten seconds",
+            emoji: "⏲️",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "ပတ်စပို့ ဘယ်မှာ ထားမလဲ။",
+            en: "Where will you put your passport?",
+            emoji: "🛄",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "ပို့စကတ် ပို့ချင်ပါတယ်။",
+            en: "I'd like to send a postcard.",
+            emoji: "✉️",
+          },
+          {
+            kind: "choice",
+            step: 4,
+            question: "What does this say?",
+            promptMy: "ဒါ ကော်ဖီပါ။",
+            options: [{ text: "That's coffee." }, { text: "Ten seconds" }, { text: "Where will you put your passport?" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 4,
+            my: "ပို့စကတ် ပို့ချင်ပါတယ်။",
+            en: "I'd like to send a postcard.",
+            optionLang: "en",
+            options: [{ text: "I'd like to send a postcard." }, { text: "That's coffee." }, { text: "Ten seconds" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 4,
+            pairs: [
+              { l: "ဒါ ကော်ဖီပါ။", r: "That's coffee." },
+              { l: "ဆယ် စက္ကန့်", r: "Ten seconds" },
+              { l: "ပတ်စပို့ ဘယ်မှာ ထားမလဲ။", r: "Where will you put your passport?" },
+              { l: "ပို့စကတ် ပို့ချင်ပါတယ်။", r: "I'd like to send a postcard." },
+            ],
+          },
+        ],
+      },
+      {
+        id: "on-the-map",
+        title: "On the map",
+        emoji: "🌍",
+        // Country and city names work the same way the loanwords do — the meaning
+        // is the pronunciation — but they add the first piece of real word-building
+        // in the unit: နိုင်ငံ "country" on the end of a borrowed name, which is a
+        // suffix you can then read off any map.
+        scriptOnly: true,
+        exercises: [
+          // ── Places big enough to need no suffix ──
+          {
+            kind: "learn",
+            my: "ဂျပန်",
+            en: "Japan",
+            emoji: "🇯🇵",
+          },
+          {
+            kind: "learn",
+            my: "ဂျာမနီ",
+            en: "Germany",
+            emoji: "🇩🇪",
+          },
+          {
+            kind: "learn",
+            my: "အာရှ",
+            en: "Asia",
+            emoji: "🌏",
+          },
+          {
+            kind: "learn",
+            my: "အမေရိက",
+            en: "America",
+            emoji: "🗽",
+          },
+          {
+            kind: "learn",
+            my: "အာဖရိက",
+            en: "Africa",
+            emoji: "🌍",
+          },
+          {
+            kind: "choice",
+            question: "What does this say?",
+            promptMy: "ဂျပန်",
+            options: [{ text: "Japan" }, { text: "Germany" }, { text: "Asia" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            my: "အာဖရိက",
+            en: "Africa",
+            optionLang: "en",
+            options: [{ text: "Africa" }, { text: "Japan" }, { text: "Germany" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            pairs: [
+              { l: "ဂျပန်", r: "Japan" },
+              { l: "ဂျာမနီ", r: "Germany" },
+              { l: "အာရှ", r: "Asia" },
+              { l: "အမေရိက", r: "America" },
+            ],
+          },
+
+          // ── နိုင်ငံ on the end: "country" ──
+          {
+            kind: "learn",
+            step: 2,
+            my: "ပြင်သစ်နိုင်ငံ",
+            en: "France",
+            emoji: "🇫🇷",
+            note: "The last two syllables are နိုင်ငံ, \"country\". Once you can see it on the end of a name, most of a world map becomes readable.",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "စပိန်နိုင်ငံ",
+            en: "Spain",
+            emoji: "🇪🇸",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "ဆွီဒင်နိုင်ငံ",
+            en: "Sweden",
+            emoji: "🇸🇪",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "နော်ဝေးနိုင်ငံ",
+            en: "Norway",
+            emoji: "🇳🇴",
+          },
+          {
+            kind: "choice",
+            step: 2,
+            question: "What does this say?",
+            promptMy: "ပြင်သစ်နိုင်ငံ",
+            options: [{ text: "France" }, { text: "Spain" }, { text: "Sweden" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 2,
+            my: "နော်ဝေးနိုင်ငံ",
+            en: "Norway",
+            optionLang: "en",
+            options: [{ text: "Norway" }, { text: "France" }, { text: "Spain" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 2,
+            pairs: [
+              { l: "ပြင်သစ်နိုင်ငံ", r: "France" },
+              { l: "စပိန်နိုင်ငံ", r: "Spain" },
+              { l: "ဆွီဒင်နိုင်ငံ", r: "Sweden" },
+              { l: "နော်ဝေးနိုင်ငံ", r: "Norway" },
+            ],
+          },
+
+          // ── The neighbours ──
+          {
+            kind: "learn",
+            step: 3,
+            my: "ဗီယက်နမ်နိုင်ငံ",
+            en: "Vietnam",
+            emoji: "🇻🇳",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "မလေးရှားနိုင်ငံ",
+            en: "Malaysia",
+            emoji: "🇲🇾",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "အိန္ဒိယနိုင်ငံ",
+            en: "India",
+            emoji: "🇮🇳",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ဖိလစ်ပိုင်နိုင်ငံ",
+            en: "The Philippines",
+            emoji: "🇵🇭",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "အင်ဒိုနီးရှားနိုင်ငံ",
+            en: "Indonesia",
+            emoji: "🇮🇩",
+          },
+          {
+            kind: "choice",
+            step: 3,
+            question: "What does this say?",
+            promptMy: "ဗီယက်နမ်နိုင်ငံ",
+            options: [{ text: "Vietnam" }, { text: "Malaysia" }, { text: "India" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 3,
+            my: "အင်ဒိုနီးရှားနိုင်ငံ",
+            en: "Indonesia",
+            optionLang: "en",
+            options: [{ text: "Indonesia" }, { text: "Vietnam" }, { text: "Malaysia" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 3,
+            pairs: [
+              { l: "ဗီယက်နမ်နိုင်ငံ", r: "Vietnam" },
+              { l: "မလေးရှားနိုင်ငံ", r: "Malaysia" },
+              { l: "အိန္ဒိယနိုင်ငံ", r: "India" },
+              { l: "ဖိလစ်ပိုင်နိုင်ငံ", r: "The Philippines" },
+            ],
+          },
+
+          // ── Cities ──
+          {
+            kind: "learn",
+            step: 4,
+            my: "တိုကျို",
+            en: "Tokyo",
+            emoji: "🗼",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "ဘန်ကောက်",
+            en: "Bangkok",
+            emoji: "🛺",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "နယူးယောက်",
+            en: "New York",
+            emoji: "🚕",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "ပဲရစ်",
+            en: "Paris",
+            emoji: "🥐",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "ဗီယင်နာ",
+            en: "Vienna",
+            emoji: "🎻",
+          },
+          {
+            kind: "choice",
+            step: 4,
+            question: "What does this say?",
+            promptMy: "တိုကျို",
+            options: [{ text: "Tokyo" }, { text: "Bangkok" }, { text: "New York" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 4,
+            my: "ဗီယင်နာ",
+            en: "Vienna",
+            optionLang: "en",
+            options: [{ text: "Vienna" }, { text: "Tokyo" }, { text: "Bangkok" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 4,
+            pairs: [
+              { l: "တိုကျို", r: "Tokyo" },
+              { l: "ဘန်ကောက်", r: "Bangkok" },
+              { l: "နယူးယောက်", r: "New York" },
+              { l: "ပဲရစ်", r: "Paris" },
+            ],
+          },
+        ],
+      },
+      {
+        id: "around-myanmar",
+        title: "Around Myanmar",
+        emoji: "🗺️",
+        // Where the payoff stops being a party trick. A bus ticket, a platform
+        // board and a road sign are all written in exactly these words, and none of
+        // them will ever be romanized for you.
+        scriptOnly: true,
+        exercises: [
+          // ── The cities everyone names first, and မြို့ "town" ──
+          {
+            kind: "learn",
+            my: "ရန်ကုန်",
+            en: "Yangon",
+            emoji: "🏙️",
+          },
+          {
+            kind: "learn",
+            my: "မန္တလေးမြို့",
+            en: "Mandalay",
+            emoji: "🏯",
+            note: "မြို့ on the end means \"town\", the way နိုင်ငံ meant \"country\". Signs use it far more often than maps in English do.",
+          },
+          {
+            kind: "learn",
+            my: "ပုဂံမြို့",
+            en: "Bagan",
+            emoji: "🛕",
+          },
+          {
+            kind: "learn",
+            my: "မော်လမြိုင်မြို့",
+            en: "Mawlamyine",
+            emoji: "⛵",
+          },
+          {
+            kind: "choice",
+            question: "What does this say?",
+            promptMy: "ရန်ကုန်",
+            options: [{ text: "Yangon" }, { text: "Mandalay" }, { text: "Bagan" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            my: "မော်လမြိုင်မြို့",
+            en: "Mawlamyine",
+            optionLang: "en",
+            options: [{ text: "Mawlamyine" }, { text: "Yangon" }, { text: "Mandalay" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            pairs: [
+              { l: "ရန်ကုန်", r: "Yangon" },
+              { l: "မန္တလေးမြို့", r: "Mandalay" },
+              { l: "ပုဂံမြို့", r: "Bagan" },
+              { l: "မော်လမြိုင်မြို့", r: "Mawlamyine" },
+            ],
+          },
+
+          // ── Down the delta and the river ──
+          {
+            kind: "learn",
+            step: 2,
+            my: "ပဲခူးမြို့",
+            en: "Bago",
+            emoji: "🏛️",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "ပုသိမ်မြို့",
+            en: "Pathein",
+            emoji: "☂️",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "စစ်ကိုင်းမြို့",
+            en: "Sagaing",
+            emoji: "⛩️",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "ထားဝယ်မြို့",
+            en: "Dawei",
+            emoji: "🏖️",
+          },
+          {
+            kind: "choice",
+            step: 2,
+            question: "What does this say?",
+            promptMy: "ပဲခူးမြို့",
+            options: [{ text: "Bago" }, { text: "Pathein" }, { text: "Sagaing" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 2,
+            my: "ထားဝယ်မြို့",
+            en: "Dawei",
+            optionLang: "en",
+            options: [{ text: "Dawei" }, { text: "Bago" }, { text: "Pathein" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 2,
+            pairs: [
+              { l: "ပဲခူးမြို့", r: "Bago" },
+              { l: "ပုသိမ်မြို့", r: "Pathein" },
+              { l: "စစ်ကိုင်းမြို့", r: "Sagaing" },
+              { l: "ထားဝယ်မြို့", r: "Dawei" },
+            ],
+          },
+
+          // ── The hills and the far edges ──
+          {
+            kind: "learn",
+            step: 3,
+            my: "တောင်ကြီး",
+            en: "Taunggyi",
+            emoji: "⛰️",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "မြစ်ကြီးနား",
+            en: "Myitkyina",
+            emoji: "🏔️",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ကျိုင်းတုံ",
+            en: "Kengtung",
+            emoji: "🌄",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ကော့သောင်း",
+            en: "Kawthaung",
+            emoji: "🏝️",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "တာချီလိပ်",
+            en: "Tachilek",
+            emoji: "🛂",
+          },
+          {
+            kind: "choice",
+            step: 3,
+            question: "What does this say?",
+            promptMy: "တောင်ကြီး",
+            options: [{ text: "Taunggyi" }, { text: "Myitkyina" }, { text: "Kengtung" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 3,
+            my: "တာချီလိပ်",
+            en: "Tachilek",
+            optionLang: "en",
+            options: [{ text: "Tachilek" }, { text: "Taunggyi" }, { text: "Myitkyina" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 3,
+            pairs: [
+              { l: "တောင်ကြီး", r: "Taunggyi" },
+              { l: "မြစ်ကြီးနား", r: "Myitkyina" },
+              { l: "ကျိုင်းတုံ", r: "Kengtung" },
+              { l: "ကော့သောင်း", r: "Kawthaung" },
+            ],
+          },
+
+          // ── Yangon townships, which is what a taxi actually asks you for ──
+          {
+            kind: "learn",
+            step: 4,
+            my: "အင်းစိန်",
+            en: "Insein",
+            emoji: "🚉",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "ဗဟန်း",
+            en: "Bahan",
+            emoji: "🏘️",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "တာမွေ",
+            en: "Tamwe",
+            emoji: "🏬",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "ကမာရွတ်",
+            en: "Kamayut",
+            emoji: "🎓",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "လှိုင်",
+            en: "Hlaing",
+            emoji: "🛣️",
+          },
+          {
+            kind: "choice",
+            step: 4,
+            question: "What does this say?",
+            promptMy: "အင်းစိန်",
+            options: [{ text: "Insein" }, { text: "Bahan" }, { text: "Tamwe" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 4,
+            my: "လှိုင်",
+            en: "Hlaing",
+            optionLang: "en",
+            options: [{ text: "Hlaing" }, { text: "Insein" }, { text: "Bahan" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 4,
+            pairs: [
+              { l: "အင်းစိန်", r: "Insein" },
+              { l: "ဗဟန်း", r: "Bahan" },
+              { l: "တာမွေ", r: "Tamwe" },
+              { l: "ကမာရွတ်", r: "Kamayut" },
+            ],
+          },
+        ],
+      },
+      {
+        id: "streets-and-signs",
+        title: "Streets and signs",
+        emoji: "🪧",
+        // Downtown Yangon, read off the signs themselves. လမ်း "road" is already
+        // familiar from Places & Directions, so these are mostly a name plus a word
+        // the learner has had since unit six — which is the point: the new thing is
+        // reading at speed, not new vocabulary.
+        scriptOnly: true,
+        exercises: [
+          // ── The four roads you will walk most ──
+          {
+            kind: "learn",
+            my: "ဗိုလ်ချုပ်လမ်း",
+            en: "Bogyoke Street",
+            emoji: "🛣️",
+            note: "ဗိုလ်ချုပ် is \"general\" — the road, the market and the park are all named for General Aung San, so the same three syllables keep turning up.",
+          },
+          {
+            kind: "learn",
+            my: "ကမ်းနားလမ်း",
+            en: "Strand Road",
+            emoji: "🚢",
+          },
+          {
+            kind: "learn",
+            my: "အနော်ရထာလမ်း",
+            en: "Anawrahta Street",
+            emoji: "🚦",
+          },
+          {
+            kind: "learn",
+            my: "သိမ်ဖြူလမ်း",
+            en: "Theinbyu Road",
+            emoji: "🚌",
+          },
+          {
+            kind: "choice",
+            question: "What does this say?",
+            promptMy: "ဗိုလ်ချုပ်လမ်း",
+            options: [{ text: "Bogyoke Street" }, { text: "Strand Road" }, { text: "Anawrahta Street" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            my: "သိမ်ဖြူလမ်း",
+            en: "Theinbyu Road",
+            optionLang: "en",
+            options: [{ text: "Theinbyu Road" }, { text: "Bogyoke Street" }, { text: "Strand Road" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            pairs: [
+              { l: "ဗိုလ်ချုပ်လမ်း", r: "Bogyoke Street" },
+              { l: "ကမ်းနားလမ်း", r: "Strand Road" },
+              { l: "အနော်ရထာလမ်း", r: "Anawrahta Street" },
+              { l: "သိမ်ဖြူလမ်း", r: "Theinbyu Road" },
+            ],
+          },
+
+          // ── Four more, and one that is an avenue ──
+          {
+            kind: "learn",
+            step: 2,
+            my: "ဦးဝိစာရလမ်း",
+            en: "U Wisara Road",
+            emoji: "🛺",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "အင်းစိန်လမ်း",
+            en: "Insein Road",
+            emoji: "🚕",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "မဟာဗန္ဓုလလမ်း",
+            en: "Maha Bandula Street",
+            emoji: "🏙️",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "တက္ကသိုလ်ရိပ်သာလမ်း",
+            en: "University Avenue",
+            emoji: "🎓",
+          },
+          {
+            kind: "choice",
+            step: 2,
+            question: "What does this say?",
+            promptMy: "ဦးဝိစာရလမ်း",
+            options: [{ text: "U Wisara Road" }, { text: "Insein Road" }, { text: "Maha Bandula Street" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 2,
+            my: "တက္ကသိုလ်ရိပ်သာလမ်း",
+            en: "University Avenue",
+            optionLang: "en",
+            options: [{ text: "University Avenue" }, { text: "U Wisara Road" }, { text: "Insein Road" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 2,
+            pairs: [
+              { l: "ဦးဝိစာရလမ်း", r: "U Wisara Road" },
+              { l: "အင်းစိန်လမ်း", r: "Insein Road" },
+              { l: "မဟာဗန္ဓုလလမ်း", r: "Maha Bandula Street" },
+              { l: "တက္ကသိုလ်ရိပ်သာလမ်း", r: "University Avenue" },
+            ],
+          },
+
+          // ── Where you are actually going ──
+          {
+            kind: "learn",
+            step: 3,
+            my: "ရွှေတိဂုံ ဘုရား",
+            en: "Shwedagon Pagoda",
+            emoji: "🛕",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ခြောက်ထက်ကြီး ဘုရား",
+            en: "Chauktatkyi Pagoda",
+            emoji: "🧘",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ဗိုလ်ချုပ်စျေး",
+            en: "Bogyoke Market",
+            emoji: "🛍️",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "သိမ်ကြီးစျေး",
+            en: "Theingyi Market",
+            emoji: "🧺",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "အမျိုးသားပြတိုက်",
+            en: "National Museum",
+            emoji: "🏛️",
+          },
+          {
+            kind: "choice",
+            step: 3,
+            question: "What does this say?",
+            promptMy: "ရွှေတိဂုံ ဘုရား",
+            options: [{ text: "Shwedagon Pagoda" }, { text: "Chauktatkyi Pagoda" }, { text: "Bogyoke Market" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 3,
+            my: "အမျိုးသားပြတိုက်",
+            en: "National Museum",
+            optionLang: "en",
+            options: [{ text: "National Museum" }, { text: "Shwedagon Pagoda" }, { text: "Chauktatkyi Pagoda" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 3,
+            pairs: [
+              { l: "ရွှေတိဂုံ ဘုရား", r: "Shwedagon Pagoda" },
+              { l: "ခြောက်ထက်ကြီး ဘုရား", r: "Chauktatkyi Pagoda" },
+              { l: "ဗိုလ်ချုပ်စျေး", r: "Bogyoke Market" },
+              { l: "သိမ်ကြီးစျေး", r: "Theingyi Market" },
+            ],
+          },
+
+          // ── Landmarks that tell you where downtown ends ──
+          {
+            kind: "learn",
+            step: 4,
+            my: "ဗိုလ်ချုပ်ပန်းခြံ",
+            en: "Bogyoke Park",
+            emoji: "🌳",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "အင်းဝတံတား",
+            en: "Ava Bridge",
+            emoji: "🌉",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "မင်္ဂလာတံခါး",
+            en: "Mingala Gate",
+            emoji: "🚪",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "ကျောက်တံတား",
+            en: "Kyauk Tada",
+            emoji: "🏢",
+          },
+          {
+            kind: "choice",
+            step: 4,
+            question: "What does this say?",
+            promptMy: "ဗိုလ်ချုပ်ပန်းခြံ",
+            options: [{ text: "Bogyoke Park" }, { text: "Ava Bridge" }, { text: "Mingala Gate" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 4,
+            my: "ကျောက်တံတား",
+            en: "Kyauk Tada",
+            optionLang: "en",
+            options: [{ text: "Kyauk Tada" }, { text: "Bogyoke Park" }, { text: "Ava Bridge" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 4,
+            pairs: [
+              { l: "ဗိုလ်ချုပ်ပန်းခြံ", r: "Bogyoke Park" },
+              { l: "အင်းဝတံတား", r: "Ava Bridge" },
+              { l: "မင်္ဂလာတံခါး", r: "Mingala Gate" },
+              { l: "ကျောက်တံတား", r: "Kyauk Tada" },
+            ],
+          },
+        ],
+      },
+      {
+        id: "burmese-names",
+        title: "Names",
+        emoji: "👤",
+        // The last thing standing between a reader and a page of Burmese: names,
+        // which no dictionary will help with. Burmese ones are built from short
+        // elements that each mean something, so a name is readable the way a
+        // compound is — and the English names in part 4 close the unit the way it
+        // opened, with a word that says itself out loud.
+        scriptOnly: true,
+        exercises: [
+          // ── Name elements, each an ordinary word ──
+          {
+            kind: "learn",
+            my: "စန်း",
+            en: "Moon",
+            emoji: "🌙",
+            note: "Burmese names are assembled from pieces like this one rather than drawn from a fixed list, so a name usually reads as a small phrase of good qualities.",
+          },
+          {
+            kind: "learn",
+            my: "ခင်",
+            en: "Friendly",
+            emoji: "🤝",
+          },
+          {
+            kind: "learn",
+            my: "ထူး",
+            en: "Outstanding",
+            emoji: "⭐",
+          },
+          {
+            kind: "learn",
+            my: "နိုင်",
+            en: "Overcome",
+            emoji: "🏅",
+          },
+          {
+            kind: "choice",
+            question: "What does this say?",
+            promptMy: "စန်း",
+            options: [{ text: "Moon" }, { text: "Friendly" }, { text: "Outstanding" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            my: "နိုင်",
+            en: "Overcome",
+            optionLang: "en",
+            options: [{ text: "Overcome" }, { text: "Moon" }, { text: "Friendly" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            pairs: [
+              { l: "စန်း", r: "Moon" },
+              { l: "ခင်", r: "Friendly" },
+              { l: "ထူး", r: "Outstanding" },
+              { l: "နိုင်", r: "Overcome" },
+            ],
+          },
+
+          // ── Four more pieces ──
+          {
+            kind: "learn",
+            step: 2,
+            my: "စိုး",
+            en: "Rule",
+            emoji: "👑",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "ဆု",
+            en: "Prize",
+            emoji: "🏆",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "စင်",
+            en: "Pure",
+            emoji: "💧",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "ဆန်း",
+            en: "Wondrous",
+            emoji: "✨",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "နု",
+            en: "Tender",
+            emoji: "🌱",
+          },
+          {
+            kind: "choice",
+            step: 2,
+            question: "What does this say?",
+            promptMy: "စိုး",
+            options: [{ text: "Rule" }, { text: "Prize" }, { text: "Pure" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 2,
+            my: "နု",
+            en: "Tender",
+            optionLang: "en",
+            options: [{ text: "Tender" }, { text: "Rule" }, { text: "Prize" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 2,
+            pairs: [
+              { l: "စိုး", r: "Rule" },
+              { l: "ဆု", r: "Prize" },
+              { l: "စင်", r: "Pure" },
+              { l: "ဆန်း", r: "Wondrous" },
+            ],
+          },
+
+          // ── Names you will meet in print ──
+          {
+            kind: "learn",
+            step: 3,
+            my: "ဦးအောင်ဆန်း",
+            en: "Aung San",
+            emoji: "🇲🇲",
+            note: "ဦး in front is the respectful title for an older man, roughly \"Mr\" — it is not part of the name, which is why the road and market drop it.",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ဦးနေဝင်း",
+            en: "Ne Win",
+            emoji: "📜",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ဦးသန့်",
+            en: "U Thant",
+            emoji: "🕊️",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ကို",
+            en: "Ko, before a young man’s name",
+            emoji: "🧑",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "မောင်",
+            en: "Maung, for a boy",
+            emoji: "👦",
+          },
+          {
+            kind: "choice",
+            step: 3,
+            question: "What does this say?",
+            promptMy: "ဦးအောင်ဆန်း",
+            options: [{ text: "Aung San" }, { text: "Ne Win" }, { text: "U Thant" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 3,
+            my: "မောင်",
+            en: "Maung, for a boy",
+            optionLang: "en",
+            options: [{ text: "Maung, for a boy" }, { text: "Aung San" }, { text: "Ne Win" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 3,
+            pairs: [
+              { l: "ဦးအောင်ဆန်း", r: "Aung San" },
+              { l: "ဦးနေဝင်း", r: "Ne Win" },
+              { l: "ဦးသန့်", r: "U Thant" },
+              { l: "ကို", r: "Ko, before a young man’s name" },
+            ],
+          },
+
+          // ── English names, spelled the Burmese way ──
+          {
+            kind: "learn",
+            step: 4,
+            my: "အယ်မလီ",
+            en: "Emily",
+            emoji: "🙋",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "ဂျက်",
+            en: "Jack",
+            emoji: "🧢",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "ရောဘတ်",
+            en: "Robert",
+            emoji: "🎩",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "ကက်သီ",
+            en: "Kathy",
+            emoji: "💐",
+          },
+          {
+            kind: "learn",
+            step: 4,
+            my: "လူစီ",
+            en: "Lucy",
+            emoji: "🌷",
+          },
+          {
+            kind: "choice",
+            step: 4,
+            question: "What does this say?",
+            promptMy: "အယ်မလီ",
+            options: [{ text: "Emily" }, { text: "Jack" }, { text: "Robert" }],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            step: 4,
+            my: "လူစီ",
+            en: "Lucy",
+            optionLang: "en",
+            options: [{ text: "Lucy" }, { text: "Emily" }, { text: "Jack" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 4,
+            pairs: [
+              { l: "အယ်မလီ", r: "Emily" },
+              { l: "ဂျက်", r: "Jack" },
+              { l: "ရောဘတ်", r: "Robert" },
+              { l: "ကက်သီ", r: "Kathy" },
             ],
           },
         ],

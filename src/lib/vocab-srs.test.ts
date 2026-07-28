@@ -49,7 +49,7 @@ describe('introduceLesson', () => {
 	it('never files the same word under two steps', () => {
 		const seen = new Set<string>();
 		for (const { lesson } of allLessons) {
-			for (const step of [1, 2, 3] as LessonStep[]) {
+			for (const step of [1, 2, 3, 4] as LessonStep[]) {
 				for (const my of stepVocab(lesson, step)) {
 					expect(seen.has(`${lesson.id}:${my}`)).toBe(false);
 					seen.add(`${lesson.id}:${my}`);

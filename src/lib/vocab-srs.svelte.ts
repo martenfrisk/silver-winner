@@ -62,7 +62,7 @@ function stepKey(lessonId: string, step: LessonStep): string {
 
 for (const unit of course) {
 	for (const lesson of unit.lessons) {
-		for (const step of [1, 2, 3] as LessonStep[]) {
+		for (const step of [1, 2, 3, 4] as LessonStep[]) {
 			const items: VocabItem[] = [];
 			for (const ex of stepExercises(lesson, step)) {
 				if (ex.kind !== 'learn') continue;
