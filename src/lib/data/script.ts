@@ -67,7 +67,7 @@ export const glyphs: Glyph[] = [
 
 	// ── Vowel signs (attach around a consonant) ────────────────────────
 	{ id: 'aa', char: 'ာ', type: 'vowel', name: 'yay-cha', nameMeaning: 'drawn-down stroke', sound: '-a (long)', mnemonic: 'A pole to the RIGHT of the letter. After ခ ဂ င ဒ ပ ဝ it grows tall: ါ.', confusables: ['asat'], speak: 'ရေးချ', traceable: false },
-	{ id: 'i', char: 'ိ', type: 'vowel', name: 'lone-gyi-tin', nameMeaning: 'big circle on top', sound: '-i', mnemonic: 'A little circle on the roof.', confusables: ['ii'], speak: 'လုံးကြီးတင်', traceable: false },
+	{ id: 'i', char: 'ိ', type: 'vowel', name: 'lone-gyi-tin', nameMeaning: 'big circle on top', sound: '-i', mnemonic: 'A little circle on the roof.', confusables: ['ii', 'anusvara'], speak: 'လုံးကြီးတင်', traceable: false },
 	{ id: 'ii', char: 'ီ', type: 'vowel', name: 'lone-gyi-tin hsan-khat', nameMeaning: 'roof circle + whisker', sound: '-i (long)', mnemonic: 'The roof circle grows a whisker.', confusables: ['i'], speak: 'လုံးကြီးတင်ဆံခတ်', traceable: false },
 	{ id: 'u', char: 'ု', type: 'vowel', name: 'ta-chaung-ngin', nameMeaning: 'one-stroke pull', sound: '-u', mnemonic: 'One hook below.', confusables: ['uu'], speak: 'တစ်ချောင်းငင်', traceable: false },
 	{ id: 'uu', char: 'ူ', type: 'vowel', name: 'hna-chaung-ngin', nameMeaning: 'two-stroke pull', sound: '-u (long)', mnemonic: 'Two hooks below.', confusables: ['u'], speak: 'နှစ်ချောင်းငင်', traceable: false },
@@ -75,6 +75,7 @@ export const glyphs: Glyph[] = [
 	{ id: 'eh', char: 'ဲ', type: 'vowel', name: 'nauk-pyit', nameMeaning: 'backward flick', sound: '-eh', mnemonic: 'A flick thrown back over the shoulder.', confusables: ['ay'], speak: 'နောက်ပစ်', traceable: false },
 	{ id: 'io', char: 'ို', type: 'vowel', name: 'lone-gyi-tin + ta-chaung-ngin', nameMeaning: 'roof circle + hook', sound: '-o', mnemonic: 'ိ and ု team up to say “o”.', confusables: ['i', 'u'], speak: 'အို', traceable: false },
 	{ id: 'asat', char: '်', type: 'vowel', name: 'a-that', nameMeaning: 'the killer', sound: '(kills the vowel)', mnemonic: 'The killer stroke: it silences the inherent “a” so the letter closes the syllable, က → -k.', confusables: ['eh'], speak: 'အသတ်', traceable: false },
+	{ id: 'anusvara', char: 'ံ', type: 'vowel', name: 'thay-thay-tin', nameMeaning: 'small one placed on top', sound: '-n (nasal)', mnemonic: 'A tiny circle on the roof that closes the syllable through the nose: က → ကံ “kan”.', confusables: ['i', 'ii'], speak: 'သေးသေးတင်', traceable: false },
 
 	// ── Tone marks ─────────────────────────────────────────────────────
 	{ id: 'visarga', char: 'း', type: 'tone', name: 'shay-ga-pauk', nameMeaning: 'two dots', sound: 'high tone', mnemonic: 'Two dots after the syllable. Say it long and high.', confusables: ['dot'], speak: 'ဝစ္စပေါက်', traceable: false },
@@ -108,7 +109,7 @@ export const chartSections: { title: string; sub?: string; ids: string[] }[] = [
 	{ title: 'Ta row', sub: 'ta hta da dha na', ids: ['ta', 'hta', 'da', 'dha', 'na'] },
 	{ title: 'Pa row', sub: 'pa hpa ba bha ma', ids: ['pa', 'hpa', 'ba', 'bha', 'ma'] },
 	{ title: 'Mixed row', sub: 'ya ra la wa tha ha a', ids: ['ya', 'ra', 'la', 'wa', 'tha', 'ha', 'a'] },
-	{ title: 'Vowel signs', ids: ['aa', 'i', 'ii', 'u', 'uu', 'ay', 'eh', 'io', 'asat'] },
+	{ title: 'Vowel signs', ids: ['aa', 'i', 'ii', 'u', 'uu', 'ay', 'eh', 'io', 'asat', 'anusvara'] },
 	{ title: 'Tones', ids: ['visarga', 'dot'] },
 	{ title: 'Medials', ids: ['yapin', 'yayit', 'wahswe', 'hahto'] },
 	{ title: 'Digits', ids: ['d0', 'd1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9'] }
@@ -216,14 +217,16 @@ export const decodableWords: Record<string, DecodableWord[]> = {
 		{ my: 'အမ', roman: 'a-ma', en: 'elder sister', parts: ['a', 'ma'] },
 		{ my: 'မာ', roman: 'ma', en: 'hard', parts: ['ma', 'aa'] },
 		{ my: 'နာ', roman: 'na', en: 'to hurt', parts: ['na', 'aa'] },
-		{ my: 'ကာ', roman: 'ka', en: 'to shield', parts: ['ka', 'aa'] }
+		{ my: 'ကာ', roman: 'ka', en: 'to shield', parts: ['ka', 'aa'] },
+		{ my: 'မမာ', roman: 'ma-ma', en: 'unwell', parts: ['ma', 'ma', 'aa'] }
 	],
 	'hooks-and-tails': [
 		{ my: 'မိ', roman: 'mi', en: 'to catch', parts: ['ma', 'i'] },
 		{ my: 'နီ', roman: 'ni', en: 'red', parts: ['na', 'ii'] },
 		{ my: 'ငါ', roman: 'nga', en: 'I / me', parts: ['nga', 'aa'] },
 		{ my: 'တာ', roman: 'ta', en: 'duty', parts: ['ta', 'aa'] },
-		{ my: 'ရတနာ', roman: 'ya-da-na', en: 'treasure', parts: ['ra', 'ta', 'na', 'aa'] }
+		{ my: 'ရတနာ', roman: 'ya-da-na', en: 'treasure', parts: ['ra', 'ta', 'na', 'aa'] },
+		{ my: 'တလ', roman: 'ta-la', en: 'one month', parts: ['ta', 'la'] }
 	],
 	'round-sounds': [
 		{ my: 'လူ', roman: 'lu', en: 'person', parts: ['la', 'uu'] },
@@ -231,7 +234,11 @@ export const decodableWords: Record<string, DecodableWord[]> = {
 		{ my: 'စာ', roman: 'sa', en: 'writing / letter', parts: ['sa', 'aa'] },
 		{ my: 'ဘာ', roman: 'ba', en: 'what', parts: ['bha', 'aa'] },
 		{ my: 'ပါ', roman: 'ba', en: 'please (particle)', parts: ['pa', 'aa'] },
-		{ my: 'စု', roman: 'su', en: 'to gather', parts: ['sa', 'u'] }
+		{ my: 'စု', roman: 'su', en: 'to gather', parts: ['sa', 'u'] },
+		{ my: 'တူ', roman: 'tu', en: 'nephew', parts: ['ta', 'uu'] },
+		{ my: 'ဆရာ', roman: 'hsa-ya', en: 'teacher', parts: ['hsa', 'ra', 'aa'] },
+		{ my: 'ဆရာမ', roman: 'hsaya-ma', en: 'female teacher', parts: ['hsa', 'ra', 'aa', 'ma'] },
+		{ my: 'မိဘ', roman: 'mi-ba', en: 'parents', parts: ['ma', 'i', 'bha'] }
 	],
 	'open-circles': [
 		{ my: 'ရေ', roman: 'yay', en: 'water', parts: ['ra', 'ay'] },
@@ -246,7 +253,9 @@ export const decodableWords: Record<string, DecodableWord[]> = {
 		{ my: 'ထူ', roman: 'htu', en: 'thick', parts: ['hta', 'uu'] },
 		{ my: 'ဖဲ', roman: 'hpeh', en: 'playing cards', parts: ['hpa', 'eh'] },
 		{ my: 'လဲ', roman: 'leh', en: 'to fall over', parts: ['la', 'eh'] },
-		{ my: 'ခဲ', roman: 'kheh', en: 'solid', parts: ['kha', 'eh'] }
+		{ my: 'ခဲ', roman: 'kheh', en: 'solid', parts: ['kha', 'eh'] },
+		{ my: 'ဗမာ', roman: 'ba-ma', en: 'Bamar / Burmese', parts: ['ba', 'ma', 'aa'] },
+		{ my: 'ပထမ', roman: 'pa-hta-ma', en: 'first', parts: ['pa', 'hta', 'ma'] }
 	],
 	'night-letters': [
 		{ my: 'ကို', roman: 'ko', en: 'older brother', parts: ['ka', 'io'] },
@@ -254,14 +263,22 @@ export const decodableWords: Record<string, DecodableWord[]> = {
 		{ my: 'သာ', roman: 'tha', en: 'pleasant', parts: ['tha', 'aa'] },
 		{ my: 'ဟာ', roman: 'ha', en: 'thing', parts: ['ha', 'aa'] },
 		{ my: 'ညာ', roman: 'nya', en: 'right (side)', parts: ['nya', 'aa'] },
-		{ my: 'ဇာ', roman: 'za', en: 'lace', parts: ['za', 'aa'] }
+		{ my: 'ဇာ', roman: 'za', en: 'lace', parts: ['za', 'aa'] },
+		{ my: 'မသာ', roman: 'ma-tha', en: 'funeral', parts: ['ma', 'tha', 'aa'] },
+		{ my: 'ဒီဟာ', roman: 'di-ha', en: 'this thing', parts: ['da', 'ii', 'ha', 'aa'] },
+		{ my: 'ဟိုဟာ', roman: 'ho-ha', en: 'that thing', parts: ['ha', 'io', 'ha', 'aa'] }
 	],
 	'killer-stroke': [
 		{ my: 'လက်', roman: 'let', en: 'hand', parts: ['la', 'ka', 'asat'] },
 		{ my: 'စက်', roman: 'set', en: 'machine', parts: ['sa', 'ka', 'asat'] },
 		{ my: 'မနက်', roman: 'ma-net', en: 'morning', parts: ['ma', 'na', 'ka', 'asat'] },
 		{ my: 'နက်', roman: 'net', en: 'deep', parts: ['na', 'ka', 'asat'] },
-		{ my: 'ရက်', roman: 'yet', en: 'day (of month)', parts: ['ra', 'ka', 'asat'] }
+		{ my: 'ရက်', roman: 'yet', en: 'day (of month)', parts: ['ra', 'ka', 'asat'] },
+		{ my: 'ကံ', roman: 'kan', en: 'luck / karma', parts: ['ka', 'anusvara'] },
+		{ my: 'သံ', roman: 'than', en: 'sound / iron', parts: ['tha', 'anusvara'] },
+		{ my: 'ပုံ', roman: 'poun', en: 'picture / shape', parts: ['pa', 'u', 'anusvara'] },
+		{ my: 'ငံ', roman: 'ngan', en: 'salty', parts: ['nga', 'anusvara'] },
+		{ my: 'ခံ', roman: 'khan', en: 'to endure / to receive', parts: ['kha', 'anusvara'] }
 	],
 	tones: [
 		{ my: 'ကား', roman: 'ka:', en: 'car', parts: ['ka', 'aa', 'visarga'] },
@@ -269,7 +286,8 @@ export const decodableWords: Record<string, DecodableWord[]> = {
 		{ my: 'မီး', roman: 'mi:', en: 'fire', parts: ['ma', 'ii', 'visarga'] },
 		{ my: 'ငါး', roman: 'nga:', en: 'fish', parts: ['nga', 'aa', 'visarga'] },
 		{ my: 'နေ့', roman: 'nay.', en: 'day', parts: ['na', 'ay', 'dot'] },
-		{ my: 'ရေး', roman: 'yay:', en: 'to write', parts: ['ra', 'ay', 'visarga'] }
+		{ my: 'ရေး', roman: 'yay:', en: 'to write', parts: ['ra', 'ay', 'visarga'] },
+		{ my: 'အေး', roman: 'ay:', en: 'cold / cool', parts: ['a', 'ay', 'visarga'] }
 	],
 	blends: [
 		{ my: 'ကျား', roman: 'kya:', en: 'tiger', parts: ['ka', 'yapin', 'aa', 'visarga'] },
@@ -286,6 +304,47 @@ export const decodableWords: Record<string, DecodableWord[]> = {
 		{ my: 'သစ္စာ', roman: 'thit-sa', en: 'truth / loyalty', parts: ['tha', 'sa', 'sa', 'aa'] },
 		{ my: 'ဗုဒ္ဓ', roman: 'boke-da.', en: 'Buddha', parts: ['ba', 'u', 'da', 'dha'] },
 		{ my: 'စက္ကူ', roman: 'set-ku', en: 'paper', parts: ['sa', 'ka', 'ka', 'uu'] }
+	],
+	// Voicing pronunciation, not spelling, is what shifts — parts stay the
+	// citation-form glyphs; only `roman` shows the voiced result. Sourced
+	// from the user's own "Burmese - Introduction to the Script" recordings
+	// (IDEAS.md Round 18): its note on this word reads "သ and စု subject to
+	// voicing". Real human audio for it lives in human-audio-manifest.json.
+	voicing: [
+		{
+			my: 'မိသားစု',
+			roman: 'mi-tha:-zu',
+			en: 'family',
+			parts: ['ma', 'i', 'tha', 'aa', 'visarga', 'sa', 'u']
+		}
+	],
+	// ည် has no vowel sign of its own to look at — the syllable it closes can
+	// land on three different sounds, and only the word tells you which. All
+	// three sourced from the user's own deck, real audio in
+	// human-audio-manifest.json.
+	'nya-endings': [
+		{ my: 'ပြည်', roman: 'pyi', en: 'country', parts: ['pa', 'yayit', 'nya', 'asat'] },
+		{ my: 'လှည်း', roman: 'hleh:', en: 'cart', parts: ['la', 'hahto', 'nya', 'asat', 'visarga'] },
+		{ my: 'အရည်', roman: 'a-yay', en: 'juice', parts: ['a', 'ra', 'nya', 'asat'] }
+	],
+	// Historical spelling that outlived the sound it once recorded: the
+	// letter is still written, the syllable it would have made is not.
+	'redundant-letters': [
+		{ my: 'ဗိုလ်', roman: 'bo', en: 'officer', parts: ['ba', 'io', 'la', 'asat'] },
+		{ my: 'မာန်', roman: 'man', en: 'pride', parts: ['ma', 'aa', 'na', 'asat'] }
+	],
+	// Two more ways real speech drifts from a letter-by-letter reading: a
+	// weak syllable worn down (ဘုရား), a consonant swapped for its
+	// aspirated cousin (ဘ heard as ဖ in ဘုန်းကြီး). Different mechanisms,
+	// same lesson — sound it out, then check.
+	'spelling-surprises': [
+		{ my: 'ဘုရား', roman: 'hpa-ya:', en: 'pagoda', parts: ['bha', 'u', 'ra', 'aa', 'visarga'] },
+		{
+			my: 'ဘုန်းကြီး',
+			roman: 'hpoun:-gyi:',
+			en: 'monk',
+			parts: ['bha', 'u', 'na', 'asat', 'visarga', 'ka', 'yayit', 'ii', 'visarga']
+		}
 	]
 };
 
@@ -303,7 +362,9 @@ export const decodableSentences: Record<string, DecodableSentence[]> = {
 	'killer-stroke': [
 		{ my: 'ဒါ ရေ ပါ', roman: 'da yay ba', en: 'This is water.' },
 		{ my: 'နေ ပူတယ်', roman: 'nay pu-deh', en: 'The sun is hot.' },
-		{ my: 'ဒါ ဘာလဲ', roman: 'da ba-leh', en: 'What is this?' }
+		{ my: 'ဒါ ဘာလဲ', roman: 'da ba-leh', en: 'What is this?' },
+		{ my: 'ဟုတ်ပါတယ်', roman: 'hote-ba-deh', en: "That's right." },
+		{ my: 'သိတယ်', roman: 'thi-deh', en: 'I know.' }
 	],
 	tones: [
 		{ my: 'ငါ ထမင်း စားတယ်', roman: 'nga hta-min: sa:-deh', en: 'I eat rice.' },
@@ -359,6 +420,22 @@ export interface UnitNote {
 }
 
 export const unitNotes: Record<string, UnitNote[]> = {
+	'killer-stroke': [
+		{
+			title: 'Two ways to close a syllable',
+			body: 'အသတ် (်) silences a consonant so it shuts the syllable in front of it. သေးသေးတင် (ံ) shuts it through the nose instead: the syllable ends in an “n” sound. ကံ and ကန် are read the same way.',
+			examples: [
+				{ my: 'ကံ', sub: 'က + ံ → kan “luck”' },
+				{ my: 'ပုံ', sub: 'ပ + ု + ံ → poun “picture”' },
+				{ my: 'ငံ', sub: 'င + ံ → ngan “salty”' }
+			]
+		},
+		{
+			title: 'Two marks that make no sound: ၊ ။',
+			body: 'You are about to read whole sentences, so meet the punctuation first. ၊ breaks a clause like a comma and ။ ends a sentence like a full stop. Neither is spoken and neither attaches to a letter, so read straight past them.',
+			examples: [{ my: 'ဒါ ရေ ပါ။', sub: 'da yay ba “This is water.”' }]
+		}
+	],
 	stacked: [
 		{
 			title: 'Stacked letters: ပါဌ်ဆင့်',
@@ -377,6 +454,63 @@ export const unitNotes: Record<string, UnitNote[]> = {
 		{
 			title: 'Where you’ll meet them',
 			body: 'Mostly in Pali loanwords: religion, scholarship, place names. မန္တလေး (Mandalay) and ကမ္ဘာ (world) are everyday sightings. Once you spot stacks, they’re everywhere.'
+		}
+	],
+	voicing: [
+		{
+			title: 'The sound spelling hides',
+			body: 'Some consonants change how they sound depending on what comes before them, and the spelling never shows it. စု on its own starts with an unvoiced “s”, but inside a word it can soften to “z” — same letters, different sound.',
+			examples: [
+				{ my: 'စု', sub: 'alone: su “to gather”' },
+				{ my: 'မိသားစု', sub: 'မိသား + စု → mi-tha:-zu “family”' }
+			]
+		},
+		{
+			title: 'Learned word by word',
+			body: 'There is no spelling rule that predicts this the way အသတ် or သေးသေးတင် do — it is a property of the specific word, not the letter. Treat each one as a fact to pick up, not a pattern to apply everywhere.'
+		}
+	],
+	'nya-endings': [
+		{
+			title: 'One letter, three sounds',
+			body: 'ည် closes a syllable the way အသတ် does, but it doesn’t settle on one sound. The same two characters — ည plus ် — read as “i”, “eh”, or “ay” depending on the word, and nothing in the spelling tells you which.',
+			examples: [
+				{ my: 'ပြည်', sub: 'pyi “country”' },
+				{ my: 'လှည်း', sub: 'hleh: “cart”' },
+				{ my: 'အရည်', sub: 'a-yay “juice”' }
+			]
+		},
+		{
+			title: 'A rough guide, not a rule',
+			body: '-ယ် turns up most often after တ ထ န မ မှ လ လှ သ (as in လှည်း). -ေ turns up most often after ပြ/ဖြ or ရ/ရှ (as in အရည် — which then sounds exactly like ရေ, “water”). Everywhere else, guess “i” first.'
+		}
+	],
+	'redundant-letters': [
+		{
+			title: 'Letters that go silent',
+			body: 'Burmese spelling keeps some history the modern language dropped. ဗိုလ် ends in လ + အသတ် — a whole extra syllable\'s worth of letters — and none of it is heard: it’s just “bo”.',
+			examples: [
+				{ my: 'ဗိုလ်', sub: 'bo “officer” — the လ် is silent' },
+				{ my: 'မာန်', sub: 'man “pride” — ာ is short here, not long' }
+			]
+		},
+		{
+			title: 'Mostly borrowed words',
+			body: 'This shows up heavily in titles, ranks and Pali/Sanskrit loanwords, the same corner of the vocabulary where you already met stacked letters. The spelling fossilized; the pronunciation kept moving.'
+		}
+	],
+	'spelling-surprises': [
+		{
+			title: 'Two more ways speech drifts from spelling',
+			body: 'A syllable can wear down until it barely sounds like its letters (ဘုရား — the ဘု practically disappears), or a written letter can come out as a completely different one (ဘုန်းကြီး — ဘ is heard as ဖ).',
+			examples: [
+				{ my: 'ဘုရား', sub: 'hpa-ya: “pagoda” — ဘု worn down' },
+				{ my: 'ဘုန်းကြီး', sub: 'hpoun:-gyi: “monk” — ဘ heard as ဖ' }
+			]
+		},
+		{
+			title: 'The pattern is: there is no pattern',
+			body: 'Voicing, redundant letters and the ည် split at least follow a rough shape you can guess at. These don’t — they’re outliers you meet one at a time, the way any language has words that just sound like themselves.'
 		}
 	]
 };
@@ -431,8 +565,8 @@ export const scriptUnits: ScriptUnit[] = [
 	{
 		id: 'killer-stroke',
 		title: 'The killer stroke',
-		blurb: 'Asat kills the vowel and closes syllables. Reading levels up.',
-		glyphIds: ['gha', 'dha', 'asat']
+		blurb: 'Two ways to close a syllable: kill the vowel, or send it through the nose.',
+		glyphIds: ['gha', 'dha', 'asat', 'anusvara']
 	},
 	{
 		id: 'tones',
@@ -458,6 +592,34 @@ export const scriptUnits: ScriptUnit[] = [
 		blurb: 'Pali stacks: one letter rides under another. Read Mandalay!',
 		glyphIds: [],
 		icon: 'က္က'
+	},
+	{
+		id: 'voicing',
+		title: 'Hidden voicing',
+		blurb: 'Same spelling, different sound: some letters soften once attached to a word.',
+		glyphIds: [],
+		icon: 'စု'
+	},
+	{
+		id: 'nya-endings',
+		title: 'One letter, three sounds',
+		blurb: 'ည် can end a word three different ways — the spelling never says which.',
+		glyphIds: [],
+		icon: 'ည်'
+	},
+	{
+		id: 'redundant-letters',
+		title: 'Letters that go silent',
+		blurb: 'Old spelling, new sound: some letters are written but never said.',
+		glyphIds: [],
+		icon: 'လ်'
+	},
+	{
+		id: 'spelling-surprises',
+		title: 'More surprises',
+		blurb: 'A worn-down syllable, a swapped consonant — spelling only gets you so far.',
+		glyphIds: [],
+		icon: 'ဘ'
 	}
 ];
 

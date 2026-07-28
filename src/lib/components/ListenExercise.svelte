@@ -130,7 +130,7 @@
 	{#if status !== 'answer'}
 		<p class="reveal" in:fly={{ y: 10, duration: 250 }}>
 			<span class="my">{ex.my}</span>
-			{#if progress.showRoman}<span class="roman">({ex.roman})</span>{/if}
+			{#if ex.roman && progress.showRoman}<span class="roman">({ex.roman})</span>{/if}
 			<span class="meaning">= {ex.en}</span>
 		</p>
 	{/if}

@@ -34,7 +34,7 @@
 		return sorted.filter(
 			(v) =>
 				v.en.toLowerCase().includes(q) ||
-				v.roman.toLowerCase().includes(q) ||
+				(v.roman?.toLowerCase().includes(q) ?? false) ||
 				v.my.includes(query.trim()) ||
 				partsMatch(v.my, q)
 		);
@@ -79,7 +79,7 @@
 					<span class="dot" class:on={learned} title={learned ? 'Learned' : 'Not learned yet'}></span>
 					<div class="text">
 						<span class="my word">{v.my}</span>
-						<span class="meaning">{v.en}{#if progress.showRoman}<span class="roman"> · {v.roman}</span>{/if}</span>
+						<span class="meaning">{v.en}{#if v.roman && progress.showRoman}<span class="roman"> · {v.roman}</span>{/if}</span>
 						{#if parts}
 							<!-- The word taken apart: each piece is one you can learn once
 							     and then recognise everywhere else it turns up. -->

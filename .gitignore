@@ -31,3 +31,11 @@ vite.config.ts.timestamp-*
 
 # Subagent worktrees (transient, each is its own git repo)
 .claude/worktrees/
+
+# Speech corpora for scripts/mine-corpus.ts (own licences, not ours to ship)
+/corpus
+
+# Raw Anki export for scripts/match-deck-audio.ts — the user's own deck,
+# re-exportable from Anki any time; static/audio-human/ + human-audio-
+# manifest.json are the durable output the app actually ships.
+/Burmese__BScriptIntro.txt

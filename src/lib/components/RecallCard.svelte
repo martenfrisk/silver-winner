@@ -49,7 +49,7 @@
 			<SpeakButton text={ex.my} />
 			<div class="answer-text">
 				<span class="my answer-my">{ex.my}</span>
-				{#if progress.showRoman}<span class="answer-roman">{ex.roman}</span>{/if}
+				{#if ex.roman && progress.showRoman}<span class="answer-roman">{ex.roman}</span>{/if}
 			</div>
 		</div>
 		{#if !graded}

@@ -29,6 +29,7 @@
 	import ListenExercise from '$lib/components/ListenExercise.svelte';
 	import AnswerReveal from '$lib/components/AnswerReveal.svelte';
 	import NoAudioPrompt from '$lib/components/NoAudioPrompt.svelte';
+	import ScriptOnlyPrompt from '$lib/components/ScriptOnlyPrompt.svelte';
 	import VerdictAnnouncer from '$lib/components/VerdictAnnouncer.svelte';
 	import HeaderMute from '$lib/components/HeaderMute.svelte';
 	import { grammarTip } from '$lib/grammar-tips';
@@ -395,6 +396,7 @@
 		</header>
 
 		<NoAudioPrompt />
+		{#if found?.lesson.scriptOnly}<ScriptOnlyPrompt />{/if}
 		<VerdictAnnouncer {status} answer={reveal?.my} meaning={reveal?.en} />
 
 		<main>

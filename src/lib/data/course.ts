@@ -26,7 +26,8 @@ export type ExerciseBody =
   | {
       kind: "learn";
       my: string;
-      roman: string;
+      /** Omit only in a `scriptOnly` lesson — see Lesson.scriptOnly. */
+      roman?: string;
       en: string;
       emoji?: string;
       note?: string;
@@ -48,7 +49,8 @@ export type ExerciseBody =
       kind: "listen";
       /** The Burmese text that is played ("Tap what you hear"). Must have generated audio. */
       my: string;
-      roman: string;
+      /** Omit only in a `scriptOnly` lesson — see Lesson.scriptOnly. */
+      roman?: string;
       /** English meaning, revealed after answering. */
       en: string;
       /** One of them is the answer: `my` when optionLang is "my", `en` when "en". */
@@ -86,7 +88,8 @@ export type ExerciseBody =
       extras: { t: string; sub?: string }[];
       /** Full sentence for TTS + the reveal. */
       my: string;
-      roman: string;
+      /** Omit only in a `scriptOnly` lesson — see Lesson.scriptOnly. */
+      roman?: string;
     };
 
 /** An exercise, plus which step of its lesson it belongs to (default 1). */
@@ -97,6 +100,17 @@ export interface Lesson {
   title: string;
   emoji: string;
   exercises: Exercise[];
+  /**
+   * No romanization anywhere in this lesson — script, audio and meaning
+   * only, on purpose. Grading never reads `roman` (listen checks an option
+   * index, assemble checks the Burmese text), so omitting it changes
+   * nothing about correctness, only the display. Reserved for learners
+   * further into the course: `lint:content` enforces the two lessons that
+   * make this legible — `roman` must be *present* everywhere else, and
+   * *absent* everywhere a lesson claims to be scriptOnly, so the flag can't
+   * quietly drift from what's actually authored.
+   */
+  scriptOnly?: true;
 }
 
 /** Steps a lesson actually has content for, ascending. Always includes 1. */
@@ -3158,6 +3172,156 @@ export const course: Unit[] = [
           },
         ],
       },
+      {
+        id: "everyday-titles",
+        title: "Everyday titles",
+        emoji: "🎓",
+        exercises: [
+          {
+            kind: "learn",
+            my: "ဆရာ",
+            roman: "hsa-ya",
+            en: "Teacher",
+            emoji: "🧑‍🏫",
+            note: "Also just a respectful way to address a skilled man, teacher or not — the same trick as ဦးလေး and အန်တီ.",
+          },
+          {
+            kind: "learn",
+            my: "ဆရာမ",
+            roman: "hsaya-ma",
+            en: "Female teacher",
+            emoji: "👩‍🏫",
+            note: "-မ marks the female form, the same suffix as ဆရာ + မ.",
+          },
+          {
+            kind: "choice",
+            question: "What does this mean?",
+            promptMy: "ဆရာမ",
+            promptRoman: "hsaya-ma",
+            options: [{ text: "Female teacher" }, { text: "Officer" }, { text: "Older sister" }],
+            correct: 0,
+          },
+          {
+            kind: "assemble",
+            question: "Build: “This is a teacher”",
+            answer: [
+              { t: "ဒါ", sub: "da" },
+              { t: "ဆရာ", sub: "hsa-ya" },
+              { t: "ပါ", sub: "ba" },
+            ],
+            extras: [{ t: "ဗိုလ်", sub: "bo" }],
+            my: "ဒါ ဆရာပါ",
+            roman: "da hsaya-ba",
+          },
+
+          // ── Step 2: two more titles you'll hear constantly ────────────
+          {
+            kind: "learn",
+            step: 2,
+            my: "ဗိုလ်",
+            roman: "bo",
+            en: "Officer",
+            emoji: "🎖️",
+            note: "Spelled with a whole extra syllable (လ်) that nobody says — it’s silent.",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "ဘုန်းကြီး",
+            roman: "hpoun:-gyi:",
+            en: "Monk",
+            emoji: "🙏",
+          },
+          {
+            kind: "listen",
+            step: 2,
+            my: "ဘုန်းကြီး",
+            roman: "hpoun:-gyi:",
+            en: "Monk",
+            optionLang: "en",
+            options: [{ text: "Monk" }, { text: "Teacher" }, { text: "Officer" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 2,
+            pairs: [
+              { l: "ဆရာ", lSub: "hsa-ya", r: "Teacher" },
+              { l: "ဆရာမ", lSub: "hsaya-ma", r: "Female teacher" },
+              { l: "ဗိုလ်", lSub: "bo", r: "Officer" },
+              { l: "ဘုန်းကြီး", lSub: "hpoun:-gyi:", r: "Monk" },
+            ],
+          },
+        ],
+      },
+      {
+        id: "extended-family",
+        title: "Extended family",
+        emoji: "👪",
+        exercises: [
+          {
+            kind: "learn",
+            my: "တူ",
+            roman: "tu",
+            en: "Nephew",
+            emoji: "🧑",
+          },
+          {
+            kind: "learn",
+            my: "တူမ",
+            roman: "tu-ma",
+            en: "Niece",
+            emoji: "🧑",
+            note: "Same -မ female-marking suffix you just saw on ဆရာမ.",
+          },
+          {
+            kind: "choice",
+            question: "What does this mean?",
+            promptMy: "တူမ",
+            promptRoman: "tu-ma",
+            options: [{ text: "Niece" }, { text: "Nephew" }, { text: "Daughter" }],
+            correct: 0,
+          },
+
+          // ── Step 2: a generation up ────────────────────────────────────
+          {
+            kind: "learn",
+            step: 2,
+            my: "မိဘ",
+            roman: "mi-ba",
+            en: "Parents",
+            emoji: "👨‍👩‍👧",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "အဖိုးအဖွား",
+            roman: "a-hpo:-a-hpwa:",
+            en: "Grandparents",
+            emoji: "👴👵",
+          },
+          {
+            kind: "listen",
+            step: 2,
+            my: "မိဘ",
+            roman: "mi-ba",
+            en: "Parents",
+            optionLang: "en",
+            options: [{ text: "Parents" }, { text: "Nephew" }, { text: "Niece" }],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 2,
+            pairs: [
+              { l: "တူ", lSub: "tu", r: "Nephew" },
+              { l: "တူမ", lSub: "tu-ma", r: "Niece" },
+              { l: "မိဘ", lSub: "mi-ba", r: "Parents" },
+              { l: "အဖိုးအဖွား", lSub: "a-hpo:-a-hpwa:", r: "Grandparents" },
+            ],
+          },
+        ],
+      },
     ],
   },
   {
@@ -4704,6 +4868,150 @@ export const course: Unit[] = [
               { l: "စိတ်ညစ်တယ်", lSub: "seik-nyit-teh", r: "fed up" },
               { l: "အံ့သြတယ်", lSub: "an-aw-deh", r: "amazed" },
               { l: "မိုက်တယ်", lSub: "maik-teh", r: "Cool" },
+            ],
+          },
+        ],
+      },
+      {
+        id: "reading-solo",
+        title: "Reading solo",
+        emoji: "📖",
+        // No romanization anywhere below — script, audio and meaning only.
+        // See Lesson.scriptOnly: grading never reads `roman`, so this changes
+        // nothing about correctness, only whether there's a Latin-letter
+        // crutch to lean on. Sentences are the user's own recordings, real
+        // conversational Burmese (IDEAS.md Round 21) that would otherwise
+        // have needed a confident romanization to ship — here that
+        // confidence isn't needed at all.
+        scriptOnly: true,
+        exercises: [
+          {
+            kind: "learn",
+            my: "ပြန်ပြောပါ။",
+            en: "Please say that again.",
+            emoji: "🔁",
+            note: "The one phrase worth memorizing before any of the others — you will need it constantly.",
+          },
+          {
+            kind: "learn",
+            my: "မှန်သလား။",
+            en: "Is that correct?",
+            emoji: "❓",
+          },
+          {
+            kind: "choice",
+            question: "What does this mean?",
+            promptMy: "မှန်သလား။",
+            options: [
+              { text: "Is that correct?" },
+              { text: "Please say that again." },
+              { text: "That's a market." },
+            ],
+            correct: 0,
+          },
+          {
+            kind: "listen",
+            my: "ပြန်ပြောပါ။",
+            en: "Please say that again.",
+            optionLang: "en",
+            options: [
+              { text: "Please say that again." },
+              { text: "Is that correct?" },
+              { text: "That's a market." },
+            ],
+            correct: 0,
+          },
+
+          // ── Step 2: a couple more everyday lines ───────────────────────
+          {
+            kind: "learn",
+            step: 2,
+            my: "ဒါ စျေးပါ။",
+            en: "That's a market.",
+            emoji: "🏪",
+          },
+          {
+            kind: "learn",
+            step: 2,
+            my: "ဘာ စားသလဲ။",
+            en: "What did he eat?",
+            emoji: "🍽️",
+          },
+          {
+            kind: "listen",
+            step: 2,
+            my: "ဘာ စားသလဲ။",
+            en: "What did he eat?",
+            optionLang: "en",
+            options: [
+              { text: "What did he eat?" },
+              { text: "That's a market." },
+              { text: "I'm going to swim." },
+            ],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 2,
+            pairs: [
+              { l: "ပြန်ပြောပါ။", r: "Please say that again." },
+              { l: "မှန်သလား။", r: "Is that correct?" },
+              { l: "ဒါ စျေးပါ။", r: "That's a market." },
+              { l: "ဘာ စားသလဲ။", r: "What did he eat?" },
+            ],
+          },
+
+          // ── Step 3: asking about people and places ─────────────────────
+          {
+            kind: "learn",
+            step: 3,
+            my: "ရေ ကူးမယ်။",
+            en: "I'm going to swim.",
+            emoji: "🏊",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ဆေး စားသလား။",
+            en: "Did he take the medicine?",
+            emoji: "💊",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ဘယ်နိုင်ငံက လာသလဲ။",
+            en: "What country does she come from?",
+            emoji: "🌍",
+          },
+          {
+            kind: "learn",
+            step: 3,
+            my: "ဒါ ဗမာလို ဘယ်လို ခေါ်သလဲ။",
+            en: "What's that called in Burmese?",
+            emoji: "🗣️",
+            note: "The question that gets you the rest of the vocabulary this course doesn't cover.",
+          },
+          {
+            kind: "listen",
+            step: 3,
+            my: "ဘယ်နိုင်ငံက လာသလဲ။",
+            en: "What country does she come from?",
+            optionLang: "en",
+            options: [
+              { text: "What country does she come from?" },
+              { text: "Did he take the medicine?" },
+              { text: "I'm going to swim." },
+            ],
+            correct: 0,
+          },
+          {
+            kind: "match",
+            step: 3,
+            pairs: [
+              { l: "ရေ ကူးမယ်။", r: "I'm going to swim." },
+              { l: "ဆေး စားသလား။", r: "Did he take the medicine?" },
+              { l: "ဘယ်နိုင်ငံက လာသလဲ။", r: "What country does she come from?" },
+              { l: "ဒါ ဗမာလို ဘယ်လို ခေါ်သလဲ။", r: "What's that called in Burmese?" },
             ],
           },
         ],

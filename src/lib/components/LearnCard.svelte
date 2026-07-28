@@ -12,7 +12,7 @@
 		en,
 		emoji,
 		note
-	}: { my: string; roman: string; en: string; emoji?: string; note?: string } = $props();
+	}: { my: string; roman?: string; en: string; emoji?: string; note?: string } = $props();
 
 	// A compound is cheaper to learn as its pieces than as one opaque string,
 	// and this is the card where the learner meets it — but it was the one
@@ -54,7 +54,7 @@
 			<SpeakButton text={my} size="lg" />
 		</div>
 	</div>
-	{#if progress.showRoman}
+	{#if roman && progress.showRoman}
 		<p class="roman">{roman}</p>
 	{/if}
 	<p class="en">{en}</p>

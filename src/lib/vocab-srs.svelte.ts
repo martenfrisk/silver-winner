@@ -27,7 +27,8 @@ const MISTAKE_CAP = 20;
 
 export interface VocabItem {
 	my: string;
-	roman: string;
+	/** Absent for words taught in a scriptOnly lesson — see Lesson.scriptOnly. */
+	roman?: string;
 	en: string;
 	lessonId: string;
 }

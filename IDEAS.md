@@ -597,3 +597,266 @@ implementation into the teaching.
     refactors get caught.
 24. 💤 **Native-speaker content audit** — generated syllable romanizations, a few
     mnemonics, and tone representation (creaky/low/high) deserve a human pass.
+
+## Round 18 — what a 40-lesson Anki deck taught us to teach (2026-07-28)
+
+A personal Anki collection surfaced "Burmese - Introduction to the Script",
+a 40-lesson, 2,760-row deck (2,033 audio clips) that the user wrote and
+recorded themselves — self-narrated, licensed content, not a third-party
+resource. (First guess in this round was wrong: the public AnkiWeb listing
+doesn't credit an author by name and describes it as *"inspired by"* the
+Okell textbook, which read as an unlicensed derivative until the user
+corrected it. Kept as a memory — [[myanlingo-user-anki-deck]] — since it
+was a real misjudgment, not just a fact worth recording.)
+
+Its category tags name five real Burmese orthography phenomena **Script
+Studio taught none of**: voicing (156 tagged rows), irregular spelling (63),
+the -ည် pronunciation split (74), redundant historical letters ာ/လ် (48),
+unstressed-syllable weakening (40). Only stacking (our `stacked` unit)
+already overlapped. That's the "advanced reading" gap the corpus-mining
+round (#13) went looking for and didn't find.
+
+- ✅ **`voicing` unit** — one new Script Studio unit (no new glyph, same
+  shape as `stacked`: `unitNotes` + `decodableWords` only), teaching that a
+  word's pronunciation can voice even though the spelling never shows it.
+  First pass used a self-authored example (the -ကြီး suffix) built before
+  the licensing correction; replaced with a real one once the deck was
+  confirmed as the user's own: **မိသားစု** "family" — already the course's
+  own Family unit's title word — voices its စု (su → zu), per the deck's own
+  note ("သ and စု subject to voicing"). Real audio, not TTS; see the pipeline
+  entry below. `unitNotes`' example now contrasts it against စု alone
+  (already taught in `round-sounds`, roman "su").
+- ✅ **Human-audio overlay, separate from the two TTS voices** — a word can
+  now carry a real recording that beats synthesized speech, without
+  touching the `f`/`m` voice system built for talker-contrast drills
+  (`$lib/voices`). `src/lib/human-audio-manifest.json` (text → hash) is
+  checked by `$lib/audio`'s `element()` first, but **only when no specific
+  voice is requested** — contrast drills always pass `voice` explicitly, so
+  a sparse one-off recording can never silently replace the deliberately-
+  picked talker in an aspiration/tone pair. Files live in
+  `static/audio-human/`, cached lazily like `static/audio/` (service worker
+  updated to exclude both prefixes from precache). `lint-content.ts` treats
+  a missing human-audio file as an **error** (never auto-generated, so
+  absence means someone deleted or forgot to commit it — unlike ordinary
+  TTS coverage gaps, which are just a warning `bun run audio` fixes).
+  One entry exists today (မိသားစု, 44.1kHz source re-encoded to the app's
+  usual 24kHz/48kbps mono). Scaling this up — which of the deck's 2,760 rows
+  are worth pulling in, and whether beyond Script Studio into course
+  vocabulary — is future work, not designed yet.
+- ✅ **Found and fixed a "Burmese-text → pick the romanization" question in
+  two places**, on the user's explicit instruction that this pattern is
+  harmful regardless of context: it trains recalling a Latin-letter spelling
+  instead of reading the script. `wordRead()` (every decodable-word drill in
+  every Script Studio unit, not just `voicing`) and `syllableRead()`'s
+  silent-mode fallback both did this. The `recall` exercise kind already
+  existed for exactly this reason at the single-glyph level (`g2s`) — it
+  just hadn't been extended to whole words. Fixed the same way: audio on →
+  self-graded read-aloud (`recall`); audio off → `wordRead` falls back to
+  the word's **meaning** (like `sentenceRead` already did), and
+  `syllableRead` has no honest silent form for a bare syllable (no meaning
+  to fall back to) so it's dropped from the queue, same as the minimal-pair
+  and tone drills. Saved as a standing rule:
+  [[feedback-no-romanization-questions]].
+- ✅ **Three more units, real examples and audio throughout** — the
+  remaining phenomena turned out to split into three units, not four:
+  weakening and the broader irregular-spelling set share one mechanism
+  worth teaching together (spelling just doesn't predict the sound, for
+  unrelated reasons), so they became a single unit rather than two thin
+  ones.
+  - **`nya-endings`** — "One letter, three sounds". ည် closes a syllable
+    like အသတ် does, but lands on "i", "eh" or "ay" depending on the word.
+    ပြည် (pyi, country), လှည်း (hleh:, cart), အရည် (a-yay, juice — which
+    then sounds exactly like ရေ "water", a genuinely useful thing to
+    notice). Conditioning cues are the deck's own, not invented: -ယ် mostly
+    after တ ထ န မ မှ လ လှ သ, -ေ mostly after ပြ/ဖြ or ရ/ရှ.
+  - **`redundant-letters`** — "Letters that go silent". Historical spelling
+    outliving the sound it recorded. ဗိုလ် (bo, officer — the whole လ်
+    contributes nothing), မာန် (man, pride — ာ is short, not long, despite
+    being the "long a" sign everywhere else).
+  - **`spelling-surprises`** — "More surprises". ဘုရား (hpa-ya:, pagoda —
+    ဘု worn down to almost nothing) and ဘုန်းကြီး (hpoun:-gyi:, monk — ဘ
+    heard as ဖ, *and* the same -ကြီး voicing as the `voicing` unit, both at
+    once — real words don't respect tidy categories).
+  - All seven words: real audio via the human-audio pipeline (Round 18's
+    other addition), verified end-to-end in-browser (note cards, the
+    self-graded reading drill, the actual `/audio-human/` file fetched on
+    "Hear it"). `bun run audio` filled in an ordinary TTS fallback for six
+    of the seven (ဘုရား already had one — it's an existing course word).
+  - One example scouted and set aside, not attempted: စင်္ကာပူ "Singapore"
+    and the same -in-ga- stacked-nasal pattern (လင်္ကာ, သင်္ကန်း) use *kinzi*
+    (consonant + nga + asat + virama + consonant), a different device from
+    the plain consonant-virama-consonant stacking `stacked` already
+    teaches, and not yet modelled in `script.ts`'s decompose/recompose
+    rules.
+
+## Round 19 — the deck becomes a content source, not just a topic list (2026-07-28)
+
+Round 18 treated the user's own deck as inspiration only, out of caution
+about authorship. The user confirmed ownership outright — *"I did create
+that deck and recorded the audio+wrote the text... my audio should be the
+default voice"* — which reopens it as a real source, not just a topic list.
+Four phases, run in order, each gated on the last staying green
+(`lint:content` / `check` / `test`, plus a Playwright pass at the end since
+this round touched `course.ts`).
+
+- ✅ **Phase 1 — `bun run match:audio`** (new, reusable). Cross-references
+  every speakable string (`collectSpeakables()`) against the deck and
+  converts + registers real audio for every exact match — no new content,
+  no romanization to derive, since the string is already taught. Idempotent
+  (skips strings already in the manifest), so it's meant to be re-run as
+  the deck or the course grows. First run: **104 matches**, from core
+  phrasebook words (မင်္ဂလာပါ, ကျွန်တော်/ကျွန်မ, ခင်ဗျား) down to bare
+  practice syllables the deck's own early lessons drill the same way Script
+  Studio does.
+- ✅ **Phase 2 — new vocabulary, hand-picked, not mass-produced.** Built
+  `bun run scripts/mine-user-deck.ts --kind words` to decompose+filter deck
+  rows into unit-placed candidates (326 decodable against today's glyph
+  set). Tried mechanizing the romanization too, the way `mine-corpus.ts`
+  mechanizes decomposition — and immediately caught why not to: validated
+  the candidate romanizer against all 67 *existing* `decodableWords`
+  entries and it only got **46 right**. The failures are exactly the
+  dangerous kind: real words with no glyph-level marker warning you
+  they're irregular (ပါ reads "ba" not "pa", ရတနာ reads "ya-**da**-na" not
+  "ya-**ta**-na"), plus a coda-consonant segmentation bug for anything
+  closed with အသတ်. So romanization stayed manual, cross-checked against
+  *already-validated* entries wherever one existed (ကို "ko" validates
+  "အကို" as "a-ko", for instance) — dropped that exact word anyway, since
+  "ကို" already means "older brother" in `night-letters` and a second word
+  with the same gloss in the same unit is confusing, not additive. Landed
+  **11 new decodable words**, real audio throughout, across
+  `first-letters`, `hooks-and-tails`, `round-sounds`, `twins-and-hats` and
+  `night-letters` — the units whose vocabulary is simple enough (open
+  syllables, no asat-coda, no known lexical irregularity) to be confident
+  in without hearing the tape. **315 candidates left unmined** —
+  `killer-stroke`/`tones`/`blends`/`stacked` account for nearly all of
+  them, and that's exactly the asat/medial-heavy territory the romanizer
+  validation says needs either audio confirmation or real phonology
+  reference-checking, not a rushed guess.
+- ✅ **Phase 3 — decodable sentences, same discipline.**
+  `mine-user-deck.ts --kind sentences` found 204 candidates; the large
+  buckets (`tones` 115, `blends` 74) turned out to be real grammar drills
+  (questions with -သလား, aspect marking with -စမှာ, negative imperatives)
+  that need grammatical confidence, not just glyph coverage. Added **2**:
+  ဟုတ်ပါတယ် "hote-ba-deh" and သိတယ် "thi-deh", both cross-validated against
+  romanization patterns already used repeatedly elsewhere in the app
+  (-ပါတယ် → "-ba-deh", -တယ် → "-deh").
+- ✅ **Phase 4 — a new course unit: "Titles & Roles"** (`titles` /
+  `everyday-titles` in `course.ts`). ဆရာ/ဆရာမ (teacher/female teacher),
+  ဗိုလ် (officer, already introduced via Script Studio's
+  `redundant-letters`) and ဘုန်းကြီး (monk, via `spelling-surprises`) —
+  reusing words already vetted for Script Studio, so no new romanization
+  risk, just a new place to meet them. Two steps (course convention: every
+  lesson has more than one, enforced by `rounds.test.ts`), one `assemble`
+  sentence, real audio throughout.
+- ✅ **125 words now speak in the user's own voice** (`human-audio-
+  manifest.json`), up from 8 at the end of Round 18. `.gitignore` gained
+  the raw deck TSV (`/Burmese__BScriptIntro.txt`) alongside `/corpus` —
+  regenerable from Anki any time, not something the app ships.
+- 💤 **Everything the mining scripts flagged but this round didn't touch**:
+  ~315 word candidates and ~200 sentence/phrase candidates, concentrated in
+  `killer-stroke`/`tones`/`blends`/`stacked`. Re-running
+  `mine-user-deck.ts` any time picks up wherever the app's vocabulary has
+  grown to next.
+
+## Round 20 — a reorganization, and testing the limits of safe mining (2026-07-28)
+
+Asked to keep mining Round 19's data source *and* reconsider the course's
+shape rather than only appending — not "just add more lessons."
+
+- ✅ **The orphan "Titles & Roles" unit folded into Family.** It was the
+  only single-lesson unit in the whole course (every other unit has three),
+  and its own content already drew the parallel explicitly — ဆရာ/ဗိုလ်/
+  ဘုန်းကြီး are address terms for non-relatives the same way ဦးလေး/အန်တီ
+  are in `siblings`. Reused unchanged as Family's 4th lesson
+  (`everyday-titles`); no content rewritten, just relocated.
+- ✅ **New 5th lesson: `extended-family`** — nephew/niece (တူ/တူမ) and
+  parents/grandparents (မိဘ/အဖိုးအဖွား), two steps. တူ and မိဘ were already
+  sourced with real audio in Round 19's Phase 2 (Script Studio); reused
+  directly rather than re-verified, since the string and its audio don't
+  change by appearing in a second place.
+- ✅ **One new Script Studio word**: အေး "cold/cool" (`tones` unit,
+  `ay:`) — already had real audio from Round 19's Phase 1 match (it's a
+  bare syllable Script Studio drills speak anyway), just never had an
+  English gloss attached to it as a word. Pairs with the existing ပူ "hot".
+- 💤 **A dedicated weather/feelings unit — investigated, not built.**
+  Checked what the deck offers beyond အေး: hot (ပူ), happy/sad
+  (ပျော်တယ်/ဝမ်းနည်းတယ်), tired/hungry/thirsty
+  (ပင်ပန်း/ဗိုက်ဆာ/ရေဆာတယ်) are **already** taught, spread across
+  `kids-and-love` and `how-are-you` — the theme is better covered than it
+  looked from outside. What's left in the deck for this theme carries more
+  romanization risk than what's already shipped, so nothing forced.
+- 💤 **Tried to mechanize asat-coda romanization properly, and learned why
+  not to.** Round 19 found the coda-consonant reading was context-
+  dependent; this round tried to fix it properly by mining the *reading*
+  empirically — extracting every (word, romanization) pair from all 425
+  `course.ts` + `script.ts` entries and tabulating what each coda consonant
+  actually resolves to. Result: a single coda consonant resolves to
+  multiple *different* endings depending on what precedes it (`ka` as a
+  coda: `-et` four times, but also `-auk`, `-et` again from a different
+  vowel, `-ok`, and three more, all attested once each). The reading is a
+  property of the whole rime (vowel + coda together), not the coda alone —
+  confirming the Round 19 finding harder, not just re-stating it. No
+  further mechanization attempted; the ~315/~200 unmined candidates stay
+  unmined until either the user's ear or a real rime-level model is
+  available.
+
+## Round 21 — lessons with no romanization at all (2026-07-28)
+
+Round 20 ended by saying the coda-romanization problem was a real limit on
+how much of the deck's richer, more complex sentences could safely ship.
+Asked directly what was stopping a lesson from just not having
+romanization — turned out the answer wasn't "a lot," and it dissolves that
+limit too: **grading never reads `roman`** anywhere in the app. `listen`
+checks a picked option's index against `ex.correct`; `assemble` checks the
+joined tile text against `ex.my`. Romanization has only ever been a display
+convenience, so a lesson that omits it entirely changes nothing about
+correctness — only whether there's a Latin-letter crutch to lean on. That
+also means the exact-phonetics risk that gated Round 19/20's mining (the
+`killer-stroke`/`tones`/`blends` candidates set aside for needing a
+confident romanization) stops applying the moment romanization isn't shown
+at all.
+
+- ✅ **`roman` is now optional everywhere it touches course content** —
+  `ExerciseBody` (learn/listen/assemble), `VocabItem`, `RecallEx`,
+  `SelfReviewCard`, `ReaderVocab`, `RelatedWord`. Eight call sites rendered
+  it unconditionally on the `progress.showRoman` toggle without also
+  checking the value was present (`LearnCard`, `ListenExercise`,
+  `WordSheet` ×2, `RecallCard`, `SelfGradeCard`, the dictionary page ×2) —
+  each would have shown an empty line or a bare "()" the first time `roman`
+  was actually absent. Fixed by gating on `roman && progress.showRoman`
+  throughout, the same pattern `AnswerReveal`'s existing `{#if sub}` already
+  used safely.
+- ✅ **`Lesson.scriptOnly?: true`** — the flag that means it. `lint:content`
+  enforces both directions: a regular lesson's exercises still require
+  `roman` (error if missing, same as always), and a `scriptOnly` lesson's
+  exercises now error if `roman` is *present*, so the flag can't quietly
+  drift from what's actually authored in either direction.
+- ✅ **`ScriptOnlyPrompt.svelte`** — a dismissible, non-blocking nudge (chip
+  above the exercise, matching `NoAudioPrompt`'s visual language) shown
+  entering a scriptOnly lesson when `progress.showRoman` is still on — the
+  signal that this learner hasn't leaned on Script Studio yet, and this
+  lesson won't have romanization to fall back on. Links to `/script`,
+  dismissible, never a gate; session-scoped state
+  (`script-only-prompt.svelte.ts`) mirrors `no-audio-prompt.svelte.ts`
+  exactly, minus the relocate/tooltip machinery that one needs and this one
+  doesn't (it's a lesson-entry nudge, not a per-question concern).
+- ✅ **First scriptOnly lesson, `reading-solo`** — added as a 4th lesson
+  to `real-talk` (the course's existing capstone unit), not a new
+  standalone unit — a single-lesson unit is exactly the "Titles & Roles"
+  mistake Round 20 just fixed. It's now the last lesson in the whole
+  course. Eight real conversational sentences from the user's own deck
+  (ပြန်ပြောပါ။ "Please say that again.", ဘယ်နိုင်ငံက လာသလဲ။ "What country
+  does she come from?", …) that would have needed a confident
+  romanization to ship under the old rules and now don't. Verified
+  end-to-end in-browser with `progress.showRoman` forced on: no
+  romanization renders anywhere in the lesson, the nudge shows and
+  dismisses correctly and stays dismissed across exercises, real
+  `/audio-human/` clips play throughout, and completing it correctly
+  triggered the "Graduate" achievement (complete every course lesson) —
+  full-circle confirmation that it's wired into the course the same as
+  every other lesson.
+- 💤 **The larger unmined pool is now lower-risk than it looked** — the
+  ~315 word and ~200 sentence candidates from Round 19/20 no longer need a
+  trusted romanization if the destination is a scriptOnly lesson. Not
+  mined further this round; flagged as the natural next expansion of
+  `reading-solo` or a sibling lesson.
