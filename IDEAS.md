@@ -860,3 +860,96 @@ at all.
   trusted romanization if the destination is a scriptOnly lesson. Not
   mined further this round; flagged as the natural next expansion of
   `reading-solo` or a sibling lesson.
+
+## Round 22 — the script-only capstone unit, and Part 4 (2026-07-28)
+
+The previous round's last line was that the unmined pool "no longer needs a
+trusted romanization if the destination is a scriptOnly lesson." This round
+takes that seriously: the ~90 words added below are shipped without a single
+romanization, and none of them needed one.
+
+- ✅ **Part 4 exists** — `LessonStep` is now `1 | 2 | 3 | 4`. Nothing but the
+  type and `ROUND_LABELS` bounded the count (every consumer already derives
+  its parts from `lessonSteps()`), so the change is four lines: the type, a
+  label, the `[1,2,3]` seeding loop in `vocab-srs`, and the `?step=` parser.
+  The five other `[1, 2, 3]` loops in the codebase turned out to be
+  three-star ratings, not parts — worth checking before assuming a widening
+  is invasive. `rounds.test.ts` gained a test that every step a lesson
+  declares has a label, since a missing one renders `undefined` as a chip
+  caption rather than failing anywhere.
+- ✅ **`read-alone` — "Read It Yourself"**, a ninth unit and the course's
+  script-only capstone. `reading-solo` **moved here** out of `real-talk`.
+  Round 21 put it there to avoid a single-lesson unit (the "Titles & Roles"
+  mistake); with five siblings that reasoning inverts — "the part of the
+  course you reach once you can read" is a milestone worth seeing on the
+  path, not a lesson hiding at the end of an unrelated theme.
+- ✅ **Five new scriptOnly lessons, 20 parts, ~90 words**, all four-part:
+  `loanwords`, `on-the-map`, `around-myanmar`, `streets-and-signs`,
+  `burmese-names`. Course totals: 27 → 32 lessons, 73 → 93 parts,
+  246 → 336 learn exercises.
+- ✅ **Why these themes, specifically** — loanwords and proper nouns are the
+  one class of vocabulary where *the meaning is the pronunciation*. A
+  learner who decodes ကော်ဖီ and lands on "coffee" has verified their own
+  decoding with nothing but their ear; a romanization printed beside it
+  would have given the answer away rather than confirmed it. That is not a
+  workaround for the romanizer's limits (Round 19) — it is strictly better
+  teaching, and it is why this unit could be authored at four times the
+  size of `reading-solo` without the risk that gated Rounds 19–21.
+- ✅ **86 of 86 new strings play the user's own recording** — every word was
+  picked by validating it against the deck TSV *and* `collection.media`
+  before authoring, so `bun run match:audio` matched 100% and nothing fell
+  through to TTS. The human-audio manifest went 135 → 221 entries. Authoring
+  from a pre-validated candidate pool, rather than writing content and
+  hoping the audio exists, is the workflow worth keeping.
+- ✅ **Morphology carried by the content, not a note** — the suffixes
+  နိုင်ငံ "country" (`on-the-map` part 2), မြို့ "town" (`around-myanmar`
+  part 1) and လမ်း "road" (`streets-and-signs`, already known from Places &
+  Directions) each get a part built around them, so a learner reads them off
+  a sign afterwards rather than memorizing sixteen opaque names.
+- 💤 **Still unmined**: roughly 470 rows remain in the "words" / "sentences"
+  categories, plus ~120 Pali and monk's-name rows that want a human decision
+  about whether they're course material at all. Kinzi stacking (စင်္ကာပူ)
+  is still not modelled in `script.ts`'s decompose/recompose rules, which is
+  what keeps a few place names out of Script Studio's decodable sets.
+
+## Round 23 — compounds, one grammar frame, and an unlocked path (2026-07-28)
+
+- ✅ **`built-from-parts`** — a lesson made entirely of words the course
+  already teaches, stuck together: ဘုန်းကြီး + ကျောင်း is a monastery, and
+  the deck's own note on စားသောက်ဆိုင် reads "eat-drink-shop". Fifteen new
+  `morphology.ts` entries carry the breakdown to the learn card, the word
+  sheet and the dictionary.
+- ✅ **The finding that decided where compounds live** — a compound *voices
+  at its seam* (ကြီး is already "gyi:" inside ဘုန်းကြီး; ဆိုင် softens after
+  လက်ဖက်ရည်), so a romanization built by concatenating the parts' own
+  romanizations is wrong in exactly the places the lesson is about. The
+  vocabulary that best builds on prior words is therefore the vocabulary
+  most exposed to Round 19's romanization problem — which is a reason to
+  put it in the script-only track, not a reason to skip it.
+- ✅ **`saying-what-you-want`** — ချင် as a reusable frame. The course had
+  been using it unnamed since `yummy` (စားချင်တယ်, သောက်ချင်တယ်); naming it
+  turns two words into a pattern that takes any verb the learner has.
+- ✅ **`asking-your-way`** — the unit's payoff: this unit's street names in
+  front of Places & Directions' question words, and part 4 answers the
+  question `reading-solo` teaches you to ask (ဘယ်နိုင်ငံက လာသလဲ။).
+- ✅ **`Lesson.optional`** — in the path, off the ladder. `loanwords` is the
+  first, since "this word was English all along" is a revelation to a
+  beginner and barely news to a script reader, who is who that unit is for.
+  Generated into `lesson-order.ts` beside `lessonOrder` so `progress` can
+  answer without importing `course.ts`.
+- ✅ **Lesson previews, and unlocking out of order** — tapping a locked node
+  used to buzz. It now opens a sheet listing every word of every part with
+  translations, plus "Unlock it anyway". `progress.opened` records only the
+  lesson jumped to: nothing before it is marked done or skipped, so the path
+  still shows exactly what has been learned. The linear order stays the
+  obvious route (it is what the path draws and what "Start here" points at)
+  without being a wall. An eye chip on every row previews any lesson,
+  including ones already finished.
+- 💤 **Two environment notes for whoever verifies next** — the in-app browser
+  pane runs with `visibilityState: "hidden"`, so `requestAnimationFrame`
+  never fires: Svelte outro transitions freeze and a closed modal stays in
+  the DOM. It affects the pre-existing sheets identically, so it is a
+  harness artifact, not app behaviour, but it makes modal *close* unverifiable
+  there. Separately, `bun run test:e2e` fails "completes lesson 1" under its
+  default 4 workers on this machine and passes with `--workers=1`; confirmed
+  pre-existing by running the same suite at the previous commit.

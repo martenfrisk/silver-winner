@@ -237,6 +237,73 @@ export const morphology: Record<string, MorphPart[]> = {
 		{ my: 'မနက်ဖြန်', gloss: 'tomorrow' },
 		{ my: 'တွေ့', base: 'တွေ့မယ်', gloss: 'meet' },
 		{ my: 'မယ်', gloss: '(future ending)' }
+	],
+
+	// ── Compounds of words the course already teaches ──────────────────
+	// The `built-from-parts` lesson is nothing but these, so the breakdown
+	// below is the lesson's actual content rather than a footnote on it.
+	// Note what the surface forms show: ဆိုင်, ကျောင်း and ကြီး all voice at
+	// the seam, which is why that lesson ships without romanization at all.
+	'လက်ဖက်ရည်ဆိုင်': [
+		{ my: 'လက်ဖက်ရည်', gloss: 'tea' },
+		{ my: 'ဆိုင်', gloss: 'shop' }
+	],
+	'စားသောက်ဆိုင်': [
+		{ my: 'စား', base: 'စားချင်တယ်', gloss: 'eat' },
+		{ my: 'သောက်', base: 'သောက်ချင်တယ်', gloss: 'drink' },
+		{ my: 'ဆိုင်', gloss: 'shop' }
+	],
+	'အရက်ဆိုင်': [
+		{ my: 'အရက်', gloss: 'liquor' },
+		{ my: 'ဆိုင်', gloss: 'shop' }
+	],
+	'ဆိုင်ရှင်': [
+		{ my: 'ဆိုင်', gloss: 'shop' },
+		{ my: 'ရှင်', gloss: 'owner' }
+	],
+	'ကိတ်မုန့်': [
+		{ my: 'ကိတ်', gloss: 'cake' },
+		{ my: 'မုန့်', gloss: 'snack, baked thing' }
+	],
+	'ပေါင်မုန့်': [
+		{ my: 'ပေါင်', gloss: 'loaf, pound' },
+		{ my: 'မုန့်', gloss: 'snack, baked thing' }
+	],
+	'ရေခဲမုန့်': [
+		{ my: 'ရေခဲ', gloss: 'ice' },
+		{ my: 'မုန့်', gloss: 'snack, baked thing' }
+	],
+	'ဘုန်းကြီးကျောင်း': [
+		{ my: 'ဘုန်းကြီး', gloss: 'monk' },
+		{ my: 'ကျောင်း', gloss: 'school' }
+	],
+	'ဘုရားလမ်း': [
+		{ my: 'ဘုရား', gloss: 'pagoda' },
+		{ my: 'လမ်း', gloss: 'road' }
+	],
+	'ဗိုလ်ကြီး': [
+		{ my: 'ဗိုလ်', gloss: 'officer' },
+		{ my: 'ကြီး', base: 'ကြီးတယ်', gloss: 'big, senior' }
+	],
+	'မုန့်သည်': [
+		{ my: 'မုန့်', gloss: 'snack, baked thing' },
+		{ my: 'သည်', gloss: 'one who deals in it' }
+	],
+	'ရေသည်': [
+		{ my: 'ရေ', gloss: 'water' },
+		{ my: 'သည်', gloss: 'one who deals in it' }
+	],
+	'ကုန်သည်': [
+		{ my: 'ကုန်', gloss: 'goods' },
+		{ my: 'သည်', gloss: 'one who deals in it' }
+	],
+	'ငါးကျပ်': [
+		{ my: 'ငါး', gloss: 'five' },
+		{ my: 'ကျပ်', gloss: 'kyat' }
+	],
+	'ငါးနာရီ': [
+		{ my: 'ငါး', gloss: 'five' },
+		{ my: 'နာရီ', gloss: "hour, o'clock" }
 	]
 };
 

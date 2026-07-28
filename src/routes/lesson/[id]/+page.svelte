@@ -47,14 +47,14 @@
 	const hard = page.url.searchParams.get('mode') === 'hard';
 
 	// Which step of the lesson this run covers. Step 1 is the lesson proper and
-	// the only one that unlocks the next lesson; 2 and 3 are optional depth,
+	// the only one that unlocks the next lesson; 2 and up are optional depth,
 	// entered from the path node. An out-of-range ?step= falls back to 1.
 	const step: LessonStep = (() => {
 		// Crowns belong to the lesson, so a crown run is always step 1 — earning
 		// one off the optional material would make it mean something else.
 		if (hard) return 1;
 		const raw = Number(page.url.searchParams.get('step'));
-		const wanted = raw === 2 || raw === 3 ? raw : 1;
+		const wanted = raw === 2 || raw === 3 || raw === 4 ? raw : 1;
 		return found && lessonSteps(found.lesson).includes(wanted) ? wanted : 1;
 	})();
 

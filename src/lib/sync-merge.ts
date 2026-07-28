@@ -157,7 +157,8 @@ export function defaultProgress(u: unknown): ProgressSaved {
 		freezes: s.freezes ?? 0,
 		freezeNotice: s.freezeNotice ?? null,
 		crowns: s.crowns ?? {},
-		skipped: s.skipped ?? {}
+		skipped: s.skipped ?? {},
+		opened: s.opened ?? {}
 	};
 }
 
@@ -297,7 +298,7 @@ function mergeConfusions(a: ConfusionSaved, b: ConfusionSaved): ConfusionSaved {
 
 /**
  * Merges the progress payload. `xp`, `stars`, `activity`, `achievements`,
- * `crowns` and `skipped` are progress facts and merge as described in the
+ * `crowns`, `skipped` and `opened` are progress facts and merge as described in the
  * header comment (max for running totals, union-with-earliest-epoch for
  * "first happened at" maps). `streak`/`lastStudy` are kept together from
  * whichever side is more recently active. Everything else is a preference
@@ -330,6 +331,9 @@ function mergeProgress(
 		achievements: numberMapMin(local.achievements, remote.achievements),
 		crowns: numberMapMin(local.crowns, remote.crowns),
 		skipped: numberMapMin(local.skipped, remote.skipped),
+		// Unlocking a lesson early on one device is a door opened, not a state
+		// toggled — so the union wins and it stays open on the other one too.
+		opened: numberMapMin(local.opened, remote.opened),
 		freezes: Math.max(local.freezes, remote.freezes),
 		// The most recent unacknowledged notice, so a streak saved on one device
 		// is still reported on another. An acknowledged one is null and loses to

@@ -17,6 +17,7 @@
 	import AchievementToast from '$lib/components/AchievementToast.svelte';
 	import ScriptSheet from '$lib/components/ScriptSheet.svelte';
 	import WordSheet from '$lib/components/WordSheet.svelte';
+	import LessonPreview from '$lib/components/LessonPreview.svelte';
 	import BottomNav from '$lib/components/BottomNav.svelte';
 	import HubHeader from '$lib/components/HubHeader.svelte';
 
@@ -57,4 +58,5 @@
 <AchievementToast />
 <ScriptSheet />
 <WordSheet />
+<LessonPreview />
 <BottomNav />

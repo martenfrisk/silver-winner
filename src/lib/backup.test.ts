@@ -158,6 +158,7 @@ describe('parseBackup sanitizing', () => {
 			achievements: {},
 			crowns: {},
 			skipped: {},
+			opened: {},
 			freezeNotice: null
 		});
 		expect(JSON.parse(res.payloads[CUSTOM_KEY])).toEqual([]);

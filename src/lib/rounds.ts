@@ -19,7 +19,8 @@ import { lessonSteps, stepStarsKey, type Lesson, type LessonStep } from '$lib/da
 export const ROUND_LABELS: Record<LessonStep, string> = {
 	1: 'Part 1',
 	2: 'Part 2',
-	3: 'Part 3'
+	3: 'Part 3',
+	4: 'Part 4'
 };
 
 export function roundLabel(step: LessonStep): string {

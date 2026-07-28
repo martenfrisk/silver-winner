@@ -9,10 +9,11 @@
 // the failure mode of forgetting a site is silent, and it is exactly the kind
 // of bug that only shows up when someone taps a number while reading a
 // definition. So the list lives here, and a new overlay is added in one place.
+import { lessonPreview } from '$lib/lesson-preview.svelte';
 import { scriptSheet } from '$lib/script-sheet.svelte';
 import { wordSheet } from '$lib/word-sheet.svelte';
 
 /** True while any modal overlay is up. Guard player shortcuts with this. */
 export function overlayOpen(): boolean {
-	return scriptSheet.open || wordSheet.open;
+	return scriptSheet.open || wordSheet.open || lessonPreview.open;
 }

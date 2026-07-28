@@ -12,8 +12,9 @@
 	import { vocabSrs } from '$lib/vocab-srs.svelte';
 	import { canSkipUnit, primaryMode } from '$lib/tracks';
 	import { sfx } from '$lib/audio';
+	import { lessonPreview } from '$lib/lesson-preview.svelte';
 	import { goto } from '$app/navigation';
-	import { Lock, Crown, Zap, BookOpen, BookOpenText } from '@lucide/svelte';
+	import { Lock, Crown, Zap, BookOpen, BookOpenText, Eye } from '@lucide/svelte';
 
 	const mode = $derived(primaryMode(progress.profile));
 
@@ -31,8 +32,10 @@
 	}
 
 	function openLesson(id: string, unlocked: boolean) {
-		if (!unlocked) return sfx.wrong();
 		sfx.tap();
+		// Tapping a locked node is someone asking what is in there. It used to
+		// answer with a buzz; now it answers with the word list and a way in.
+		if (!unlocked) return lessonPreview.show(id);
 		goto(`/lesson/${id}`);
 	}
 
@@ -98,8 +101,7 @@
 								class:done={stars > 0}
 								class:current={isCurrent}
 								onclick={() => openLesson(lesson.id, unlocked)}
-								disabled={!unlocked}
-								aria-label="{lesson.title}{unlocked ? '' : ' (locked)'}">
+								aria-label="{lesson.title}{unlocked ? '' : ' (locked, opens a preview)'}">
 								<svg viewBox="0 0 46 46" aria-hidden="true">
 									<circle cx="23" cy="23" r="20" fill="none" stroke="var(--line)" stroke-width="3.5" />
 									{#if pct > 0}
@@ -129,6 +131,12 @@
 										<span class="muted">Skipped &middot; tap to learn anyway</span>
 									{:else if !unlocked}
 										<span class="muted">Locked</span>
+									{:else if lesson.optional}
+										<!-- Said out loud, because the flag is otherwise invisible:
+										     this lesson gates nothing, and a learner deciding
+										     whether to spend twenty minutes on it deserves to know
+										     that before starting rather than after. -->
+										<span class="muted">Optional &middot; {rdone} of {steps.length} parts done</span>
 									{:else}
 										<span class="muted">{rdone} of {steps.length} parts done</span>
 									{/if}
@@ -136,6 +144,16 @@
 							</div>
 
 							<div class="chips">
+								<!-- On every lesson, not just the locked ones: "what words does
+								     this teach?" is as fair a question about the lesson you are
+								     on as about one three units away. -->
+								<button
+									class="chip peek"
+									onclick={() => lessonPreview.show(lesson.id)}
+									aria-label="Preview {lesson.title}"
+									title="See the words this lesson teaches">
+									<Eye size={16} strokeWidth={2} />
+								</button>
 								{#if stars > 0}
 									<a
 										class="chip crown"

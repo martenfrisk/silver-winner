@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import { lessonOrder } from '$lib/data/lesson-order';
+import { lessonOrder, optionalLessons } from '$lib/data/lesson-order';
 import { PROGRESS_KEY as STORAGE_KEY, sanitizeProgress, type ProgressSaved } from '$lib/backup';
 import { DEFAULT_VOICE, isVoiceId, type VoiceId } from '$lib/voices';
 import { sessionXp } from '$lib/xp';
@@ -87,6 +87,21 @@ class Progress {
 	// earn nothing: no stars, no XP, and their words stay out of the SRS. They
 	// stay openable, and un-skipping puts them back exactly as they were.
 	skipped = $state<Record<string, number>>({});
+	/**
+	 * Lessons the learner opened early from a preview, out of order.
+	 *
+	 * Distinct from `skipped` on purpose, because the two say opposite things:
+	 * skipping is "I already know this, don't make me do it" and applies to the
+	 * lesson being skipped, while this is "I want to do *that* one now" and
+	 * applies to the lesson being jumped to. Neither the lessons in between nor
+	 * this one are marked done, so the path still shows exactly what has and
+	 * hasn't been learned — the only thing that changes is that the door is
+	 * unlocked.
+	 *
+	 * The linear order is a recommendation the app makes very obvious and never
+	 * enforces; this is what keeps the second half of that true.
+	 */
+	opened = $state<Record<string, number>>({});
 
 	constructor() {
 		if (browser) {
@@ -116,6 +131,7 @@ class Progress {
 					this.freezeNotice = s.freezeNotice ?? null;
 					this.crowns = s.crowns ?? {};
 					this.skipped = s.skipped ?? {};
+					this.opened = s.opened ?? {};
 				}
 			} catch {
 				// Corrupt storage — start fresh.
@@ -173,7 +189,8 @@ class Progress {
 			freezes: this.freezes,
 			freezeNotice: this.freezeNotice,
 			crowns: this.crowns,
-			skipped: this.skipped
+			skipped: this.skipped,
+			opened: this.opened
 		};
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
 	}
@@ -275,16 +292,46 @@ class Progress {
 		this.save();
 	}
 
-	/** Whether a lesson stops blocking the ones after it. */
+	/**
+	 * Whether a lesson stops blocking the ones after it.
+	 *
+	 * An optional lesson never blocks anything, so it counts as cleared the
+	 * moment it exists (see Lesson.optional). That also keeps `currentLesson`
+	 * — which is just the first uncleared lesson — from parking the "current"
+	 * node on a lesson the learner was never asked to do.
+	 */
 	private isCleared(lessonId: string): boolean {
+		if (optionalLessons.includes(lessonId)) return true;
 		return this.isCompleted(lessonId) || this.isSkipped(lessonId);
 	}
 
-	/** A lesson is unlocked if it is first, or the previous one is cleared. */
+	/**
+	 * A lesson is unlocked if it is first, the previous one is cleared, or the
+	 * learner opened it early from its preview.
+	 */
 	isUnlocked(lessonId: string): boolean {
+		if (lessonId in this.opened) return true;
 		const i = lessonOrder.indexOf(lessonId);
 		if (i <= 0) return i === 0;
 		return this.isCleared(lessonOrder[i - 1]);
+	}
+
+	/** Whether this lesson was opened early rather than reached in order. */
+	isOpenedEarly(lessonId: string): boolean {
+		return lessonId in this.opened;
+	}
+
+	/**
+	 * Opens a lesson the path hasn't reached yet.
+	 *
+	 * Records only this lesson: the ones before it are left untouched, so a
+	 * learner who jumps ahead and then comes back finds the path exactly where
+	 * they left it rather than having been silently marked past it.
+	 */
+	openLessonEarly(lessonId: string) {
+		if (!lessonOrder.includes(lessonId) || lessonId in this.opened) return;
+		this.opened = { ...this.opened, [lessonId]: Date.now() };
+		this.save();
 	}
 
 	/** The first lesson still worth doing (the "current" node). */
@@ -303,12 +350,20 @@ class Progress {
 	 * Skipping a unit says "I already know this", so those lessons stop being
 	 * part of the ladder — counting them in the denominator forever would leave
 	 * a script-reader stuck at 21/24 with no way to reach the end short of
-	 * sitting through the very lessons they were invited to skip. A skipped
-	 * lesson is still openable, and doing it un-skips it, which puts it back in
-	 * both halves of the fraction.
+	 * sitting through the very lessons they were invited to skip. An optional
+	 * lesson (see Lesson.optional) was never required of anyone, so it is out
+	 * for the same reason without the learner having to say anything.
+	 *
+	 * Either way, doing the lesson anyway puts it back in *both* halves of the
+	 * fraction, which is what keeps the count from running past 100%.
 	 */
 	get courseTotal(): number {
-		return lessonOrder.filter((id) => !this.isSkipped(id) || this.isCompleted(id)).length;
+		return lessonOrder.filter((id) => this.countsTowardCourse(id)).length;
+	}
+
+	private countsTowardCourse(id: string): boolean {
+		if (this.isCompleted(id)) return true;
+		return !this.isSkipped(id) && !optionalLessons.includes(id);
 	}
 
 	toggleSound() {
@@ -374,6 +429,7 @@ class Progress {
 		this.freezes = 0;
 		this.crowns = {};
 		this.skipped = {};
+		this.opened = {};
 		this.profile = null; // re-ask on the next home visit
 		this.save();
 	}
