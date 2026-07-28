@@ -10,6 +10,8 @@ afterEach(() => {
 	progress.profile = null;
 	progress.stars = {};
 	progress.skipped = {};
+	progress.opened = {};
+	progress.xp = 0;
 });
 
 describe('skipping lessons', () => {
@@ -53,6 +55,44 @@ describe('skipping lessons', () => {
 		progress.skipLesson(first);
 		progress.reset();
 		expect(progress.isSkipped(first)).toBe(false);
+	});
+});
+
+describe('opening a lesson early from its preview', () => {
+	const [first, second, third] = lessonOrder;
+
+	it('unlocks that lesson without touching the ones before it', () => {
+		expect(progress.isUnlocked(third)).toBe(false);
+		progress.openLessonEarly(third);
+		expect(progress.isUnlocked(third)).toBe(true);
+		// The path is unchanged behind it: nothing was marked done or skipped.
+		expect(progress.isUnlocked(second)).toBe(false);
+		expect(progress.isCompleted(first)).toBe(false);
+		expect(progress.isSkipped(first)).toBe(false);
+		expect(progress.currentLesson).toBe(first);
+	});
+
+	it('earns nothing by itself', () => {
+		progress.openLessonEarly(third);
+		expect(progress.isCompleted(third)).toBe(false);
+		expect(progress.completedCount).toBe(0);
+		expect(progress.xp).toBe(0);
+	});
+
+	it('is idempotent and ignores ids that are not lessons', () => {
+		progress.openLessonEarly(third);
+		const at = progress.opened[third];
+		progress.openLessonEarly(third);
+		expect(progress.opened[third]).toBe(at);
+		progress.openLessonEarly('not-a-lesson');
+		expect(progress.opened['not-a-lesson']).toBeUndefined();
+	});
+
+	it('reset clears it', () => {
+		progress.openLessonEarly(third);
+		progress.reset();
+		expect(progress.isOpenedEarly(third)).toBe(false);
+		expect(progress.isUnlocked(third)).toBe(false);
 	});
 });
 

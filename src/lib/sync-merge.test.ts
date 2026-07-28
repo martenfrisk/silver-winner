@@ -23,6 +23,7 @@ function progress(overrides: Partial<ProgressSaved> = {}): ProgressSaved {
 		freezeNotice: null,
 		crowns: {},
 		skipped: {},
+		opened: {},
 		...overrides
 	};
 }

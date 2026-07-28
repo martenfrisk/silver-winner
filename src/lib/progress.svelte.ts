@@ -87,6 +87,21 @@ class Progress {
 	// earn nothing: no stars, no XP, and their words stay out of the SRS. They
 	// stay openable, and un-skipping puts them back exactly as they were.
 	skipped = $state<Record<string, number>>({});
+	/**
+	 * Lessons the learner opened early from a preview, out of order.
+	 *
+	 * Distinct from `skipped` on purpose, because the two say opposite things:
+	 * skipping is "I already know this, don't make me do it" and applies to the
+	 * lesson being skipped, while this is "I want to do *that* one now" and
+	 * applies to the lesson being jumped to. Neither the lessons in between nor
+	 * this one are marked done, so the path still shows exactly what has and
+	 * hasn't been learned — the only thing that changes is that the door is
+	 * unlocked.
+	 *
+	 * The linear order is a recommendation the app makes very obvious and never
+	 * enforces; this is what keeps the second half of that true.
+	 */
+	opened = $state<Record<string, number>>({});
 
 	constructor() {
 		if (browser) {
@@ -116,6 +131,7 @@ class Progress {
 					this.freezeNotice = s.freezeNotice ?? null;
 					this.crowns = s.crowns ?? {};
 					this.skipped = s.skipped ?? {};
+					this.opened = s.opened ?? {};
 				}
 			} catch {
 				// Corrupt storage — start fresh.
@@ -173,7 +189,8 @@ class Progress {
 			freezes: this.freezes,
 			freezeNotice: this.freezeNotice,
 			crowns: this.crowns,
-			skipped: this.skipped
+			skipped: this.skipped,
+			opened: this.opened
 		};
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
 	}
@@ -288,11 +305,33 @@ class Progress {
 		return this.isCompleted(lessonId) || this.isSkipped(lessonId);
 	}
 
-	/** A lesson is unlocked if it is first, or the previous one is cleared. */
+	/**
+	 * A lesson is unlocked if it is first, the previous one is cleared, or the
+	 * learner opened it early from its preview.
+	 */
 	isUnlocked(lessonId: string): boolean {
+		if (lessonId in this.opened) return true;
 		const i = lessonOrder.indexOf(lessonId);
 		if (i <= 0) return i === 0;
 		return this.isCleared(lessonOrder[i - 1]);
+	}
+
+	/** Whether this lesson was opened early rather than reached in order. */
+	isOpenedEarly(lessonId: string): boolean {
+		return lessonId in this.opened;
+	}
+
+	/**
+	 * Opens a lesson the path hasn't reached yet.
+	 *
+	 * Records only this lesson: the ones before it are left untouched, so a
+	 * learner who jumps ahead and then comes back finds the path exactly where
+	 * they left it rather than having been silently marked past it.
+	 */
+	openLessonEarly(lessonId: string) {
+		if (!lessonOrder.includes(lessonId) || lessonId in this.opened) return;
+		this.opened = { ...this.opened, [lessonId]: Date.now() };
+		this.save();
 	}
 
 	/** The first lesson still worth doing (the "current" node). */
@@ -390,6 +429,7 @@ class Progress {
 		this.freezes = 0;
 		this.crowns = {};
 		this.skipped = {};
+		this.opened = {};
 		this.profile = null; // re-ask on the next home visit
 		this.save();
 	}

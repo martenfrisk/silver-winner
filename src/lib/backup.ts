@@ -184,6 +184,7 @@ export interface ProgressSaved {
 	freezeNotice: { date: string; used: number; streak: number } | null;
 	crowns: Record<string, number>; // lessonId -> epoch ms of the perfect hard-mode run
 	skipped: Record<string, number>; // lessonId -> epoch ms it was skipped
+	opened: Record<string, number>; // lessonId -> epoch ms it was unlocked from its preview
 }
 
 /**
@@ -200,7 +201,8 @@ export function sanitizeProgress(u: unknown): Partial<ProgressSaved> {
 		activity: sanitizeNumberMap(src.activity),
 		achievements: sanitizeNumberMap(src.achievements),
 		crowns: sanitizeNumberMap(src.crowns),
-		skipped: sanitizeNumberMap(src.skipped)
+		skipped: sanitizeNumberMap(src.skipped),
+		opened: sanitizeNumberMap(src.opened)
 	};
 }
 
